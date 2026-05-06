@@ -188,6 +188,8 @@ tr:hover td { background: var(--cream); }
 .form-group input, .form-group select { padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); outline: none; }
 .form-group input:focus, .form-group select:focus { border-color: var(--green-light); }
 #modal-overlay.open { display: flex !important; }
+.doc-link { color: var(--green); font-weight: 500; text-decoration: none; }
+.doc-link:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -205,9 +207,6 @@ tr:hover td { background: var(--cream); }
     </div>
 
     <div class="nav-section-label">Horses & Clients</div>
-    <div class="nav-item" onclick="showPage('horses', this)">
-      <span class="nav-icon">♞</span> Horses
-    </div>
     <div class="nav-item" onclick="showPage('horse-profiles', this)">
       <span class="nav-icon">🐴</span> Horse Profiles
     </div>
@@ -240,10 +239,7 @@ tr:hover td { background: var(--cream); }
       <span class="nav-icon">📋</span> Coggins Records
     </div>
 
-    <div class="nav-section-label">Communication</div>
-    <div class="nav-item" onclick="showPage('messages', this)">
-      <span class="nav-icon">💬</span> Messages & Staff
-    </div>
+
   </nav>
   <div class="sidebar-user">
     <div class="user-avatar">HS</div>
@@ -427,48 +423,19 @@ tr:hover td { background: var(--cream); }
       </div>
     </div>
 
-    <!-- HORSES -->
-    <div class="page" id="page-horses">
-      <div class="section-header">
-        <div class="section-title">Horses</div>
-        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-horse')">+ Add horse</button>
-      </div>
-      <div class="filter-row">
-        <input type="text" class="filter-select" id="horse-search" placeholder="&#128269;  Search horses…" oninput="renderHorses()" style="min-width:200px">
-        <select class="filter-select" id="horse-filter" onchange="renderHorses()">
-          <option value="all">All horses</option>
-          <option value="training">Board + Training</option>
-          <option value="board">Board only</option>
-        </select>
-        <span id="horse-count" style="font-size:12px;color:var(--text-muted);align-self:center;margin-left:4px"></span>
-      </div>
-      <div class="card">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Horse</th>
-                <th>Owner</th>
-                <th>Type</th>
-                <th>Monthly fee</th>
-                <th>Coggins</th>
-                <th>Vacc</th>
-                <th>Notes</th>
-                <th style="text-align:right">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="horse-table"></tbody>
-          </table>
-        </div>
-        <div class="empty" id="horse-empty" style="display:none"><div class="empty-icon">&#9822;</div>No horses match your search.</div>
-      </div>
-    </div>
-
     <!-- HORSE PROFILES -->
     <div class="page" id="page-horse-profiles">
       <div class="section-header">
         <div class="section-title">Horse profiles</div>
         <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-horse')">+ Add horse</button>
+      </div>
+      <div class="filter-row" style="margin-bottom:16px">
+        <input type="text" class="filter-select" id="horse-search" placeholder="&#128269;  Search horses…" oninput="renderHorseProfiles()" style="min-width:200px">
+        <select class="filter-select" id="horse-filter" onchange="renderHorseProfiles()">
+          <option value="all">All horses</option>
+          <option value="training">Board + Training</option>
+          <option value="board">Board only</option>
+        </select>
       </div>
       <div id="horse-profiles-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px"></div>
       <div class="empty" id="horse-profiles-empty" style="display:none"><div class="empty-icon">🐴</div>No horses yet. Add your first horse!</div>
@@ -549,7 +516,7 @@ tr:hover td { background: var(--cream); }
     <div class="page" id="page-boarding">
       <div class="section-header">
         <div class="section-title">Boarding & Training</div>
-        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-client')">+ New agreement</button>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-boarder')">+ Add boarder</button>
       </div>
       <div class="tabs">
         <div class="tab active" onclick="switchBoardTab(this,'board-active')">Active boarders</div>
@@ -559,20 +526,10 @@ tr:hover td { background: var(--cream); }
       <div id="board-active">
         <div class="card">
           <table>
-            <thead><tr><th>Horse</th><th>Owner / Contact</th><th>Type</th><th>Since</th><th>Monthly fee</th><th>Agreement</th></tr></thead>
-            <tbody>
-              <tr><td><strong>Stanley</strong></td><td>Alex Charles</td><td><span class="badge badge-blue">Full board + Training</span></td><td>Jan 2024</td><td>$2,800</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td><strong>Gigi</strong></td><td>Melissa Girnius</td><td><span class="badge badge-blue">Full board + Training</span></td><td>Oct 2025</td><td>$2,800</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td><strong>Rosie</strong></td><td>Hermine Heller</td><td><span class="badge badge-blue">Full board + Training</span></td><td>Mar 2024</td><td>$2,800</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td><strong>Captain Union Jack</strong></td><td>ia Oehm</td><td><span class="badge badge-blue">Full board + Training</span></td><td>Feb 2024</td><td>$2,800</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td><strong>Mando</strong></td><td>Bobbi Healey</td><td><span class="badge badge-blue">Full board + Training</span></td><td>Apr 2024</td><td>$2,800</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td><strong>Coco</strong></td><td>–</td><td><span class="badge badge-gray">Full board</span></td><td>Jun 2024</td><td>$2,200</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td><strong>Diplo</strong></td><td>–</td><td><span class="badge badge-gray">Full board</span></td><td>Aug 2024</td><td>$2,200</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td><strong>Kingston</strong></td><td>–</td><td><span class="badge badge-gray">Full board</span></td><td>Sep 2024</td><td>$2,200</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td><strong>Valencio</strong></td><td>Carolline Schaffer</td><td><span class="badge badge-gray">Full board</span></td><td>Nov 2024</td><td>$2,200</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td><strong>Cordelia</strong></td><td>Kathryn Baker</td><td><span class="badge badge-gray">Full board</span></td><td>Dec 2024</td><td>$2,200</td><td><span class="badge badge-amber">Pending</span></td></tr>
-            </tbody>
+            <thead><tr><th>Horse</th><th>Owner / Contact</th><th>Type</th><th>Since</th><th>Monthly fee</th><th>Agreement</th><th style="text-align:right">Actions</th></tr></thead>
+            <tbody id="boarders-table"></tbody>
           </table>
+          <div class="empty" id="boarders-empty" style="display:none"><div class="empty-icon">🏠</div>No active boarders.</div>
         </div>
       </div>
       <div id="board-training" style="display:none">
@@ -592,7 +549,7 @@ tr:hover td { background: var(--cream); }
       <div id="board-agreements" style="display:none">
         <div class="card">
           <table>
-            <thead><tr><th>Client</th><th>Horse</th><th>Agreement</th><th>Date</th><th>Status</th></tr></thead>
+            <thead><tr><th>Client</th><th>Horse</th><th>Agreement type</th><th>Date</th><th>Status</th></tr></thead>
             <tbody>
               <tr><td>Bridget Lang</td><td>–</td><td>Boarding agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
               <tr><td>Bobbi Healey</td><td>Mando</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
@@ -600,9 +557,9 @@ tr:hover td { background: var(--cream); }
               <tr><td>Erin Polos</td><td>–</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
               <tr><td>Hermine Heller</td><td>Rosie</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
               <tr><td>ia Oehm</td><td>Captain Union Jack</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Kristen Caporaso</td><td>–</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Kristen Caporaso</td><td>–</td><td>Board + training (Heron Stables)</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
               <tr><td>Melissa Girnius</td><td>Gigi</td><td>Board + training</td><td>Oct 2025</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Sherri Pyka</td><td>–</td><td>Boarding</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Sherri Pyka</td><td>–</td><td>Boarding agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -740,9 +697,10 @@ tr:hover td { background: var(--cream); }
     <!-- WAIVERS -->
     <div class="page" id="page-waivers">
       <div class="section-header">
-        <div class="section-title">Waivers & documents</div>
-        <button class="btn btn-primary btn-sm" onclick="toast('📎 To upload documents, use the file input below or drag & drop — coming in next update!','var(--amber)')">+ Upload doc</button>
+        <div class="section-title">Waivers &amp; documents</div>
+        <button class="btn btn-primary btn-sm" onclick="openUploadModal()">+ Upload doc</button>
       </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Click any document name to open it. Documents must be uploaded to your GitHub repo to be viewable.</p>
       <div class="tabs">
         <div class="tab active" onclick="switchDocTab(this,'docs-waivers')">Waivers</div>
         <div class="tab" onclick="switchDocTab(this,'docs-board')">Boarding agreements</div>
@@ -753,33 +711,33 @@ tr:hover td { background: var(--cream); }
           <table>
             <thead><tr><th>Client</th><th>Document</th><th>Date on file</th><th>Status</th></tr></thead>
             <tbody>
-              <tr><td>Alexandra Kutovoy (for Lukas Torres)</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Anna Baskevich</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Bridget Lang</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Caryn Biehl</td><td>Risk waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Courtney McCaffrey</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Courtney Stern (for Beatrice)</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Danielle Blomquist (for Piper Duff)</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Emma Brown</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Erin Polos</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Gloria Woo</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Heidi Miller (for Alina)</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Isabella Paradise</td><td>Liability waiver</td><td>–</td><td><span class="badge badge-amber">Pending</span></td></tr>
-              <tr><td>Jacquelin Sawyer</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Juno Cox</td><td>Liability waiver</td><td>–</td><td><span class="badge badge-red">Missing</span></td></tr>
-              <tr><td>Kate Tsirelman</td><td>Liability release</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Kathryn Baker (for Cordelia)</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Kristen Caporaso</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Lucas Holzmann</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Mary Trezza</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Meredith Sternberg</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Michelle Figuereido (for Noelle)</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Sheila Sadighi</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Sherri Pyka</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Soleil Margolin</td><td>Liability release</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Stephanie O'Brien</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Steve Rossi (for Dane)</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Vivienne DuBarry</td><td>Liability waiver</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Alexandra Kutovoy (for Lukas Torres)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Alexandra_Kutovoy_for_Lukas_Torres_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Anna Baskevich</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Anna_Baskevich_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Bridget Lang</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Bridget_Lang_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Caryn Biehl</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Caryn_Biehl_Risk_Waiver.pdf" target="_blank" class="doc-link">Risk waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Courtney McCaffrey</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Courtney_McCaffrey_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Courtney Stern (for Beatrice)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Courtney_stern_for_Beatrice_stern_waiver_.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Danielle Blomquist (for Piper Duff)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Danielle_Blomquist_for_Piper_Duff_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Emma Brown</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Emma_Brown_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Erin Polos</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Erin_Polos_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Gloria Woo</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Gloria_Woo_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Heidi Miller (for Alina)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Heidi_Miller_and_Alina_Miller_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Isabella Paradise</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Isabella_Paradise_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>–</td><td><span class="badge badge-amber">Pending</span></td></tr>
+              <tr><td>Jacquelin Sawyer</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Jacquelin_Sawyer_waiver_.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Juno Cox</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Juno_Cox_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>–</td><td><span class="badge badge-red">Missing</span></td></tr>
+              <tr><td>Kate Tsirelman</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Kate_Tsirelman_liability_release.pdf" target="_blank" class="doc-link">Liability release &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Kathryn Baker (for Cordelia)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Kathryn_Baker_for_Cordelia_baker_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Kristen Caporaso</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Kristen_Caporaso_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Lucas Holzmann</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Lucas_Holzmann_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Mary Trezza</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Mary_Trezza_Waiver_.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Meredith Sternberg</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Meredith_Sternberg_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Michelle Figuereido (for Noelle)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Michelle_Figuereido_And_Noelle_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Sheila Sadighi</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Sheila_sadighi_waiver_.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Sherri Pyka</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Sherri_Pyka_waivere.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Soleil Margolin</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Soleil_Margolin_liability_release.pdf" target="_blank" class="doc-link">Liability release &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Stephanie O'Brien</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Stephanie_OBrien_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Steve Rossi (for Dane)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Steve_Rossi_for_Dane_Rossi_waiver_.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Vivienne DuBarry</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Vivienne_DuBarry_Waivver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
               <tr><td>Abigail O'Brien</td><td>Liability waiver</td><td>–</td><td><span class="badge badge-red">Missing</span></td></tr>
             </tbody>
           </table>
@@ -788,63 +746,28 @@ tr:hover td { background: var(--cream); }
       <div id="docs-board" style="display:none">
         <div class="card">
           <table>
-            <thead><tr><th>Client</th><th>Horse</th><th>Agreement type</th><th>Date</th><th>Status</th></tr></thead>
+            <thead><tr><th>Client</th><th>Horse</th><th>Agreement</th><th>Date</th><th>Status</th></tr></thead>
             <tbody>
-              <tr><td>Bridget Lang</td><td>–</td><td>Boarding agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Bobbi Healey</td><td>Mando</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Carolline Schaffer</td><td>–</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Erin Polos</td><td>–</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Hermine Heller</td><td>Rosie</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>ia Oehm</td><td>Captain Union Jack</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Kristen Caporaso</td><td>–</td><td>Board + training (Heron Stables)</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Melissa Girnius</td><td>Gigi</td><td>Board + training</td><td>Oct 2025</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Sherri Pyka</td><td>–</td><td>Boarding agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Bridget Lang</td><td>–</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Bridget_Lang_boarding_agreement.pdf" target="_blank" class="doc-link">Boarding agreement &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Bobbi Healey</td><td>Mando</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Bobby_Healey_and_Mando_Board_agreement.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Carolline Schaffer</td><td>–</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Caroline_Schaeffer_Boarding_and_training_agreement.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Erin Polos</td><td>–</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Erin_Polos_Board_and_training_agreement.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Hermine Heller</td><td>Rosie</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Hermine_Heller_For_Rosie_Boarding_and_training_agreement.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>ia Oehm</td><td>Captain Union Jack</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/ia_Oehm_Board_agreement_for_Captain_Union_Jack.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Kristen Caporaso</td><td>–</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Heron_Stables_Contract_Kristen_Caporaso_.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Melissa Girnius</td><td>Gigi</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/melissa_Girnius_Agreement_for_gigi.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>Oct 2025</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Sherri Pyka</td><td>–</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Sherri_Pyka_Boarding_Agreement.pdf" target="_blank" class="doc-link">Boarding agreement &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
             </tbody>
           </table>
         </div>
       </div>
       <div id="docs-other" style="display:none">
         <div class="card">
-          <div class="doc-row">
-            <div class="doc-icon green">📋</div>
-            <div>
-              <div class="doc-name">Vaccination signup sheet — Spring 2025</div>
-              <div class="doc-sub">All horses on file</div>
-            </div>
-            <span class="badge badge-green">On file</span>
-          </div>
-          <div class="doc-row">
-            <div class="doc-icon">📄</div>
-            <div>
-              <div class="doc-name">Bill of sale — Valencio</div>
-              <div class="doc-sub">Signed bill of sale</div>
-            </div>
-            <span class="badge badge-green">On file</span>
-          </div>
-          <div class="doc-row">
-            <div class="doc-icon">📄</div>
-            <div>
-              <div class="doc-name">Bill of sale — Stanley</div>
-              <div class="doc-sub">Signed bill of sale</div>
-            </div>
-            <span class="badge badge-green">On file</span>
-          </div>
-          <div class="doc-row">
-            <div class="doc-icon green">📋</div>
-            <div>
-              <div class="doc-name">Gastos de Gestion</div>
-              <div class="doc-sub">Management expense doc</div>
-            </div>
-            <span class="badge badge-green">On file</span>
-          </div>
-          <div class="doc-row">
-            <div class="doc-icon green">📋</div>
-            <div>
-              <div class="doc-name">Emma Blumer — Record</div>
-              <div class="doc-sub">–</div>
-            </div>
-            <span class="badge badge-green">On file</span>
-          </div>
+          <div class="doc-row"><div class="doc-icon">📄</div><div><div class="doc-name"><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Vaccination_signup_sheet_Spring_2025_2.pdf" target="_blank" class="doc-link">Vaccination signup sheet — Spring 2025 &#8599;</a></div><div class="doc-sub">All horses</div></div><span class="badge badge-green">On file</span></div>
+          <div class="doc-row"><div class="doc-icon">📄</div><div><div class="doc-name"><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/bill_of_sale_Valencio.pdf" target="_blank" class="doc-link">Bill of sale — Valencio &#8599;</a></div></div><span class="badge badge-green">On file</span></div>
+          <div class="doc-row"><div class="doc-icon">📄</div><div><div class="doc-name"><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/STANLEY_Bill_of_sale_signed___.pdf" target="_blank" class="doc-link">Bill of sale — Stanley &#8599;</a></div></div><span class="badge badge-green">On file</span></div>
+          <div class="doc-row"><div class="doc-icon">📄</div><div><div class="doc-name"><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/GastosdeGestion.pdf" target="_blank" class="doc-link">Gastos de Gestion &#8599;</a></div></div><span class="badge badge-green">On file</span></div>
+          <div class="doc-row"><div class="doc-icon">📄</div><div><div class="doc-name"><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Emma_Blumer.pdf" target="_blank" class="doc-link">Emma Blumer — Record &#8599;</a></div></div><span class="badge badge-green">On file</span></div>
         </div>
       </div>
     </div>
@@ -872,71 +795,6 @@ tr:hover td { background: var(--cream); }
       </div>
       <div style="margin-top:12px;font-size:12px;color:var(--text-muted);padding:0 4px">
         All EIA (Coggins) tests must be renewed annually. Contact Dr. Nicole Jochec at Running Equine (908) 832-5484 to schedule testing.
-      </div>
-    </div>
-
-    <!-- MESSAGES -->
-    <div class="page" id="page-messages">
-      <div class="section-header">
-        <div class="section-title">Messages & staff communication</div>
-      </div>
-      <div style="display:grid;grid-template-columns:200px 1fr;gap:16px">
-        <div>
-          <div style="font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Channels</div>
-          <div class="channel-list">
-            <div class="channel-item active" onclick="switchChannel(this,'ch-grooms')"><span class="channel-hash">#</span> grooms</div>
-            <div class="channel-item" onclick="switchChannel(this,'ch-general')"><span class="channel-hash">#</span> general</div>
-            <div class="channel-item" onclick="switchChannel(this,'ch-vet')"><span class="channel-hash">#</span> vet-updates</div>
-            <div class="channel-item" onclick="switchChannel(this,'ch-farrier')"><span class="channel-hash">#</span> farrier</div>
-          </div>
-          <div style="font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;margin-top:16px">Direct messages</div>
-          <div class="channel-list">
-            <div class="channel-item" onclick="switchChannel(this,'ch-alex')">Alex Charles</div>
-            <div class="channel-item" onclick="switchChannel(this,'ch-patricia')">Patricia Amador</div>
-            <div class="channel-item" onclick="switchChannel(this,'ch-caroline')">Caroline Johnston</div>
-          </div>
-        </div>
-        <div class="card" style="display:flex;flex-direction:column;min-height:440px">
-          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)"># grooms</div>
-          <div class="msg-container" style="flex:1" id="msg-area">
-            <div class="msg-row">
-              <div class="avatar av-green" style="width:30px;height:30px;font-size:11px;flex-shrink:0">PA</div>
-              <div class="msg-bubble">
-                <div class="msg-sender">Patricia Amador</div>
-                <div class="msg-text">Good morning everyone! Stanley needs his left front leg wrapped before the 8am lesson — noticed slight puffiness this morning.</div>
-                <div class="msg-time">7:32 AM</div>
-              </div>
-            </div>
-            <div class="msg-row">
-              <div class="avatar av-brown" style="width:30px;height:30px;font-size:11px;flex-shrink:0">CJ</div>
-              <div class="msg-bubble">
-                <div class="msg-sender">Caroline Johnston</div>
-                <div class="msg-text">On it. Also — Valencio's stall is low on shavings, needs bedding before turnout.</div>
-                <div class="msg-time">7:45 AM</div>
-              </div>
-            </div>
-            <div class="msg-row mine">
-              <div class="avatar av-amber" style="width:30px;height:30px;font-size:11px;flex-shrink:0">HS</div>
-              <div class="msg-bubble">
-                <div class="msg-sender">You</div>
-                <div class="msg-text">Thanks Patricia. Caroline, I ordered shavings from Sergeantsville Grain — should arrive by noon. Can you check Gigi's water buckets after morning feed?</div>
-                <div class="msg-time">8:01 AM</div>
-              </div>
-            </div>
-            <div class="msg-row">
-              <div class="avatar av-green" style="width:30px;height:30px;font-size:11px;flex-shrink:0">PA</div>
-              <div class="msg-bubble">
-                <div class="msg-sender">Patricia Amador</div>
-                <div class="msg-text">Stanley's leg is wrapped. Looks better than yesterday — probably fine but worth monitoring. I'll let Alex know before the lesson.</div>
-                <div class="msg-time">8:14 AM</div>
-              </div>
-            </div>
-          </div>
-          <div class="msg-input-row">
-            <input class="msg-input" type="text" placeholder="Message #grooms…" id="msg-input" onkeydown="sendMsg(event)">
-            <button class="btn btn-primary btn-sm" onclick="sendMsgClick()">Send</button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -1230,12 +1088,257 @@ tr:hover td { background: var(--cream); }
 <!-- TOAST -->
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:2000;box-shadow:0 4px 16px rgba(0,0,0,0.15)"></div>
 
+
+<!-- ========== MODALS ========== -->
+<div id="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center" onclick="closeModalOverlay(event)">
+
+  <!-- ADD / EDIT HORSE -->
+  <div class="modal-box" id="modal-add-horse" style="display:none;max-width:600px">
+    <div class="modal-header"><span>Add new horse</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div style="font-size:11px;font-weight:500;color:var(--green);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Identity</div>
+      <div class="form-row">
+        <div class="form-group"><label>Barn name *</label><input type="text" id="h-name" placeholder="e.g. Bella"></div>
+        <div class="form-group"><label>Show name</label><input type="text" id="h-showname" placeholder="e.g. Heron's Bella"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Registered name</label><input type="text" id="h-regname" placeholder="Full registered name"></div>
+        <div class="form-group"><label>USEF number</label><input type="text" id="h-usef" placeholder="e.g. 5432198"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>EIA / Coggins #</label><input type="text" id="h-eia" placeholder="e.g. EIA21459861"></div>
+        <div class="form-group"><label>Owner</label><select id="h-owner"><option value="">Select owner…</option></select></div>
+      </div>
+      <div style="font-size:11px;font-weight:500;color:var(--green);text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 4px">Physical description</div>
+      <div class="form-row">
+        <div class="form-group"><label>Breed</label><input type="text" id="h-breed" placeholder="e.g. Warmblood"></div>
+        <div class="form-group"><label>Color / markings</label><input type="text" id="h-color" placeholder="e.g. Bay, four white socks"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Sex</label><select id="h-sex"><option value="">–</option><option>Mare</option><option>Gelding</option><option>Stallion</option><option>Filly</option><option>Colt</option></select></div>
+        <div class="form-group"><label>Height (hands)</label><input type="text" id="h-height" placeholder="e.g. 16.2"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Date of birth</label><input type="date" id="h-dob"></div>
+        <div class="form-group"><label>Monthly fee ($)</label><input type="number" id="h-fee" placeholder="2200"></div>
+      </div>
+      <div style="font-size:11px;font-weight:500;color:var(--green);text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 4px">Board &amp; health</div>
+      <div class="form-row">
+        <div class="form-group"><label>Board type</label><select id="h-board"><option>Full board</option><option>Full board + Training</option><option>Pasture board</option><option>Training only</option></select></div>
+        <div class="form-group"><label>Coggins status</label><select id="h-coggins"><option value="Current">Current</option><option value="Renew">Renew needed</option><option value="Check">Needs check</option><option value="Overdue">Overdue</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Vaccination status</label><select id="h-vacc"><option value="Current">Current</option><option value="Due soon">Due soon</option><option value="Overdue">Overdue</option></select></div>
+        <div class="form-group"></div>
+      </div>
+      <div class="form-group"><label>Notes / care instructions</label><textarea id="h-notes" rows="2" placeholder="Special care, feeding, health notes…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;background:var(--cream);color:var(--text)"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="horse-save-btn" onclick="saveHorse()">Add horse</button>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT CLIENT -->
+  <div class="modal-box" id="modal-add-client" style="display:none">
+    <div class="modal-header"><span>Add new client</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>First name *</label><input type="text" id="c-first" placeholder="First"></div>
+        <div class="form-group"><label>Last name *</label><input type="text" id="c-last" placeholder="Last"></div>
+      </div>
+      <div class="form-group">
+        <label>Roles * <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light);font-size:10px">(select all that apply)</span></label>
+        <div id="c-roles-wrap" style="display:flex;flex-wrap:wrap;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--cream)">
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" value="rider" style="accent-color:var(--green)"> Rider</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" value="lesson student" style="accent-color:var(--green)"> Lesson student</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" value="horse owner" style="accent-color:var(--green)"> Horse owner</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" value="bill payer" style="accent-color:var(--green)"> Bill payer</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" value="parent" style="accent-color:var(--green)"> Parent</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" value="staff" style="accent-color:var(--green)"> Staff</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" value="trainer" style="accent-color:var(--green)"> Trainer</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" value="vendor" style="accent-color:var(--green)"> Vendor</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" value="veterinarian" style="accent-color:var(--green)"> Veterinarian</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" value="farrier" style="accent-color:var(--green)"> Farrier</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer"><input type="checkbox" value="lessee" style="accent-color:var(--green)"> Lessee</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone</label><input type="tel" id="c-phone" placeholder="(000) 000-0000"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="c-email" placeholder="email@example.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>City</label><input type="text" id="c-city" placeholder="City"></div>
+        <div class="form-group"><label>State</label><input type="text" id="c-state" placeholder="NJ"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="client-save-btn" onclick="saveClient()">Add client</button>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT BOARDER -->
+  <div class="modal-box" id="modal-add-boarder" style="display:none">
+    <div class="modal-header"><span>Add boarder</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Horse *</label><select id="b-horse"><option value="">Select horse…</option></select></div>
+        <div class="form-group"><label>Owner / Contact</label><select id="b-owner"><option value="">Select client…</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Board type</label><select id="b-type"><option>Full board + Training</option><option>Full board</option><option>Pasture board</option><option>Training only</option></select></div>
+        <div class="form-group"><label>Since</label><input type="month" id="b-since"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Monthly fee ($)</label><input type="number" id="b-fee" placeholder="2200"></div>
+        <div class="form-group"><label>Agreement status</label><select id="b-agreement"><option value="Signed">Signed</option><option value="Pending">Pending</option><option value="Not signed">Not signed</option></select></div>
+      </div>
+      <div class="form-group"><label>Notes</label><textarea id="b-notes" rows="2" placeholder="Any notes about this boarding arrangement…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;background:var(--cream);color:var(--text)"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="boarder-save-btn" onclick="saveBoarder()">Add boarder</button>
+    </div>
+  </div>
+
+  <!-- ADD LESSON -->
+  <div class="modal-box" id="modal-add-lesson" style="display:none">
+    <div class="modal-header"><span>Log a lesson</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Date *</label><input type="date" id="l-date"></div>
+        <div class="form-group"><label>Trainer *</label><select id="l-trainer"><option>Alex Charles</option><option>Patricia Amador</option><option>Bridget Lang</option><option>Other</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Rider *</label>
+          <select id="l-rider" onchange="toggleDropIn(this.value)"><option value="">Select rider…</option><option value="__dropin__">+ Drop-in / Guest (not on list)</option></select>
+        </div>
+        <div class="form-group"><label>Horse *</label><select id="l-horse"><option value="">Select horse…</option></select></div>
+      </div>
+      <div class="form-group" id="dropin-wrap" style="display:none">
+        <label>Guest / drop-in name *</label>
+        <input type="text" id="l-dropin" placeholder="Enter guest rider name">
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Lesson type</label><select id="l-type"><option>Jump lesson</option><option>Flatwork</option><option>Dressage</option><option>Hunter lesson</option><option>Trail ride</option><option>Trot work</option><option>Canter work</option><option>Show prep</option><option>Private lesson</option><option>Group lesson</option></select></div>
+        <div class="form-group"><label>Duration</label><select id="l-duration"><option>30 min</option><option>45 min</option><option selected>1 hour</option><option>1.5 hours</option><option>2 hours</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Fee ($)</label><input type="number" id="l-fee" value="120"></div>
+        <div class="form-group"><label>Paid?</label><select id="l-paid"><option value="unpaid">Unpaid</option><option value="paid">Paid</option><option value="pending">Pending</option></select></div>
+      </div>
+      <div class="form-group"><label>Notes / observations</label><textarea id="l-notes" rows="2" placeholder="e.g. Good progress on lead changes…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;background:var(--cream);color:var(--text)"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="lesson-save-btn" onclick="saveLesson()">Log lesson</button>
+    </div>
+  </div>
+
+  <!-- ADD SCHEDULE -->
+  <div class="modal-box" id="modal-add-sched" style="display:none">
+    <div class="modal-header"><span>Add scheduled lesson</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Date *</label><input type="date" id="s-date"></div>
+        <div class="form-group"><label>Time *</label><input type="time" id="s-time" value="09:00"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Client *</label><select id="s-client"><option value="">Select client…</option></select></div>
+        <div class="form-group"><label>Horse *</label><select id="s-horse"><option value="">Select horse…</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Type</label><select id="s-type"><option>Jump lesson</option><option>Flatwork</option><option>Dressage</option><option>Hunter lesson</option><option>Trail ride</option><option>Trot work</option><option>Show prep</option></select></div>
+        <div class="form-group"><label>Status</label><select id="s-status"><option value="Confirmed">Confirmed</option><option value="Pending">Pending</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="sched-save-btn" onclick="saveSchedule()">Add to schedule</button>
+    </div>
+  </div>
+
+  <!-- ADD VACCINATION -->
+  <div class="modal-box" id="modal-add-vacc" style="display:none">
+    <div class="modal-header"><span>Log vaccination</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Horse *</label><select id="v-horse"><option value="">Select horse…</option></select></div>
+        <div class="form-group"><label>Date administered *</label><input type="date" id="v-date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Vaccines given</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--cream)">
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" checked value="Rabies" style="accent-color:var(--green)"> Rabies</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" checked value="EEE/WEE" style="accent-color:var(--green)"> EEE/WEE</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" checked value="Flu/Rhino" style="accent-color:var(--green)"> Flu/Rhino</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" checked value="West Nile" style="accent-color:var(--green)"> West Nile</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" checked value="Tetanus" style="accent-color:var(--green)"> Tetanus</label>
+          </div>
+        </div>
+        <div class="form-group"><label>Administered by</label><select id="v-vet"><option>Dr. Nicole Jochec</option><option>Dr. Travis Bowers</option><option>Other</option></select></div>
+      </div>
+      <div class="form-group"><label>Notes</label><input type="text" id="v-notes" placeholder="Any reactions or observations…"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveVacc()">Save record</button>
+    </div>
+  </div>
+
+  <!-- SHARE LESSONS -->
+  <div class="modal-box" id="modal-share-lessons" style="display:none;max-width:680px">
+    <div class="modal-header"><span>&#128228; Share monthly lesson report</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div id="share-preview" style="font-size:12px;line-height:1.7;background:var(--cream);padding:16px;border-radius:8px;border:1px solid var(--border);white-space:pre;font-family:monospace;overflow-x:auto"></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">Click Copy to paste into an email or message.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Close</button>
+      <button class="btn btn-primary" onclick="copyReport()">&#128203; Copy to clipboard</button>
+    </div>
+  </div>
+
+</div><!-- end modal overlay -->
+
+<div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:2000;box-shadow:0 4px 16px rgba(0,0,0,0.15)"></div>
+
 <script>
 // ==========================================
-// HERON STABLES — COMPLETE APP LOGIC
+// HERON STABLES — COMPLETE APP LOGIC v3
 // ==========================================
 
-// ---- DATA ----
+// ---- LOCALSTORAGE PERSISTENCE ----
+const LS_KEY = 'heronStables_v1';
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      clients, archivedClients, horses, archivedHorses,
+      boarders, lessonsData, scheduleData
+    }));
+  } catch(e) { console.warn('Storage save failed', e); }
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (data.clients) clients.splice(0, clients.length, ...data.clients);
+    if (data.archivedClients) archivedClients.splice(0, archivedClients.length, ...data.archivedClients);
+    if (data.horses) horses.splice(0, horses.length, ...data.horses);
+    if (data.archivedHorses) archivedHorses.splice(0, archivedHorses.length, ...data.archivedHorses);
+    if (data.boarders) boarders.splice(0, boarders.length, ...data.boarders);
+    if (data.lessonsData) lessonsData.splice(0, lessonsData.length, ...data.lessonsData);
+    if (data.scheduleData) scheduleData.splice(0, scheduleData.length, ...data.scheduleData);
+    return true;
+  } catch(e) { console.warn('Storage load failed', e); return false; }
+}
+
+// ---- DEFAULT DATA ----
 const clients = [
   {name:"Abigail O'Brien",roles:"rider, lesson student",phone:"",email:"",city:"",state:""},
   {name:"Alex Charles",roles:"horse owner, trainer",phone:"(551) 404-8054",email:"rutgersgraduate@gmail.com",city:"",state:""},
@@ -1283,7 +1386,6 @@ const clients = [
   {name:"Down to Earth",roles:"vendor",phone:"9083194434",email:"d2efarms@gmail.com",city:"",state:""},
   {name:"Sergeantsville Grain",roles:"vendor",phone:"609-397-0807",email:"",city:"Sergeantsville",state:"NJ"},
 ];
-
 const archivedClients = [];
 
 const horses = [
@@ -1300,13 +1402,26 @@ const horses = [
   {name:'Captain Union Jack',showname:'Captain Union Jack',regname:'',owner:'ia Oehm',board:'Full board + Training',breed:'',color:'',sex:'Gelding',height:'',dob:'',usef:'',eia:'',fee:2800,coggins:'Current',vacc:'Current',notes:'',photo:''},
   {name:'Mando',showname:'Mando',regname:'',owner:'Bobbi Healey',board:'Full board + Training',breed:'',color:'',sex:'Gelding',height:'',dob:'',usef:'',eia:'',fee:2800,coggins:'Current',vacc:'Current',notes:'',photo:''},
 ];
-
 const archivedHorses = [];
 
+const boarders = [
+  {horse:'Stanley',owner:'Alex Charles',type:'Full board + Training',since:'Jan 2024',fee:2800,agreement:'Signed',notes:''},
+  {horse:'Gigi',owner:'Melissa Girnius',type:'Full board + Training',since:'Oct 2025',fee:2800,agreement:'Signed',notes:''},
+  {horse:'Rosie',owner:'Hermine Heller',type:'Full board + Training',since:'Mar 2024',fee:2800,agreement:'Signed',notes:''},
+  {horse:'Captain Union Jack',owner:'ia Oehm',type:'Full board + Training',since:'Feb 2024',fee:2800,agreement:'Signed',notes:''},
+  {horse:'Mando',owner:'Bobbi Healey',type:'Full board + Training',since:'Apr 2024',fee:2800,agreement:'Signed',notes:''},
+  {horse:'Coco',owner:'–',type:'Full board',since:'Jun 2024',fee:2200,agreement:'Signed',notes:''},
+  {horse:'Diplo',owner:'–',type:'Full board',since:'Aug 2024',fee:2200,agreement:'Signed',notes:''},
+  {horse:'Kingston',owner:'–',type:'Full board',since:'Sep 2024',fee:2200,agreement:'Signed',notes:''},
+  {horse:'Valencio',owner:'Carolline Schaffer',type:'Full board',since:'Nov 2024',fee:2200,agreement:'Signed',notes:''},
+  {horse:'Cordelia',owner:'Kathryn Baker',type:'Full board',since:'Dec 2024',fee:2200,agreement:'Pending',notes:''},
+];
+const archivedBoarders = [];
+
 const lessonsData = [
-  {date:'2026-05-01',trainer:'Alex Charles',rider:'Erin Polos',horse:'Stanley',type:'Jump lesson',duration:'1 hour',fee:120,paid:'paid',notes:'Great lead changes. Work on sitting trot.'},
+  {date:'2026-05-01',trainer:'Alex Charles',rider:'Erin Polos',horse:'Stanley',type:'Jump lesson',duration:'1 hour',fee:120,paid:'paid',notes:'Great lead changes.'},
   {date:'2026-05-01',trainer:'Alex Charles',rider:'Sherri Pyka',horse:'Diplo',type:'Flatwork',duration:'1 hour',fee:120,paid:'paid',notes:''},
-  {date:'2026-05-02',trainer:'Alex Charles',rider:'Emma Brown',horse:'Stanley',type:'Jump lesson',duration:'1 hour',fee:120,paid:'paid',notes:'First 3-foot course — did great!'},
+  {date:'2026-05-02',trainer:'Alex Charles',rider:'Emma Brown',horse:'Stanley',type:'Jump lesson',duration:'1 hour',fee:120,paid:'paid',notes:'First 3-foot course!'},
   {date:'2026-05-02',trainer:'Alex Charles',rider:'Caryn Biehl',horse:'Rosie',type:'Flatwork',duration:'1 hour',fee:120,paid:'unpaid',notes:''},
   {date:'2026-05-02',trainer:'Alex Charles',rider:'Courtney McCaffrey',horse:'Mando',type:'Hunter lesson',duration:'1 hour',fee:120,paid:'paid',notes:''},
   {date:'2026-05-03',trainer:'Alex Charles',rider:'Kristen Caporaso',horse:'Kingston',type:'Dressage',duration:'1 hour',fee:120,paid:'paid',notes:'Working on half-pass.'},
@@ -1340,194 +1455,168 @@ const scheduleData = [
 
 // ---- NAVIGATION ----
 function showPage(id, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const page = document.getElementById('page-' + id);
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  var page = document.getElementById('page-' + id);
   if (page) page.classList.add('active');
   if (el) el.classList.add('active');
-  const titles = {
-    dashboard:'Dashboard', horses:'Horses', 'horse-profiles':'Horse Profiles',
-    clients:'Clients', archive:'Archive', boarding:'Boarding & Training',
-    schedule:'Lesson Schedule', vaccinations:'Vaccinations',
-    lessons:'Lessons Log', waivers:'Waivers & Documents',
-    coggins:'Coggins / EIA Records', messages:'Messages & Staff'
+  var titles = {
+    dashboard:'Dashboard', 'horse-profiles':'Horse Profiles', clients:'Clients', archive:'Archive',
+    boarding:'Boarding & Training', schedule:'Lesson Schedule', vaccinations:'Vaccinations',
+    lessons:'Lessons Log', waivers:'Waivers & Documents', coggins:'Coggins / EIA Records'
   };
   document.getElementById('topbar-title').textContent = titles[id] || id;
+  if (id === 'horse-profiles') renderHorseProfiles();
   if (id === 'lessons') renderLessons();
   if (id === 'archive') renderArchive();
-  if (id === 'horse-profiles') renderHorseProfiles();
+  if (id === 'boarding') renderBoarders();
 }
 
 // ---- MODAL ----
 function openModal(id) {
   document.getElementById('modal-overlay').style.display = 'flex';
-  document.querySelectorAll('.modal-box').forEach(m => m.style.display = 'none');
+  document.querySelectorAll('.modal-box').forEach(function(m) { m.style.display = 'none'; });
   document.getElementById(id).style.display = 'block';
 }
 function closeModal() {
   document.getElementById('modal-overlay').style.display = 'none';
-  document.querySelectorAll('.modal-box').forEach(m => m.style.display = 'none');
+  document.querySelectorAll('.modal-box').forEach(function(m) { m.style.display = 'none'; });
 }
-function closeModalOverlay(e) {
-  if (e.target.id === 'modal-overlay') closeModal();
-}
+function closeModalOverlay(e) { if (e.target.id === 'modal-overlay') closeModal(); }
 
 // ---- TOAST ----
 function toast(msg, color) {
-  const t = document.getElementById('toast');
+  var t = document.getElementById('toast');
   t.textContent = msg;
   t.style.background = color || 'var(--green)';
   t.style.display = 'block';
-  setTimeout(() => { t.style.display = 'none'; }, 3000);
+  setTimeout(function() { t.style.display = 'none'; }, 3000);
 }
 
 // ---- HELPERS ----
 function roleColor(roles) {
   if (roles.includes('horse owner')) return 'av-brown';
-  if (roles.includes('staff') || roles.includes('barn manager')) return 'av-green';
+  if (roles.includes('staff') || roles.includes('barn manager') || roles.includes('trainer')) return 'av-green';
   if (roles.includes('veterinarian') || roles.includes('farrier')) return 'av-blue';
   if (roles.includes('vendor')) return 'av-amber';
   return 'av-purple';
 }
-
 function initials(name) {
-  return name.split(' ').filter(Boolean).slice(0,2).map(w => w[0]).join('').toUpperCase().slice(0,2);
+  return name.split(' ').filter(Boolean).slice(0,2).map(function(w) { return w[0]; }).join('').toUpperCase().slice(0,2);
 }
-
 function roleBadge(roles) {
-  const r = roles.split(',')[0].trim();
-  const map = {'horse owner':'badge-brown','rider':'badge-blue','lesson student':'badge-blue','staff':'badge-green','barn manager':'badge-green','bill payer':'badge-gray','parent':'badge-gray','veterinarian':'badge-blue','farrier':'badge-blue','vendor':'badge-amber','lessee':'badge-gray','trainer':'badge-green'};
-  const cls = map[r] || 'badge-gray';
-  return '<span class="badge ' + cls + '" style="font-size:10px">' + roles.split(',').slice(0,2).join(', ') + '</span>';
+  var first = roles.split(',')[0].trim();
+  var map = {'horse owner':'badge-brown','rider':'badge-blue','lesson student':'badge-blue','staff':'badge-green','barn manager':'badge-green','bill payer':'badge-gray','parent':'badge-gray','veterinarian':'badge-blue','farrier':'badge-blue','vendor':'badge-amber','lessee':'badge-gray','trainer':'badge-green'};
+  var cls = map[first] || 'badge-gray';
+  var display = roles.split(',').slice(0,2).map(function(r) { return r.trim(); }).join(', ');
+  return '<span class="badge ' + cls + '" style="font-size:10px">' + display + '</span>';
 }
-
-// ---- POPULATE SELECTS ----
-function populateSelects() {
-  const riders = clients.filter(c => c.roles.includes('rider') || c.roles.includes('lesson student'));
-  ['l-rider','s-client'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    while (sel.options.length > 1) sel.remove(1);
-    riders.forEach(r => { const o = document.createElement('option'); o.value = r.name; o.textContent = r.name; sel.appendChild(o); });
-  });
-  const owners = clients.filter(c => c.roles.includes('horse owner'));
-  const sel = document.getElementById('h-owner');
-  if (sel) { while(sel.options.length > 1) sel.remove(1); owners.forEach(o => { const opt = document.createElement('option'); opt.value = o.name; opt.textContent = o.name; sel.appendChild(opt); }); }
-  syncHorseSelects();
-}
-
-function syncHorseSelects() {
-  const names = horses.map(h => h.name);
-  ['l-horse','s-horse','v-horse'].forEach(id => {
-    const s = document.getElementById(id);
-    if (!s) return;
-    const cur = s.value;
-    while (s.options.length > 1) s.remove(1);
-    names.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; s.appendChild(o); });
-    if (names.includes(cur)) s.value = cur;
-  });
+function horseStatusBadge(val) {
+  if (!val || val === 'Current') return '<span class="badge badge-green">Current</span>';
+  if (val === 'Renew' || val === 'Overdue') return '<span class="badge badge-red">' + val + '</span>';
+  return '<span class="badge badge-amber">' + val + '</span>';
 }
 
 // ---- GLOBAL SEARCH ----
 function globalSearch(val) {
   if (!val) return;
   showPage('clients', document.querySelector('[onclick*="clients"]'));
-  const cs = document.getElementById('client-search');
-  if (cs) { cs.value = val; }
+  var cs = document.getElementById('client-search');
+  if (cs) cs.value = val;
   document.getElementById('client-filter').value = 'all';
   renderClients();
 }
 
 // ---- HANDLE ADD BUTTON ----
 function handleAdd() {
-  const active = document.querySelector('.page.active');
+  var active = document.querySelector('.page.active');
   if (!active) return;
-  const id = active.id;
-  if (id === 'page-horses' || id === 'page-horse-profiles') openModal('modal-add-horse');
+  var id = active.id;
+  if (id === 'page-horse-profiles') openModal('modal-add-horse');
   else if (id === 'page-clients') openModal('modal-add-client');
   else if (id === 'page-schedule') openModal('modal-add-sched');
   else if (id === 'page-lessons') openModal('modal-add-lesson');
   else if (id === 'page-vaccinations') openModal('modal-add-vacc');
+  else if (id === 'page-boarding') openModal('modal-add-boarder');
   else openModal('modal-add-client');
+}
+
+// ---- POPULATE SELECTS (only active, non-archived) ----
+function populateSelects() {
+  // Riders for lesson/schedule dropdowns (active clients only)
+  var riders = clients.filter(function(c) { return c.roles.includes('rider') || c.roles.includes('lesson student'); });
+  ['l-rider','s-client'].forEach(function(id) {
+    var sel = document.getElementById(id);
+    if (!sel) return;
+    var cur = sel.value;
+    while (sel.options.length > (id === 'l-rider' ? 2 : 1)) sel.remove(id === 'l-rider' ? 2 : 1);
+    riders.forEach(function(r) { var o = document.createElement('option'); o.value = r.name; o.textContent = r.name; sel.appendChild(o); });
+    if (cur) sel.value = cur;
+  });
+  // Owners for horse modal
+  var owners = clients.filter(function(c) { return c.roles.includes('horse owner'); });
+  var hOwn = document.getElementById('h-owner');
+  if (hOwn) {
+    while (hOwn.options.length > 1) hOwn.remove(1);
+    owners.forEach(function(o) { var opt = document.createElement('option'); opt.value = o.name; opt.textContent = o.name; hOwn.appendChild(opt); });
+  }
+  // Owners for boarder modal
+  var bOwn = document.getElementById('b-owner');
+  if (bOwn) {
+    while (bOwn.options.length > 1) bOwn.remove(1);
+    clients.forEach(function(c) { var opt = document.createElement('option'); opt.value = c.name; opt.textContent = c.name; bOwn.appendChild(opt); });
+  }
+  syncHorseSelects();
+}
+
+function syncHorseSelects() {
+  var names = horses.map(function(h) { return h.name; }); // only active horses
+  ['l-horse','s-horse','v-horse','b-horse'].forEach(function(id) {
+    var s = document.getElementById(id);
+    if (!s) return;
+    var cur = s.value;
+    while (s.options.length > 1) s.remove(1);
+    names.forEach(function(n) { var o = document.createElement('option'); o.value = n; o.textContent = n; s.appendChild(o); });
+    if (names.includes(cur)) s.value = cur;
+  });
 }
 
 // ==========================================
 // HORSES
 // ==========================================
-const horseAvatarColors = ['av-green','av-brown','av-amber','av-blue','av-purple'];
-const horseBgColors = ['#d8f3dc','#f0e6d8','#faeeda','#e8f0fe','#f0e8fe'];
-const horseTextColors = ['#2d6a4f','#6b4c2a','#854f0b','#1a56db','#6d28d9'];
-
-function horseStatusBadge(val) {
-  if (!val || val === 'Current') return '<span class="badge badge-green">Current</span>';
-  if (val === 'Renew' || val === 'Overdue') return '<span class="badge badge-red">' + val + '</span>';
-  if (val.includes('Due') || val === 'Check') return '<span class="badge badge-amber">' + val + '</span>';
-  return '<span class="badge badge-green">' + val + '</span>';
-}
-
-let editingHorseIdx = -1;
-
-function renderHorses() {
-  const q = (document.getElementById('horse-search') ? document.getElementById('horse-search').value : '').toLowerCase().trim();
-  const filter = document.getElementById('horse-filter') ? document.getElementById('horse-filter').value : 'all';
-  let list = horses.slice();
-  if (q) list = list.filter(h => h.name.toLowerCase().includes(q) || (h.owner||'').toLowerCase().includes(q) || (h.breed||'').toLowerCase().includes(q));
-  if (filter === 'training') list = list.filter(h => h.board.includes('Training'));
-  if (filter === 'board') list = list.filter(h => !h.board.includes('Training'));
-  const tbody = document.getElementById('horse-table');
-  const empty = document.getElementById('horse-empty');
-  const count = document.getElementById('horse-count');
-  if (count) count.textContent = list.length + ' horse' + (list.length !== 1 ? 's' : '');
-  if (!list.length) { if(tbody) tbody.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
-  if (empty) empty.style.display = 'none';
-  if (!tbody) return;
-  tbody.innerHTML = list.map(h => {
-    const idx = horses.indexOf(h);
-    const av = horseAvatarColors[idx % horseAvatarColors.length];
-    const ini = h.name.slice(0,2).toUpperCase();
-    const photoEl = h.photo ? '<img src="' + h.photo + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid var(--border)">' : '<div class="avatar ' + av + '" style="width:32px;height:32px;font-size:11px">' + ini + '</div>';
-    const showExtra = (h.showname && h.showname !== h.name) ? '<br><span style="font-size:11px;color:var(--text-muted)">' + h.showname + '</span>' : '';
-    return '<tr>' +
-      '<td><div style="display:flex;align-items:center;gap:8px">' + photoEl + '<div><strong>' + h.name + '</strong>' + showExtra + '</div></div></td>' +
-      '<td>' + (h.owner || '–') + '</td>' +
-      '<td><span class="badge ' + (h.board.includes('Training') ? 'badge-blue' : 'badge-gray') + '">' + h.board + '</span></td>' +
-      '<td style="font-variant-numeric:tabular-nums">$' + h.fee.toLocaleString() + '/mo</td>' +
-      '<td>' + horseStatusBadge(h.coggins) + '</td>' +
-      '<td>' + horseStatusBadge(h.vacc) + '</td>' +
-      '<td style="font-size:12px;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (h.notes||'–') + '</td>' +
-      '<td style="text-align:right;white-space:nowrap">' +
-        '<button class="btn btn-sm" onclick="showHorseProfile(' + idx + ')" style="margin-right:2px" title="Profile">&#128065;</button>' +
-        '<button class="btn btn-sm" onclick="editHorse(' + idx + ')" style="margin-right:2px" title="Edit">&#9999;</button>' +
-        '<button class="btn btn-sm" onclick="archiveHorse(' + idx + ')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)" title="Archive">&#128230;</button>' +
-        '<button class="btn btn-sm" onclick="confirmDeleteHorse(' + idx + ')" style="color:var(--red);border-color:var(--red)" title="Delete">&#10005;</button>' +
-      '</td></tr>';
-  }).join('');
-}
+var horseBgColors = ['#d8f3dc','#f0e6d8','#faeeda','#e8f0fe','#f0e8fe'];
+var horseTextColors = ['#2d6a4f','#6b4c2a','#854f0b','#1a56db','#6d28d9'];
+var editingHorseIdx = -1;
 
 function renderHorseProfiles() {
-  const grid = document.getElementById('horse-profiles-grid');
-  const empty = document.getElementById('horse-profiles-empty');
+  var q = (document.getElementById('horse-search') ? document.getElementById('horse-search').value : '').toLowerCase().trim();
+  var filter = document.getElementById('horse-filter') ? document.getElementById('horse-filter').value : 'all';
+  var list = horses.slice();
+  if (q) list = list.filter(function(h) { return h.name.toLowerCase().includes(q) || (h.owner||'').toLowerCase().includes(q) || (h.breed||'').toLowerCase().includes(q); });
+  if (filter === 'training') list = list.filter(function(h) { return h.board.includes('Training'); });
+  if (filter === 'board') list = list.filter(function(h) { return !h.board.includes('Training'); });
+  var grid = document.getElementById('horse-profiles-grid');
+  var empty = document.getElementById('horse-profiles-empty');
   if (!grid) return;
-  if (!horses.length) { grid.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
+  if (!list.length) { grid.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
   if (empty) empty.style.display = 'none';
-  grid.innerHTML = horses.map((h, idx) => {
-    const bgCol = horseBgColors[idx % horseBgColors.length];
-    const txtCol = horseTextColors[idx % horseTextColors.length];
-    const ini = h.name.slice(0,2).toUpperCase();
-    const photoHTML = h.photo
+  grid.innerHTML = list.map(function(h) {
+    var idx = horses.indexOf(h);
+    var bgCol = horseBgColors[idx % horseBgColors.length];
+    var txtCol = horseTextColors[idx % horseTextColors.length];
+    var ini = h.name.slice(0,2).toUpperCase();
+    var photoHTML = h.photo
       ? '<img src="' + h.photo + '" style="width:100%;height:180px;object-fit:cover;display:block;">'
       : '<div style="width:100%;height:180px;background:' + bgCol + ';display:flex;align-items:center;justify-content:center;font-size:56px;font-family:\'Playfair Display\',serif;font-weight:600;color:' + txtCol + '">' + ini + '</div>';
-    const dobStr = h.dob ? new Date(h.dob + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
-    const attn = (h.coggins !== 'Current' || (h.vacc && h.vacc !== 'Current'));
-    const borderStyle = attn ? 'border:2px solid var(--amber)' : '';
+    var dobStr = h.dob ? new Date(h.dob + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
+    var attn = (h.coggins !== 'Current' || (h.vacc && h.vacc !== 'Current'));
+    var borderStyle = attn ? 'border:2px solid var(--amber)' : '';
     return '<div class="card" style="padding:0;overflow:hidden;' + borderStyle + '">' +
       photoHTML +
       '<div style="padding:16px">' +
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">' +
-          '<div>' +
-            '<div style="font-family:\'Playfair Display\',serif;font-size:20px;font-weight:600;color:var(--text)">' + (h.showname || h.name) + '</div>' +
-            (h.regname ? '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">' + h.regname + '</div>' : '') +
-          '</div>' +
+          '<div><div style="font-family:\'Playfair Display\',serif;font-size:20px;font-weight:600;color:var(--text)">' + (h.showname || h.name) + '</div>' +
+          (h.regname ? '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">' + h.regname + '</div>' : '') + '</div>' +
           '<div style="display:flex;gap:4px">' +
             '<button class="btn btn-sm" onclick="editHorse(' + idx + ')" title="Edit">&#9999;</button>' +
             '<button class="btn btn-sm" onclick="archiveHorse(' + idx + ')" style="color:var(--amber);border-color:var(--amber)" title="Archive">&#128230;</button>' +
@@ -1545,41 +1634,32 @@ function renderHorseProfiles() {
         '</div>' +
         '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">' +
           '<span class="badge ' + (h.board.includes('Training') ? 'badge-blue' : 'badge-gray') + '" style="font-size:10px">' + h.board + '</span>' +
-          horseStatusBadge(h.coggins) +
-          horseStatusBadge(h.vacc) +
+          horseStatusBadge(h.coggins) + horseStatusBadge(h.vacc) +
         '</div>' +
         (h.notes ? '<div style="font-size:12px;color:var(--text-muted);font-style:italic;margin-bottom:10px">' + h.notes + '</div>' : '') +
         '<div style="border-top:1px solid var(--border);padding-top:10px">' +
           '<label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:500">Upload photo</label>' +
           '<input type="file" accept="image/*" onchange="uploadHorsePhoto(' + idx + ', this)" style="font-size:11px;width:100%">' +
         '</div>' +
-      '</div>' +
-    '</div>';
+      '</div></div>';
   }).join('');
 }
 
 function uploadHorsePhoto(idx, input) {
-  const file = input.files[0];
+  var file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
+  var reader = new FileReader();
   reader.onload = function(e) {
     horses[idx].photo = e.target.result;
-    renderHorses();
+    saveToStorage();
+    renderHorseProfiles();
     toast('Photo updated for ' + horses[idx].name + '!');
   };
   reader.readAsDataURL(file);
 }
 
-function showHorseProfile(idx) {
-  showPage('horse-profiles', document.querySelector('[onclick*="horse-profiles"]'));
-  setTimeout(function() {
-    const grid = document.getElementById('horse-profiles-grid');
-    if (grid && grid.children[idx]) grid.children[idx].scrollIntoView({behavior:'smooth',block:'center'});
-  }, 150);
-}
-
 function editHorse(idx) {
-  const h = horses[idx];
+  var h = horses[idx];
   if (!h) return;
   editingHorseIdx = idx;
   document.getElementById('h-name').value = h.name || '';
@@ -1604,89 +1684,81 @@ function editHorse(idx) {
 }
 
 function archiveHorse(idx) {
-  const h = horses[idx];
+  var h = horses[idx];
   if (!h) return;
   if (!confirm('Archive ' + h.name + '? They will be moved to the Archive and can be restored later.')) return;
   h.archivedOn = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   archivedHorses.push(h);
   horses.splice(idx, 1);
-  renderHorses();
   syncHorseSelects();
+  renderHorseProfiles();
   renderArchive();
+  saveToStorage();
   toast('📦 ' + h.name + ' archived');
 }
 
-function confirmDeleteHorse(idx) {
-  const h = horses[idx];
-  if (!h) return;
-  if (!confirm('Permanently delete ' + h.name + '? This cannot be undone.\n\nConsider using Archive instead.')) return;
-  horses.splice(idx, 1);
-  renderHorses();
-  syncHorseSelects();
-  toast('Deleted', '#c0392b');
-}
-
 function saveHorse() {
-  const name = document.getElementById('h-name').value.trim();
+  var name = document.getElementById('h-name').value.trim();
   if (!name) { toast('Please enter a horse name', '#c0392b'); return; }
-  const h = {
-    name: name,
-    showname: document.getElementById('h-showname').value.trim() || name,
+  var h = {
+    name: name, showname: document.getElementById('h-showname').value.trim() || name,
     regname: document.getElementById('h-regname').value.trim(),
     owner: document.getElementById('h-owner').value || '–',
     board: document.getElementById('h-board').value,
-    breed: document.getElementById('h-breed').value.trim(),
-    color: document.getElementById('h-color').value.trim(),
-    sex: document.getElementById('h-sex').value,
-    height: document.getElementById('h-height').value.trim(),
-    dob: document.getElementById('h-dob').value,
-    usef: document.getElementById('h-usef').value.trim(),
+    breed: document.getElementById('h-breed').value.trim(), color: document.getElementById('h-color').value.trim(),
+    sex: document.getElementById('h-sex').value, height: document.getElementById('h-height').value.trim(),
+    dob: document.getElementById('h-dob').value, usef: document.getElementById('h-usef').value.trim(),
     eia: document.getElementById('h-eia').value.trim(),
     fee: parseFloat(document.getElementById('h-fee').value) || 2200,
-    coggins: document.getElementById('h-coggins').value,
-    vacc: document.getElementById('h-vacc').value,
+    coggins: document.getElementById('h-coggins').value, vacc: document.getElementById('h-vacc').value,
     notes: document.getElementById('h-notes').value.trim(),
     photo: (editingHorseIdx >= 0 && horses[editingHorseIdx]) ? (horses[editingHorseIdx].photo || '') : ''
   };
-  if (editingHorseIdx >= 0) {
-    horses[editingHorseIdx] = h;
-    toast('✅ ' + name + ' updated!');
-    editingHorseIdx = -1;
-  } else {
-    horses.push(h);
-    toast('🐴 ' + name + ' added!');
-  }
-  renderHorses();
-  syncHorseSelects();
-  closeModal();
+  if (editingHorseIdx >= 0) { horses[editingHorseIdx] = h; toast('✅ ' + name + ' updated!'); editingHorseIdx = -1; }
+  else { horses.push(h); toast('🐴 ' + name + ' added!'); }
+  syncHorseSelects(); renderHorseProfiles(); saveToStorage(); closeModal();
   document.getElementById('modal-add-horse').querySelector('.modal-header span').textContent = 'Add new horse';
   document.getElementById('horse-save-btn').textContent = 'Add horse';
-  ['h-name','h-showname','h-regname','h-breed','h-color','h-height','h-dob','h-usef','h-eia','h-notes'].forEach(function(id) { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['h-name','h-showname','h-regname','h-breed','h-color','h-height','h-dob','h-usef','h-eia','h-notes'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
   document.getElementById('h-fee').value = '';
 }
 
 // ==========================================
 // CLIENTS
 // ==========================================
-let editingClientIdx = -1;
+var editingClientIdx = -1;
+
+function getCheckedRoles() {
+  var boxes = document.querySelectorAll('#c-roles-wrap input[type=checkbox]:checked');
+  return Array.from(boxes).map(function(b) { return b.value; }).join(', ');
+}
+
+function setCheckedRoles(rolesStr) {
+  document.querySelectorAll('#c-roles-wrap input[type=checkbox]').forEach(function(cb) { cb.checked = false; });
+  if (!rolesStr) return;
+  rolesStr.split(',').forEach(function(r) {
+    r = r.trim();
+    var box = document.querySelector('#c-roles-wrap input[value="' + r + '"]');
+    if (box) box.checked = true;
+  });
+}
 
 function renderClients() {
-  const role = (document.getElementById('client-filter') ? document.getElementById('client-filter').value : 'all');
-  const q = (document.getElementById('client-search') ? document.getElementById('client-search').value : '').toLowerCase().trim();
-  let list = clients.slice();
-  if (role !== 'all') list = list.filter(c => c.roles.includes(role));
-  if (q) list = list.filter(c => c.name.toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q) || (c.phone||'').includes(q) || (c.city||'').toLowerCase().includes(q));
-  const tbody = document.getElementById('client-table');
-  const empty = document.getElementById('client-empty');
-  const count = document.getElementById('client-count');
+  var role = (document.getElementById('client-filter') ? document.getElementById('client-filter').value : 'all');
+  var q = (document.getElementById('client-search') ? document.getElementById('client-search').value : '').toLowerCase().trim();
+  var list = clients.slice();
+  if (role !== 'all') list = list.filter(function(c) { return c.roles.includes(role); });
+  if (q) list = list.filter(function(c) { return c.name.toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q) || (c.phone||'').includes(q) || (c.city||'').toLowerCase().includes(q); });
+  var tbody = document.getElementById('client-table');
+  var empty = document.getElementById('client-empty');
+  var count = document.getElementById('client-count');
   if (count) count.textContent = list.length + ' client' + (list.length !== 1 ? 's' : '');
   if (!list.length) { if(tbody) tbody.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
   if (empty) empty.style.display = 'none';
   if (!tbody) return;
   tbody.innerHTML = list.map(function(c) {
-    const globalIdx = clients.indexOf(c);
-    return '<tr>' +
-      '<td><div style="display:flex;align-items:center;gap:8px"><div class="avatar ' + roleColor(c.roles) + '" style="width:28px;height:28px;font-size:11px">' + initials(c.name) + '</div><strong>' + c.name + '</strong></div></td>' +
+    var globalIdx = clients.indexOf(c);
+    return '<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar ' + roleColor(c.roles) + '" style="width:28px;height:28px;font-size:11px">' + initials(c.name) + '</div><strong>' + c.name + '</strong></div></td>' +
       '<td>' + roleBadge(c.roles) + '</td>' +
       '<td style="color:var(--text-muted)">' + (c.phone||'–') + '</td>' +
       '<td style="color:var(--text-muted);font-size:12px">' + (c.email||'–') + '</td>' +
@@ -1695,23 +1767,20 @@ function renderClients() {
         '<button class="btn btn-sm" onclick="editClient(' + globalIdx + ')" style="margin-right:2px">&#9999; Edit</button>' +
         '<button class="btn btn-sm" onclick="archiveClient(' + globalIdx + ')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)">&#128230;</button>' +
         '<button class="btn btn-sm" onclick="confirmDeleteClient(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button>' +
-      '</td>' +
-    '</tr>';
+      '</td></tr>';
   }).join('');
 }
 
 function filterClients() { renderClients(); }
 
 function editClient(idx) {
-  const c = clients[idx];
+  var c = clients[idx];
   if (!c) return;
   editingClientIdx = idx;
-  const parts = c.name.trim().split(' ');
-  const last = parts.pop();
-  const first = parts.join(' ');
+  var parts = c.name.trim().split(' '); var last = parts.pop(); var first = parts.join(' ');
   document.getElementById('c-first').value = first;
   document.getElementById('c-last').value = last;
-  document.getElementById('c-role').value = c.roles.split(',')[0].trim();
+  setCheckedRoles(c.roles);
   document.getElementById('c-phone').value = c.phone || '';
   document.getElementById('c-email').value = c.email || '';
   document.getElementById('c-city').value = c.city || '';
@@ -1722,199 +1791,212 @@ function editClient(idx) {
 }
 
 function saveClient() {
-  const first = document.getElementById('c-first').value.trim();
-  const last = document.getElementById('c-last').value.trim();
+  var first = document.getElementById('c-first').value.trim();
+  var last = document.getElementById('c-last').value.trim();
   if (!first || !last) { toast('Please enter first and last name', '#c0392b'); return; }
-  const c = {
-    name: first + ' ' + last,
-    roles: document.getElementById('c-role').value,
-    phone: document.getElementById('c-phone').value.trim(),
-    email: document.getElementById('c-email').value.trim(),
-    city: document.getElementById('c-city').value.trim(),
-    state: document.getElementById('c-state').value.trim()
+  var roles = getCheckedRoles();
+  if (!roles) { toast('Please select at least one role', '#c0392b'); return; }
+  var c = {
+    name: first + ' ' + last, roles: roles,
+    phone: document.getElementById('c-phone').value.trim(), email: document.getElementById('c-email').value.trim(),
+    city: document.getElementById('c-city').value.trim(), state: document.getElementById('c-state').value.trim()
   };
-  if (editingClientIdx >= 0) {
-    clients[editingClientIdx] = c;
-    toast('✅ ' + c.name + ' updated!');
-    editingClientIdx = -1;
-  } else {
-    clients.push(c);
-    toast('👤 ' + c.name + ' added!');
-    populateSelects();
-  }
-  renderClients();
-  closeModal();
+  if (editingClientIdx >= 0) { clients[editingClientIdx] = c; toast('✅ ' + c.name + ' updated!'); editingClientIdx = -1; }
+  else { clients.push(c); toast('👤 ' + c.name + ' added!'); }
+  populateSelects(); renderClients(); saveToStorage(); closeModal();
   document.getElementById('modal-add-client').querySelector('.modal-header span').textContent = 'Add new client';
   document.getElementById('client-save-btn').textContent = 'Add client';
-  ['c-first','c-last','c-phone','c-email','c-city','c-state'].forEach(function(id) { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['c-first','c-last','c-phone','c-email','c-city','c-state'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
+  setCheckedRoles('');
 }
 
 function archiveClient(idx) {
-  const c = clients[idx];
+  var c = clients[idx];
   if (!c) return;
   if (!confirm('Archive ' + c.name + '? They will be moved to the Archive and can be restored later.')) return;
   c.archivedOn = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   archivedClients.push(c);
   clients.splice(idx, 1);
-  renderClients();
-  renderArchive();
+  populateSelects(); renderClients(); renderArchive(); saveToStorage();
   toast('📦 ' + c.name + ' archived');
 }
 
 function confirmDeleteClient(idx) {
-  const c = clients[idx];
+  var c = clients[idx];
   if (!c) return;
-  if (!confirm('Permanently delete ' + c.name + '? This cannot be undone.\n\nConsider using Archive instead.')) return;
+  if (!confirm('Permanently delete ' + c.name + '?\n\nConsider archiving instead.')) return;
   clients.splice(idx, 1);
-  renderClients();
+  populateSelects(); renderClients(); saveToStorage();
   toast('Deleted', '#c0392b');
+}
+
+// ==========================================
+// BOARDING
+// ==========================================
+var editingBoarderIdx = -1;
+
+function renderBoarders() {
+  var tbody = document.getElementById('boarders-table');
+  var empty = document.getElementById('boarders-empty');
+  if (!tbody) return;
+  if (!boarders.length) { tbody.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
+  if (empty) empty.style.display = 'none';
+  tbody.innerHTML = boarders.map(function(b, i) {
+    var agCls = b.agreement === 'Signed' ? 'badge-green' : b.agreement === 'Pending' ? 'badge-amber' : 'badge-red';
+    var typeCls = b.type.includes('Training') ? 'badge-blue' : 'badge-gray';
+    return '<tr><td><strong>' + b.horse + '</strong></td><td>' + (b.owner||'–') + '</td>' +
+      '<td><span class="badge ' + typeCls + '">' + b.type + '</span></td>' +
+      '<td>' + (b.since||'–') + '</td>' +
+      '<td>$' + Number(b.fee).toLocaleString() + '</td>' +
+      '<td><span class="badge ' + agCls + '">' + b.agreement + '</span></td>' +
+      '<td style="text-align:right;white-space:nowrap">' +
+        '<button class="btn btn-sm" onclick="editBoarder(' + i + ')" style="margin-right:2px">&#9999;</button>' +
+        '<button class="btn btn-sm" onclick="archiveBoarder(' + i + ')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)">&#128230;</button>' +
+        '<button class="btn btn-sm" onclick="deleteBoarder(' + i + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button>' +
+      '</td></tr>';
+  }).join('');
+}
+
+function editBoarder(i) {
+  var b = boarders[i];
+  if (!b) return;
+  editingBoarderIdx = i;
+  document.getElementById('b-horse').value = b.horse;
+  document.getElementById('b-owner').value = b.owner || '';
+  document.getElementById('b-type').value = b.type;
+  document.getElementById('b-fee').value = b.fee;
+  document.getElementById('b-agreement').value = b.agreement;
+  document.getElementById('b-notes').value = b.notes || '';
+  document.getElementById('modal-add-boarder').querySelector('.modal-header span').textContent = 'Edit boarder — ' + b.horse;
+  document.getElementById('boarder-save-btn').textContent = 'Save changes';
+  openModal('modal-add-boarder');
+}
+
+function saveBoarder() {
+  var horse = document.getElementById('b-horse').value;
+  if (!horse) { toast('Please select a horse', '#c0392b'); return; }
+  var since = document.getElementById('b-since').value;
+  var sinceStr = since ? new Date(since + '-01T12:00:00').toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '';
+  var b = {
+    horse: horse, owner: document.getElementById('b-owner').value || '–',
+    type: document.getElementById('b-type').value,
+    since: editingBoarderIdx >= 0 ? boarders[editingBoarderIdx].since : sinceStr,
+    fee: parseFloat(document.getElementById('b-fee').value) || 2200,
+    agreement: document.getElementById('b-agreement').value,
+    notes: document.getElementById('b-notes').value.trim()
+  };
+  if (editingBoarderIdx >= 0) { boarders[editingBoarderIdx] = b; toast('✅ Boarder updated!'); editingBoarderIdx = -1; }
+  else { boarders.push(b); toast('🏠 ' + horse + ' added to boarding!'); }
+  renderBoarders(); saveToStorage(); closeModal();
+  document.getElementById('modal-add-boarder').querySelector('.modal-header span').textContent = 'Add boarder';
+  document.getElementById('boarder-save-btn').textContent = 'Add boarder';
+}
+
+function archiveBoarder(i) {
+  var b = boarders[i];
+  if (!b) return;
+  if (!confirm('Archive ' + b.horse + "'s boarding record?")) return;
+  b.archivedOn = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  archivedBoarders.push(b);
+  boarders.splice(i, 1);
+  renderBoarders(); saveToStorage();
+  toast('📦 ' + b.horse + ' boarding archived');
+}
+
+function deleteBoarder(i) {
+  var b = boarders[i];
+  if (!b) return;
+  if (!confirm('Remove ' + b.horse + ' from active boarding?')) return;
+  boarders.splice(i, 1);
+  renderBoarders(); saveToStorage();
+  toast('Removed', '#c0392b');
 }
 
 // ==========================================
 // ARCHIVE
 // ==========================================
 function switchArchiveTab(el, show) {
-  document.querySelectorAll('#page-archive .tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#page-archive .tab').forEach(function(t) { t.classList.remove('active'); });
   el.classList.add('active');
   document.getElementById('archive-horses').style.display = show === 'archive-horses' ? 'block' : 'none';
   document.getElementById('archive-clients').style.display = show === 'archive-clients' ? 'block' : 'none';
 }
 
 function renderArchive() {
-  const ht = document.getElementById('archive-horse-table');
+  var ht = document.getElementById('archive-horse-table');
   if (ht) {
-    if (!archivedHorses.length) {
-      ht.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No archived horses yet.</td></tr>';
-    } else {
-      ht.innerHTML = archivedHorses.map(function(h,i) {
-        return '<tr>' +
-          '<td><strong style="color:var(--text-muted)">' + h.name + '</strong></td>' +
-          '<td style="color:var(--text-muted)">' + (h.regname||'–') + '</td>' +
-          '<td style="color:var(--text-muted)">' + (h.owner||'–') + '</td>' +
-          '<td><span class="badge badge-gray">' + h.board + '</span></td>' +
-          '<td style="color:var(--text-muted);font-size:12px">' + (h.archivedOn||'–') + '</td>' +
-          '<td style="text-align:right"><button class="btn btn-sm" onclick="restoreHorse(' + i + ')" style="color:var(--green);border-color:var(--green)">&#8617; Restore</button></td>' +
-        '</tr>';
-      }).join('');
-    }
+    if (!archivedHorses.length) { ht.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No archived horses yet.</td></tr>'; }
+    else { ht.innerHTML = archivedHorses.map(function(h,i) { return '<tr><td><strong style="color:var(--text-muted)">' + h.name + '</strong></td><td style="color:var(--text-muted)">' + (h.regname||'–') + '</td><td style="color:var(--text-muted)">' + (h.owner||'–') + '</td><td><span class="badge badge-gray">' + h.board + '</span></td><td style="color:var(--text-muted);font-size:12px">' + (h.archivedOn||'–') + '</td><td style="text-align:right"><button class="btn btn-sm" onclick="restoreHorse(' + i + ')" style="color:var(--green);border-color:var(--green)">&#8617; Restore</button></td></tr>'; }).join(''); }
   }
-  const ct = document.getElementById('archive-client-table');
+  var ct = document.getElementById('archive-client-table');
   if (ct) {
-    if (!archivedClients.length) {
-      ct.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No archived clients yet.</td></tr>';
-    } else {
-      ct.innerHTML = archivedClients.map(function(c,i) {
-        return '<tr>' +
-          '<td><strong style="color:var(--text-muted)">' + c.name + '</strong></td>' +
-          '<td>' + roleBadge(c.roles) + '</td>' +
-          '<td style="color:var(--text-muted)">' + (c.phone||'–') + '</td>' +
-          '<td style="color:var(--text-muted);font-size:12px">' + (c.email||'–') + '</td>' +
-          '<td style="color:var(--text-muted);font-size:12px">' + (c.archivedOn||'–') + '</td>' +
-          '<td style="text-align:right"><button class="btn btn-sm" onclick="restoreClient(' + i + ')" style="color:var(--green);border-color:var(--green)">&#8617; Restore</button></td>' +
-        '</tr>';
-      }).join('');
-    }
+    if (!archivedClients.length) { ct.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No archived clients yet.</td></tr>'; }
+    else { ct.innerHTML = archivedClients.map(function(c,i) { return '<tr><td><strong style="color:var(--text-muted)">' + c.name + '</strong></td><td>' + roleBadge(c.roles) + '</td><td style="color:var(--text-muted)">' + (c.phone||'–') + '</td><td style="color:var(--text-muted);font-size:12px">' + (c.email||'–') + '</td><td style="color:var(--text-muted);font-size:12px">' + (c.archivedOn||'–') + '</td><td style="text-align:right"><button class="btn btn-sm" onclick="restoreClient(' + i + ')" style="color:var(--green);border-color:var(--green)">&#8617; Restore</button></td></tr>'; }).join(''); }
   }
 }
 
 function restoreHorse(i) {
-  const h = archivedHorses[i];
-  if (!h) return;
-  delete h.archivedOn;
-  horses.push(h);
-  archivedHorses.splice(i, 1);
-  renderHorses();
-  syncHorseSelects();
-  renderArchive();
+  var h = archivedHorses[i]; if (!h) return;
+  delete h.archivedOn; horses.push(h); archivedHorses.splice(i, 1);
+  syncHorseSelects(); renderHorseProfiles(); renderArchive(); saveToStorage();
   toast('✅ ' + h.name + ' restored!');
 }
-
 function restoreClient(i) {
-  const c = archivedClients[i];
-  if (!c) return;
-  delete c.archivedOn;
-  clients.push(c);
-  archivedClients.splice(i, 1);
-  renderClients();
-  renderArchive();
+  var c = archivedClients[i]; if (!c) return;
+  delete c.archivedOn; clients.push(c); archivedClients.splice(i, 1);
+  populateSelects(); renderClients(); renderArchive(); saveToStorage();
   toast('✅ ' + c.name + ' restored!');
 }
 
 // ==========================================
 // SCHEDULE
 // ==========================================
-let editingSchedIdx = -1;
+var editingSchedIdx = -1;
 
 function renderSchedule() {
-  const tbody = document.querySelector('#page-schedule table tbody');
+  var tbody = document.querySelector('#page-schedule table tbody');
   if (!tbody) return;
-  tbody.innerHTML = scheduleData.map(function(s,i) {
-    return '<tr>' +
-      '<td>' + s.day + '</td><td>' + s.time + '</td><td><strong>' + s.client + '</strong></td>' +
-      '<td>' + s.type + '</td><td>' + s.horse + '</td>' +
-      '<td><span class="badge ' + (s.status === 'Confirmed' ? 'badge-green' : 'badge-amber') + '">' + s.status + '</span></td>' +
-      '<td style="text-align:right;white-space:nowrap">' +
-        '<button class="btn btn-sm" onclick="editSchedule(' + i + ')" style="margin-right:4px">&#9999;</button>' +
-        '<button class="btn btn-sm" onclick="deleteSchedule(' + i + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button>' +
-      '</td></tr>';
+  tbody.innerHTML = scheduleData.map(function(s, i) {
+    return '<tr><td>' + s.day + '</td><td>' + s.time + '</td><td><strong>' + s.client + '</strong></td><td>' + s.type + '</td><td>' + s.horse + '</td><td><span class="badge ' + (s.status === 'Confirmed' ? 'badge-green' : 'badge-amber') + '">' + s.status + '</span></td><td style="text-align:right;white-space:nowrap"><button class="btn btn-sm" onclick="editSchedule(' + i + ')" style="margin-right:4px">&#9999;</button><button class="btn btn-sm" onclick="deleteSchedule(' + i + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td></tr>';
   }).join('');
 }
 
 function editSchedule(i) {
-  const s = scheduleData[i];
-  if (!s) return;
+  var s = scheduleData[i]; if (!s) return;
   editingSchedIdx = i;
   document.getElementById('s-date').value = new Date().toISOString().slice(0,10);
-  const parts = s.time.split(' ');
-  const ampm = parts[1];
-  const timeParts = parts[0].split(':');
-  let h = parseInt(timeParts[0]);
-  const m = timeParts[1];
-  if (ampm === 'PM' && h !== 12) h += 12;
-  if (ampm === 'AM' && h === 12) h = 0;
-  document.getElementById('s-time').value = String(h).padStart(2,'0') + ':' + m;
+  var parts = s.time.split(' '); var ampm = parts[1]; var tp = parts[0].split(':');
+  var hr = parseInt(tp[0]); var m = tp[1];
+  if (ampm === 'PM' && hr !== 12) hr += 12; if (ampm === 'AM' && hr === 12) hr = 0;
+  document.getElementById('s-time').value = String(hr).padStart(2,'0') + ':' + m;
   document.getElementById('s-client').value = s.client;
   document.getElementById('s-horse').value = s.horse;
   document.getElementById('s-type').value = s.type;
   document.getElementById('s-status').value = s.status;
-  document.getElementById('modal-add-sched').querySelector('.modal-header span').textContent = 'Edit lesson — ' + s.client;
+  document.getElementById('modal-add-sched').querySelector('.modal-header span').textContent = 'Edit — ' + s.client;
   document.getElementById('sched-save-btn').textContent = 'Save changes';
   openModal('modal-add-sched');
 }
 
 function deleteSchedule(i) {
-  const s = scheduleData[i];
-  if (!s) return;
-  if (!confirm('Remove ' + s.client + "'s lesson on " + s.day + '?')) return;
-  scheduleData.splice(i, 1);
-  renderSchedule();
-  toast('Lesson removed', '#c0392b');
+  if (!confirm('Remove this lesson?')) return;
+  scheduleData.splice(i, 1); renderSchedule(); saveToStorage(); toast('Removed', '#c0392b');
 }
 
 function saveSchedule() {
-  const client = document.getElementById('s-client').value;
-  const horse = document.getElementById('s-horse').value;
-  const date = document.getElementById('s-date').value;
-  const time = document.getElementById('s-time').value;
+  var client = document.getElementById('s-client').value;
+  var horse = document.getElementById('s-horse').value;
+  var date = document.getElementById('s-date').value;
+  var time = document.getElementById('s-time').value;
   if (!client || !horse || !date || !time) { toast('Please fill all required fields', '#c0392b'); return; }
-  const d = new Date(date + 'T12:00:00');
-  const dayStr = d.toLocaleDateString('en-US',{weekday:'short',day:'numeric'});
-  const timeParts = time.split(':');
-  const hr = parseInt(timeParts[0]);
-  const ampm = hr >= 12 ? 'PM' : 'AM';
-  const hr12 = hr > 12 ? hr - 12 : (hr === 0 ? 12 : hr);
-  const timeStr = hr12 + ':' + timeParts[1] + ' ' + ampm;
-  const entry = {day:dayStr, time:timeStr, client:client, type:document.getElementById('s-type').value, horse:horse, status:document.getElementById('s-status').value};
-  if (editingSchedIdx >= 0) {
-    scheduleData[editingSchedIdx] = entry;
-    toast('✅ Lesson updated!');
-    editingSchedIdx = -1;
-  } else {
-    scheduleData.push(entry);
-    toast('📅 Lesson added!');
-  }
-  renderSchedule();
-  closeModal();
+  var d = new Date(date + 'T12:00:00');
+  var dayStr = d.toLocaleDateString('en-US',{weekday:'short',day:'numeric'});
+  var tp = time.split(':'); var hr = parseInt(tp[0]); var ampm = hr >= 12 ? 'PM' : 'AM';
+  var hr12 = hr > 12 ? hr - 12 : (hr === 0 ? 12 : hr);
+  var entry = {day:dayStr, time:hr12 + ':' + tp[1] + ' ' + ampm, client:client, type:document.getElementById('s-type').value, horse:horse, status:document.getElementById('s-status').value};
+  if (editingSchedIdx >= 0) { scheduleData[editingSchedIdx] = entry; toast('✅ Updated!'); editingSchedIdx = -1; }
+  else { scheduleData.push(entry); toast('📅 Lesson added!'); }
+  renderSchedule(); saveToStorage(); closeModal();
   document.getElementById('modal-add-sched').querySelector('.modal-header span').textContent = 'Add scheduled lesson';
   document.getElementById('sched-save-btn').textContent = 'Add to schedule';
 }
@@ -1922,68 +2004,62 @@ function saveSchedule() {
 // ==========================================
 // LESSONS
 // ==========================================
-let editingLessonIdx = -1;
+var editingLessonIdx = -1;
+
+function toggleDropIn(val) {
+  document.getElementById('dropin-wrap').style.display = val === '__dropin__' ? 'block' : 'none';
+}
 
 function durationToHours(d) {
   if (!d) return 1;
-  const m = d.match(/(\d+\.?\d*)/);
-  if (!m) return 1;
+  var m = d.match(/(\d+\.?\d*)/); if (!m) return 1;
   if (d.includes('min')) return parseFloat(m[1]) / 60;
   return parseFloat(m[1]);
 }
 
 function renderLessons() {
-  const month = document.getElementById('lesson-month-filter') ? document.getElementById('lesson-month-filter').value : '2026-05';
-  const trainer = document.getElementById('lesson-trainer-filter') ? document.getElementById('lesson-trainer-filter').value : 'all';
-  let list = lessonsData.filter(function(l) { return l.date.startsWith(month); });
+  var month = document.getElementById('lesson-month-filter') ? document.getElementById('lesson-month-filter').value : '2026-05';
+  var trainer = document.getElementById('lesson-trainer-filter') ? document.getElementById('lesson-trainer-filter').value : 'all';
+  var list = lessonsData.filter(function(l) { return l.date.startsWith(month); });
   if (trainer !== 'all') list = list.filter(function(l) { return l.trainer === trainer; });
   list.sort(function(a,b) { return a.date.localeCompare(b.date); });
-  const tbody = document.getElementById('lessons-table');
-  const empty = document.getElementById('lessons-empty');
+  var tbody = document.getElementById('lessons-table');
+  var empty = document.getElementById('lessons-empty');
   if (!tbody) return;
   tbody.innerHTML = '';
   if (!list.length) { if(empty) empty.style.display = 'block'; } else { if(empty) empty.style.display = 'none'; }
   list.forEach(function(l) {
-    const globalIdx = lessonsData.indexOf(l);
-    const d = new Date(l.date + 'T12:00:00');
-    const dateStr = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const paidClass = l.paid === 'paid' ? 'badge-green' : l.paid === 'pending' ? 'badge-amber' : 'badge-red';
-    const paidLabel = l.paid === 'paid' ? 'Paid' : l.paid === 'pending' ? 'Pending' : 'Unpaid';
-    const row = document.createElement('tr');
-    row.innerHTML = '<td>' + dateStr + '</td>' +
-      '<td><strong>' + l.rider + '</strong></td>' +
-      '<td>' + l.horse + '</td>' +
-      '<td><span class="badge badge-blue" style="font-size:10px">' + l.type + '</span></td>' +
-      '<td>' + l.duration + '</td>' +
-      '<td style="color:var(--text-muted)">' + l.trainer + '</td>' +
-      '<td>$' + l.fee + '</td>' +
-      '<td><span class="badge ' + paidClass + '">' + paidLabel + '</span></td>' +
-      '<td style="color:var(--text-muted);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.notes||'–') + '</td>' +
-      '<td style="white-space:nowrap">' +
-        '<button class="btn btn-sm" onclick="editLesson(' + globalIdx + ')" style="margin-right:2px">&#9999;</button>' +
-        '<button class="btn btn-sm" onclick="deleteLesson(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button>' +
-      '</td>';
+    var globalIdx = lessonsData.indexOf(l);
+    var d = new Date(l.date + 'T12:00:00');
+    var dateStr = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    var paidClass = l.paid === 'paid' ? 'badge-green' : l.paid === 'pending' ? 'badge-amber' : 'badge-red';
+    var paidLabel = l.paid === 'paid' ? 'Paid' : l.paid === 'pending' ? 'Pending' : 'Unpaid';
+    var row = document.createElement('tr');
+    row.innerHTML = '<td>' + dateStr + '</td><td><strong>' + l.rider + '</strong></td><td>' + l.horse + '</td><td><span class="badge badge-blue" style="font-size:10px">' + l.type + '</span></td><td>' + l.duration + '</td><td style="color:var(--text-muted)">' + l.trainer + '</td><td>$' + l.fee + '</td><td><span class="badge ' + paidClass + '">' + paidLabel + '</span></td><td style="color:var(--text-muted);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.notes||'–') + '</td><td style="white-space:nowrap"><button class="btn btn-sm" onclick="editLesson(' + globalIdx + ')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteLesson(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td>';
     tbody.appendChild(row);
   });
-  const total = list.length;
-  const hours = list.reduce(function(s,l) { return s + durationToHours(l.duration); }, 0);
-  const riders = new Set(list.map(function(l) { return l.rider; })).size;
-  const revenue = list.reduce(function(s,l) { return s + (l.fee||0); }, 0);
-  const st = document.getElementById('stat-total'); if(st) st.textContent = total;
-  const sh = document.getElementById('stat-hours'); if(sh) sh.textContent = Math.round(hours * 10) / 10;
-  const sr = document.getElementById('stat-riders'); if(sr) sr.textContent = riders;
-  const sv = document.getElementById('stat-revenue'); if(sv) sv.textContent = '$' + revenue.toLocaleString();
+  var total = list.length;
+  var hours = list.reduce(function(s,l) { return s + durationToHours(l.duration); }, 0);
+  var riders = new Set(list.map(function(l) { return l.rider; })).size;
+  var revenue = list.reduce(function(s,l) { return s + (l.fee||0); }, 0);
+  var st = document.getElementById('stat-total'); if(st) st.textContent = total;
+  var sh = document.getElementById('stat-hours'); if(sh) sh.textContent = Math.round(hours * 10) / 10;
+  var sr = document.getElementById('stat-riders'); if(sr) sr.textContent = riders;
+  var sv = document.getElementById('stat-revenue'); if(sv) sv.textContent = '$' + revenue.toLocaleString();
 }
 
 function filterLessons() { renderLessons(); }
 
 function editLesson(globalIdx) {
-  const l = lessonsData[globalIdx];
-  if (!l) return;
+  var l = lessonsData[globalIdx]; if (!l) return;
   editingLessonIdx = globalIdx;
   document.getElementById('l-date').value = l.date;
   document.getElementById('l-trainer').value = l.trainer;
-  document.getElementById('l-rider').value = l.rider;
+  // Check if rider is in client list or was a drop-in
+  var riderSel = document.getElementById('l-rider');
+  var found = Array.from(riderSel.options).some(function(o) { return o.value === l.rider; });
+  if (found) { riderSel.value = l.rider; document.getElementById('dropin-wrap').style.display = 'none'; }
+  else { riderSel.value = '__dropin__'; document.getElementById('dropin-wrap').style.display = 'block'; document.getElementById('l-dropin').value = l.rider; }
   document.getElementById('l-horse').value = l.horse;
   document.getElementById('l-type').value = l.type;
   document.getElementById('l-duration').value = l.duration;
@@ -1997,176 +2073,112 @@ function editLesson(globalIdx) {
 
 function deleteLesson(globalIdx) {
   if (globalIdx >= 0 && globalIdx < lessonsData.length) {
-    const name = lessonsData[globalIdx].rider;
-    lessonsData.splice(globalIdx, 1);
-    renderLessons();
-    toast('Lesson removed for ' + name, '#c0392b');
+    var name = lessonsData[globalIdx].rider; lessonsData.splice(globalIdx, 1);
+    renderLessons(); saveToStorage(); toast('Lesson removed for ' + name, '#c0392b');
   }
 }
 
 function saveLesson() {
-  const rider = document.getElementById('l-rider').value;
-  const horse = document.getElementById('l-horse').value;
-  const date = document.getElementById('l-date').value;
+  var riderSel = document.getElementById('l-rider').value;
+  var rider = riderSel === '__dropin__' ? document.getElementById('l-dropin').value.trim() : riderSel;
+  var horse = document.getElementById('l-horse').value;
+  var date = document.getElementById('l-date').value;
   if (!rider || !horse || !date) { toast('Please fill in date, rider and horse', '#c0392b'); return; }
-  const l = {
-    date: date,
-    trainer: document.getElementById('l-trainer').value,
-    rider: rider,
-    horse: horse,
-    type: document.getElementById('l-type').value,
-    duration: document.getElementById('l-duration').value,
+  var l = {
+    date: date, trainer: document.getElementById('l-trainer').value, rider: rider, horse: horse,
+    type: document.getElementById('l-type').value, duration: document.getElementById('l-duration').value,
     fee: parseFloat(document.getElementById('l-fee').value) || 120,
-    paid: document.getElementById('l-paid').value,
-    notes: document.getElementById('l-notes').value
+    paid: document.getElementById('l-paid').value, notes: document.getElementById('l-notes').value
   };
-  if (editingLessonIdx >= 0) {
-    lessonsData[editingLessonIdx] = l;
-    toast('✅ Lesson updated!');
-    editingLessonIdx = -1;
-  } else {
-    lessonsData.push(l);
-    document.getElementById('lesson-month-filter').value = date.slice(0,7);
-    toast('🎓 Lesson logged!');
-  }
-  renderLessons();
-  closeModal();
+  if (editingLessonIdx >= 0) { lessonsData[editingLessonIdx] = l; toast('✅ Lesson updated!'); editingLessonIdx = -1; }
+  else { lessonsData.push(l); document.getElementById('lesson-month-filter').value = date.slice(0,7); toast('🎓 Lesson logged!'); }
+  renderLessons(); saveToStorage(); closeModal();
   document.getElementById('modal-add-lesson').querySelector('.modal-header span').textContent = 'Log a lesson';
   document.getElementById('lesson-save-btn').textContent = 'Log lesson';
-  document.getElementById('l-notes').value = '';
-  document.getElementById('l-fee').value = '120';
-  document.getElementById('l-paid').value = 'unpaid';
+  document.getElementById('l-notes').value = ''; document.getElementById('l-fee').value = '120';
+  document.getElementById('l-paid').value = 'unpaid'; document.getElementById('l-rider').value = '';
+  document.getElementById('dropin-wrap').style.display = 'none'; document.getElementById('l-dropin').value = '';
 }
 
 function exportLessons() {
-  const month = document.getElementById('lesson-month-filter').value;
-  const trainer = document.getElementById('lesson-trainer-filter').value;
-  let list = lessonsData.filter(function(l) { return l.date.startsWith(month); });
+  var month = document.getElementById('lesson-month-filter').value;
+  var trainer = document.getElementById('lesson-trainer-filter').value;
+  var list = lessonsData.filter(function(l) { return l.date.startsWith(month); });
   if (trainer !== 'all') list = list.filter(function(l) { return l.trainer === trainer; });
   list.sort(function(a,b) { return a.date.localeCompare(b.date); });
   if (!list.length) { toast('No lessons to export', '#c0392b'); return; }
-  const monthLabel = new Date(month + '-15').toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  const total = list.length;
-  const revenue = list.reduce(function(s,l) { return s + (l.fee||0); }, 0);
-  const unpaid = list.filter(function(l) { return l.paid !== 'paid'; }).reduce(function(s,l) { return s + (l.fee||0); }, 0);
-  const rows = list.map(function(l) {
-    const d = new Date(l.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    return '  ' + d.padEnd(8) + ' | ' + l.rider.padEnd(22) + ' | ' + l.horse.padEnd(14) + ' | ' + l.type.padEnd(16) + ' | $' + String(l.fee).padStart(4) + ' | ' + l.paid;
-  }).join('\n');
-  const report = 'HERON STABLES — LESSON REPORT\n' + monthLabel + ' | Trainer: ' + (trainer === 'all' ? 'All' : trainer) + '\n' +
-    '─'.repeat(86) + '\n' +
-    '  Date     | Rider                  | Horse          | Type             | Fee  | Status\n' +
-    '─'.repeat(86) + '\n' + rows + '\n' + '─'.repeat(86) + '\n\n' +
-    '  Total lessons : ' + total + '\n' +
-    '  Total revenue : $' + revenue.toLocaleString() + '\n' +
-    '  Still unpaid  : $' + unpaid.toLocaleString() + '\n\n' +
-    'Generated by Heron Stables Management Portal';
+  var monthLabel = new Date(month + '-15').toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  var revenue = list.reduce(function(s,l) { return s + (l.fee||0); }, 0);
+  var unpaid = list.filter(function(l) { return l.paid !== 'paid'; }).reduce(function(s,l) { return s + (l.fee||0); }, 0);
+  var rows = list.map(function(l) { var d = new Date(l.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}); return '  ' + d.padEnd(8) + ' | ' + l.rider.padEnd(22) + ' | ' + l.horse.padEnd(14) + ' | ' + l.type.padEnd(16) + ' | $' + String(l.fee).padStart(4) + ' | ' + l.paid; }).join('\n');
+  var report = 'HERON STABLES — LESSON REPORT\n' + monthLabel + ' | Trainer: ' + (trainer === 'all' ? 'All' : trainer) + '\n' + '─'.repeat(82) + '\n  Date     | Rider                  | Horse          | Type             | Fee  | Status\n' + '─'.repeat(82) + '\n' + rows + '\n' + '─'.repeat(82) + '\n\n  Total lessons : ' + list.length + '\n  Total revenue : $' + revenue.toLocaleString() + '\n  Still unpaid  : $' + unpaid.toLocaleString() + '\n\nGenerated by Heron Stables Management Portal';
   document.getElementById('share-preview').textContent = report;
   openModal('modal-share-lessons');
 }
 
 function copyReport() {
-  const text = document.getElementById('share-preview').textContent;
-  navigator.clipboard.writeText(text).then(function() {
-    toast('📋 Report copied to clipboard!');
-    closeModal();
-  }).catch(function() {
-    toast('Select and copy the text manually', '#c0392b');
-  });
+  var text = document.getElementById('share-preview').textContent;
+  navigator.clipboard.writeText(text).then(function() { toast('📋 Copied!'); closeModal(); }).catch(function() { toast('Select and copy manually', '#c0392b'); });
 }
 
 // ==========================================
 // VACCINATIONS
 // ==========================================
 function saveVacc() {
-  const horse = document.getElementById('v-horse').value;
-  const date = document.getElementById('v-date').value;
+  var horse = document.getElementById('v-horse').value;
+  var date = document.getElementById('v-date').value;
   if (!horse || !date) { toast('Please select horse and date', '#c0392b'); return; }
-  const d = new Date(date + 'T12:00:00');
-  const dateStr = d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
-  const nextDate = new Date(d);
-  nextDate.setMonth(nextDate.getMonth() + 6);
-  const nextStr = nextDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
-  const tbody = document.querySelector('#page-vaccinations table tbody');
+  var d = new Date(date + 'T12:00:00');
+  var dateStr = d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+  var nextDate = new Date(d); nextDate.setMonth(nextDate.getMonth() + 6);
+  var nextStr = nextDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+  var tbody = document.querySelector('#page-vaccinations table tbody');
   if (tbody) {
-    let updated = false;
+    var updated = false;
     tbody.querySelectorAll('tr').forEach(function(row) {
-      if (row.cells[0] && row.cells[0].textContent.trim() === horse) {
-        row.cells[6].textContent = nextStr;
-        row.cells[7].innerHTML = '<span class="badge badge-green">Current</span>';
-        updated = true;
-      }
+      if (row.cells[0] && row.cells[0].textContent.trim() === horse) { row.cells[6].textContent = nextStr; row.cells[7].innerHTML = '<span class="badge badge-green">Current</span>'; updated = true; }
     });
-    if (!updated) {
-      const row = document.createElement('tr');
-      row.innerHTML = '<td><strong>' + horse + '</strong></td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + nextStr + '</td><td><span class="badge badge-green">Current</span></td>';
-      tbody.appendChild(row);
-    }
+    if (!updated) { var row = document.createElement('tr'); row.innerHTML = '<td><strong>' + horse + '</strong></td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + nextStr + '</td><td><span class="badge badge-green">Current</span></td>'; tbody.appendChild(row); }
   }
-  closeModal();
-  toast('💉 Vaccination logged for ' + horse + '!');
+  closeModal(); saveToStorage(); toast('💉 Vaccination logged for ' + horse + '!');
+}
+
+function openUploadModal() {
+  toast('To add new documents, upload the PDF file to your GitHub repo and the link will appear here automatically.', 'var(--amber)');
 }
 
 // ==========================================
-// MESSAGING
-// ==========================================
-function switchChannel(el) {
-  document.querySelectorAll('.channel-item').forEach(function(c) { c.classList.remove('active'); });
-  el.classList.add('active');
-}
-
-function sendMsg(e) { if (e.key === 'Enter') sendMsgClick(); }
-
-function sendMsgClick() {
-  const input = document.getElementById('msg-input');
-  const text = input.value.trim();
-  if (!text) return;
-  const area = document.getElementById('msg-area');
-  const now = new Date();
-  const time = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-  const div = document.createElement('div');
-  div.className = 'msg-row mine';
-  div.innerHTML = '<div class="avatar av-amber" style="width:30px;height:30px;font-size:11px;flex-shrink:0">HS</div><div class="msg-bubble"><div class="msg-sender">You</div><div class="msg-text">' + text + '</div><div class="msg-time">' + time + '</div></div>';
-  area.appendChild(div);
-  input.value = '';
-  area.scrollTop = area.scrollHeight;
-}
-
-// ==========================================
-// TABS (boarding, docs)
+// TABS
 // ==========================================
 function switchBoardTab(el, show) {
   document.querySelectorAll('#page-boarding .tab').forEach(function(t) { t.classList.remove('active'); });
   el.classList.add('active');
-  ['board-active','board-training','board-agreements'].forEach(function(id) {
-    document.getElementById(id).style.display = id === show ? 'block' : 'none';
-  });
+  ['board-active','board-training','board-agreements'].forEach(function(id) { document.getElementById(id).style.display = id === show ? 'block' : 'none'; });
+  if (show === 'board-active') renderBoarders();
 }
-
 function switchDocTab(el, show) {
   document.querySelectorAll('#page-waivers .tab').forEach(function(t) { t.classList.remove('active'); });
   el.classList.add('active');
-  ['docs-waivers','docs-board','docs-other'].forEach(function(id) {
-    document.getElementById(id).style.display = id === show ? 'block' : 'none';
-  });
+  ['docs-waivers','docs-board','docs-other'].forEach(function(id) { document.getElementById(id).style.display = id === show ? 'block' : 'none'; });
 }
 
 // ==========================================
 // INIT
 // ==========================================
 window.addEventListener('load', function() {
-  const today = new Date().toISOString().slice(0,10);
-  ['l-date','s-date','v-date'].forEach(function(id) {
-    const el = document.getElementById(id);
-    if (el && el.type === 'date') el.value = today;
-  });
+  var hadSavedData = loadFromStorage();
+  var today = new Date().toISOString().slice(0,10);
+  ['l-date','s-date','v-date'].forEach(function(id) { var el = document.getElementById(id); if (el && el.type === 'date') el.value = today; });
   populateSelects();
-  renderHorses();
+  renderHorseProfiles();
   renderClients();
   renderSchedule();
+  renderBoarders();
   renderLessons();
   renderArchive();
+  if (hadSavedData) toast('✅ Your data has been restored from last session');
 });
+
 </script>
 </body>
 </html>
