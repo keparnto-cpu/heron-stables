@@ -1816,7 +1816,30 @@ function renderAll() {
   populateShowSelect();
   populateFarrierHorseSelect();
   populateVetHorseSelects();
-  saveToStorage(); // sync to localStorage backup
+  saveToStorage();
+  // Sync any items that don't have a DB id yet
+  syncUnsavedData();
+}
+
+async function syncUnsavedData() {
+  // Save horses without _id
+  for (var i = 0; i < horses.length; i++) {
+    if (!horses[i]._id) {
+      await dbSaveHorse(horses[i]);
+    }
+  }
+  // Save clients without _id
+  for (var j = 0; j < clients.length; j++) {
+    if (!clients[j]._id) {
+      await dbSaveClient(clients[j]);
+    }
+  }
+  // Save vacc data without _id
+  for (var k = 0; k < vaccData.length; k++) {
+    if (!vaccData[k]._id) {
+      await dbSaveVacc(vaccData[k]);
+    }
+  }
 }
 
 // ── DB-AWARE SAVE WRAPPERS ──
@@ -1829,15 +1852,22 @@ async function dbSaveHorse(horse) {
 }
 
 async function dbArchiveHorse(horse) {
-  if (!horse._id) return;
-  await sb.from('horses').update({archived: true, archived_on: horse.archivedOn}).eq('id', horse._id);
-  saveToStorage();
+  try {
+    if (!horse._id) {
+      horse._id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'h' + Date.now();
+      await dbSaveHorse(horse);
+    }
+    await sb.from('horses').update({archived: true, archived_on: horse.archivedOn}).eq('id', horse._id);
+    saveToStorage();
+  } catch(e) { console.warn('dbArchiveHorse error:', e); saveToStorage(); }
 }
 
 async function dbRestoreHorse(horse) {
-  if (!horse._id) return;
-  await sb.from('horses').update({archived: false, archived_on: null}).eq('id', horse._id);
-  saveToStorage();
+  try {
+    if (!horse._id) { saveToStorage(); return; }
+    await sb.from('horses').update({archived: false, archived_on: null}).eq('id', horse._id);
+    saveToStorage();
+  } catch(e) { saveToStorage(); }
 }
 
 async function dbDeleteHorse(horse) {
@@ -1855,15 +1885,23 @@ async function dbSaveClient(client) {
 }
 
 async function dbArchiveClient(client) {
-  if (!client._id) return;
-  await sb.from('clients').update({archived: true, archived_on: client.archivedOn}).eq('id', client._id);
-  saveToStorage();
+  try {
+    if (!client._id) {
+      // Not yet in DB — save it first then archive
+      client._id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'c' + Date.now();
+      await dbSaveClient(client);
+    }
+    await sb.from('clients').update({archived: true, archived_on: client.archivedOn}).eq('id', client._id);
+    saveToStorage();
+  } catch(e) { console.warn('dbArchiveClient error:', e); saveToStorage(); }
 }
 
 async function dbRestoreClient(client) {
-  if (!client._id) return;
-  await sb.from('clients').update({archived: false, archived_on: null}).eq('id', client._id);
-  saveToStorage();
+  try {
+    if (!client._id) { saveToStorage(); return; }
+    await sb.from('clients').update({archived: false, archived_on: null}).eq('id', client._id);
+    saveToStorage();
+  } catch(e) { saveToStorage(); }
 }
 
 async function dbSaveLesson(lesson) {
