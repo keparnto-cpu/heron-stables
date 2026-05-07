@@ -183,6 +183,78 @@ tr:hover td { background: var(--cream); }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 
+/* Hamburger button */
+.hamburger { display: none; background: none; border: none; cursor: pointer; padding: 8px; flex-direction: column; gap: 5px; }
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.2s; }
+
+/* Mobile overlay */
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+.sidebar-overlay.open { display: block; }
+
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
+  body { overflow: hidden; }
+
+  /* Sidebar slides in from left */
+  .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; z-index: 100; width: 260px; transition: left 0.25s ease; box-shadow: 4px 0 20px rgba(0,0,0,0.2); }
+  .sidebar.open { left: 0; }
+
+  /* Main takes full width */
+  .main { width: 100%; }
+
+  /* Show hamburger */
+  .hamburger { display: flex; }
+
+  /* Topbar */
+  .topbar { padding: 0 12px; gap: 8px; height: 54px; }
+  .topbar-title { font-size: 18px; }
+  .topbar-search { display: none; }
+
+  /* Content padding */
+  .content { padding: 12px; }
+
+  /* Metrics grid - 2 columns on mobile */
+  .metrics-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .metric-value { font-size: 22px; }
+
+  /* Two-col becomes one-col */
+  .two-col { grid-template-columns: 1fr; }
+
+  /* Tables scroll horizontally */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 500px; font-size: 13px; }
+  th, td { padding: 8px 10px; }
+
+  /* Modals full screen on mobile */
+  .modal-box { width: 95vw; max-width: 95vw; max-height: 90vh; margin: 0 auto; border-radius: 8px; }
+  .modal-body { padding: 14px; }
+  .form-row { grid-template-columns: 1fr; }
+
+  /* Section header */
+  .section-header { flex-wrap: wrap; gap: 8px; }
+  .section-title { font-size: 20px; }
+
+  /* Filter row wraps */
+  .filter-row { flex-wrap: wrap; }
+
+  /* Cards */
+  .card { border-radius: 4px; padding: 12px; }
+
+  /* Horse profiles grid - 1 col on mobile */
+  #horse-profiles-grid { grid-template-columns: 1fr !important; }
+
+  /* Tabs scroll */
+  .tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+  .tab { white-space: nowrap; flex-shrink: 0; }
+
+  /* Buttons */
+  .btn { padding: 8px 14px; font-size: 12px; }
+  .btn-sm { padding: 6px 10px; font-size: 11px; }
+
+  /* IEA/Shows selector row */
+  #show-content .tabs, #vet-tabs, #farrier-tabs { overflow-x: auto; }
+}
+
 /* Modals */
 .modal-box { background: var(--white); border-radius: 4px; border: 1px solid var(--border); width: 540px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.18); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid var(--border); font-size: 17px; font-weight: 400; color: var(--text); font-family: 'Cormorant Garamond', serif; letter-spacing: 0.04em; }
@@ -273,6 +345,9 @@ tr:hover td { background: var(--cream); }
 <!-- Main -->
 <div class="main">
   <div class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-search">
       <span class="search-icon">🔍</span>
@@ -280,6 +355,7 @@ tr:hover td { background: var(--cream); }
     </div>
     <button class="btn btn-primary btn-sm" onclick="handleAdd()">+ Add New</button>
   </div>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
   <div class="content">
 
@@ -784,22 +860,25 @@ tr:hover td { background: var(--cream); }
     <div class="page" id="page-farrier">
       <div class="section-header">
         <div class="section-title">Farrier schedule</div>
-        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-farrier-visit')">+ Log visit</button>
+        <button class="btn btn-primary btn-sm" onclick="openFarrierModal()">+ Add appointment</button>
       </div>
 
-      <!-- Reminders -->
-      <div id="farrier-reminders-card" class="card" style="margin-bottom:16px;border-left:3px solid var(--amber)">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;margin-bottom:10px;color:var(--amber)">⚠ Upcoming &amp; overdue (5-week cycle)</div>
-        <div id="farrier-reminders-list"></div>
+      <!-- Horse selector -->
+      <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:200px">
+          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">View by horse</label>
+          <select id="farrier-horse-filter" onchange="renderFarrier()" style="padding:8px 12px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:14px;background:var(--cream);color:var(--text);outline:none">
+            <option value="all">All horses</option>
+          </select>
+        </div>
+        <div id="farrier-horse-note" style="font-size:12px;color:var(--amber);align-self:center;display:none"></div>
       </div>
 
-      <!-- Tabs -->
       <div class="tabs" id="farrier-tabs">
-        <div class="tab active" onclick="switchFarrierTab(this,'farrier-schedule-tab')">Scheduled visits</div>
+        <div class="tab active" onclick="switchFarrierTab(this,'farrier-schedule-tab')">Upcoming</div>
         <div class="tab" onclick="switchFarrierTab(this,'farrier-history-tab')">History</div>
       </div>
 
-      <!-- SCHEDULED VISITS -->
       <div id="farrier-schedule-tab">
         <div class="card">
           <div class="table-wrap">
@@ -808,11 +887,10 @@ tr:hover td { background: var(--cream); }
               <tbody id="farrier-upcoming-table"></tbody>
             </table>
           </div>
-          <div class="empty" id="farrier-upcoming-empty" style="display:none"><div class="empty-icon">📅</div>No upcoming visits scheduled.</div>
+          <div class="empty" id="farrier-upcoming-empty" style="display:none"><div class="empty-icon">&#128197;</div>No upcoming appointments. Click "+ Add appointment" to schedule one.</div>
         </div>
       </div>
 
-      <!-- HISTORY -->
       <div id="farrier-history-tab" style="display:none">
         <div class="card">
           <div class="table-wrap">
@@ -821,10 +899,9 @@ tr:hover td { background: var(--cream); }
               <tbody id="farrier-history-table"></tbody>
             </table>
           </div>
-          <div class="empty" id="farrier-history-empty" style="display:none"><div class="empty-icon">📋</div>No past visits recorded.</div>
+          <div class="empty" id="farrier-history-empty" style="display:none"><div class="empty-icon">&#128203;</div>No past visits recorded yet.</div>
         </div>
       </div>
-
     </div>
 
     <!-- VET -->
@@ -1239,6 +1316,299 @@ tr:hover td { background: var(--cream); }
     <div class="modal-header"><span>&#128228; Share monthly lesson report</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
     <div class="modal-body">
       <div id="share-preview" style="font-size:12px;line-height:1.7;background:var(--cream);padding:16px;border-radius:8px;border:1px solid var(--border);white-space:pre;font-family:monospace;overflow-x:auto"></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">Click Copy to paste into an email or message.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Close</button>
+      <button class="btn btn-primary" onclick="copyReport()">&#128203; Copy to clipboard</button>
+    </div>
+  </div>
+
+  <!-- ADD SHOW -->
+  <div class="modal-box" id="modal-add-show" style="display:none">
+    <div class="modal-header"><span>Add show</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Show name *</label><input type="text" id="show-name-input" placeholder="e.g. HITS Ocala Spring Circuit"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Date <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional)</span></label><input type="date" id="show-date-input"></div>
+        <div class="form-group"><label>Location <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional)</span></label>
+          <div class="location-wrap">
+            <input type="text" id="show-loc-input" placeholder="Type barn or venue name…" autocomplete="off" oninput="locationSearch(this,'show-loc-suggestions')" onblur="hideLocationSuggestions('show-loc-suggestions',300)">
+            <div id="show-loc-suggestions" class="location-suggestions" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group"><label>Notes <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional)</span></label><input type="text" id="show-notes-input" placeholder="Any notes…"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveShow()">Add show</button>
+    </div>
+  </div>
+
+  <!-- ADD SHOW RIDER -->
+  <div class="modal-box" id="modal-add-show-rider" style="display:none">
+    <div class="modal-header"><span>Add participant</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Rider *</label>
+          <select id="show-rider-select" onchange="handleShowRiderSelect(this.value)" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option value="">Select rider…</option>
+            <option value="__new__">+ Add new name…</option>
+          </select>
+          <input type="text" id="show-rider-new" placeholder="Type new rider name" style="display:none;margin-top:6px;width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+        </div>
+        <div class="form-group">
+          <label>Horse</label>
+          <select id="show-rider-horse" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option value="">Select horse…</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Class / Category</label>
+          <select id="show-rider-class" onchange="handleShowClassSelect(this.value)" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option value="">Select class…</option>
+          </select>
+          <input type="text" id="show-rider-class-custom" placeholder="Type class name…" style="display:none;margin-top:6px;width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+        </div>
+        <div class="form-group"><label>Division</label><input type="text" id="show-rider-division" placeholder="e.g. Junior Hunter, Adult Amateur"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Result / placing</label><input type="text" id="show-rider-result" placeholder="e.g. 1st, Champion, Qualified"></div>
+        <div class="form-group"><label>Notes</label><input type="text" id="show-rider-notes" placeholder="Any observations…"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="show-rider-save-btn" onclick="saveShowRider()">Add rider</button>
+    </div>
+  </div>
+
+  <!-- ADD SHOW CATEGORY -->
+  <div class="modal-box" id="modal-add-show-category" style="display:none">
+    <div class="modal-header"><span>Add class / category</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Class name *</label><input type="text" id="show-cat-name" placeholder="e.g. Pre-Children's Hunter Over Fences"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Division</label><input type="text" id="show-cat-division" placeholder="e.g. Junior, Adult Amateur"></div>
+        <div class="form-group"><label>Notes</label><input type="text" id="show-cat-notes" placeholder="Optional notes"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="show-cat-save-btn" onclick="saveShowCategory()">Add class</button>
+    </div>
+  </div>
+
+  <!-- ADD SHOW EXPENSE -->
+  <div class="modal-box" id="modal-add-show-expense" style="display:none">
+    <div class="modal-header"><span>Add expense</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Category *</label>
+          <select id="show-exp-category" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option>Travel</option><option>Accommodation</option><option>Food</option><option>Tips</option>
+            <option>Horse supplements</option><option>Entry fees</option><option>Vet</option>
+            <option>Farrier</option><option>Equipment</option><option>Braiding</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Description</label><input type="text" id="show-exp-desc" placeholder="e.g. Gas to show grounds"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Amount ($) *</label><input type="number" id="show-exp-amount" placeholder="0.00" step="0.01"></div>
+        <div class="form-group"><label>Paid by</label><input type="text" id="show-exp-paidby" placeholder="e.g. Alex, Stable"></div>
+      </div>
+      <div class="form-group"><label>Notes</label><input type="text" id="show-exp-notes" placeholder="Any additional notes…"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="show-exp-save-btn" onclick="saveShowExpense()">Add expense</button>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT FARRIER VISIT -->
+  <div class="modal-box" id="modal-add-farrier-visit" style="display:none">
+    <div class="modal-header"><span>Add visit / appointment</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Date *</label><input type="date" id="fv-date"></div>
+        <div class="form-group"><label>Farrier</label>
+          <select id="fv-farrier" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option>Joshua Smith</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Horse *</label>
+          <select id="fv-horse" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option value="">Select horse…</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Service type</label>
+          <select id="fv-service" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option>Full reset (4 shoes)</option><option>Front shoes only</option><option>Hind shoes only</option>
+            <option>Trim only</option><option>Pull shoes</option><option>New set (4 shoes)</option>
+            <option>New fronts only</option><option>Corrective shoeing</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Type</label>
+          <select id="fv-status" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option value="scheduled">&#128197; Appointment (upcoming)</option>
+            <option value="completed">&#10003; Completed visit</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Notes / reason for visit</label><input type="text" id="fv-notes" placeholder="e.g. loose shoe, uneven wear, corrective work needed…"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="farrier-visit-save-btn" onclick="saveFarrierVisit()">Save</button>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT VET VISIT -->
+  <div class="modal-box" id="modal-add-vet-visit" style="display:none">
+    <div class="modal-header"><span>Log vet visit</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Date *</label><input type="date" id="vv-date"></div>
+        <div class="form-group"><label>Veterinarian</label>
+          <select id="vv-vet" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option>Dr. Nicole Jochec</option><option>Dr. Travis Bowers</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Horse *</label>
+          <select id="vv-horse" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option value="">Select horse…</option>
+            <option value="All horses">All horses</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Category *</label>
+          <select id="vv-category" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option>Routine</option><option>Deworming</option><option>Emergency</option>
+            <option>Dental</option><option>Coggins</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Status</label>
+          <select id="vv-status" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option value="scheduled">Scheduled</option><option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Description</label><input type="text" id="vv-desc" placeholder="e.g. Annual wellness exam"></div>
+      </div>
+      <div class="form-group"><label>Notes / findings</label>
+        <textarea id="vv-notes" rows="3" placeholder="Observations, treatments, medications prescribed…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;resize:vertical;background:var(--cream);color:var(--text);outline:none"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="vet-visit-save-btn" onclick="saveVetVisit()">Log visit</button>
+    </div>
+  </div>
+
+  <!-- ADD IEA SHOW -->
+  <div class="modal-box" id="modal-add-iea-show" style="display:none">
+    <div class="modal-header"><span>Add IEA show</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Show name *</label><input type="text" id="iea-show-name" placeholder="e.g. Region 5 IEA Horse Show"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Date <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional)</span></label><input type="date" id="iea-show-date-input"></div>
+        <div class="form-group"><label>Location <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional)</span></label>
+          <div class="location-wrap">
+            <input type="text" id="iea-show-loc" placeholder="Type barn or venue name…" autocomplete="off" oninput="locationSearch(this,'iea-loc-suggestions')" onblur="hideLocationSuggestions('iea-loc-suggestions',300)">
+            <div id="iea-loc-suggestions" class="location-suggestions" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group"><label>Notes</label><input type="text" id="iea-show-notes" placeholder="Any notes…"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveIeaShow()">Add show</button>
+    </div>
+  </div>
+
+  <!-- ADD IEA RIDER -->
+  <div class="modal-box" id="modal-add-iea-rider" style="display:none">
+    <div class="modal-header"><span>Add participant</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Rider *</label>
+          <select id="iea-rider-select" onchange="handleIeaRiderSelect(this.value)" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option value="">Select rider…</option>
+            <option value="__new__">+ Add new name…</option>
+          </select>
+          <input type="text" id="iea-rider-new" placeholder="Type new rider name" style="display:none;margin-top:6px;width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+        </div>
+        <div class="form-group"><label>Division</label>
+          <select id="iea-rider-division" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option>Walk/Trot</option><option>Walk/Trot/Canter</option><option>Novice</option>
+            <option>Beginner</option><option>Intermediate</option><option>Open</option><option>Advanced</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Horse drawn</label><input type="text" id="iea-rider-horse" placeholder="Horse assigned at show"></div>
+        <div class="form-group"><label>Class / section</label><input type="text" id="iea-rider-class" placeholder="e.g. Flat, Over Fences"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Result / placing</label><input type="text" id="iea-rider-result" placeholder="e.g. 1st, Champion, Qualified"></div>
+        <div class="form-group"><label>Notes</label><input type="text" id="iea-rider-notes" placeholder="Any observations…"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="iea-rider-save-btn" onclick="saveIeaRider()">Add rider</button>
+    </div>
+  </div>
+
+  <!-- EDIT VACC ROW -->
+  <div class="modal-box" id="modal-edit-vacc" style="display:none;max-width:520px">
+    <div class="modal-header"><span>Edit vaccination record</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Horse</label><input type="text" id="ev-horse" readonly style="background:var(--cream-dark);color:var(--text-muted)"></div>
+      <div style="font-size:10px;font-weight:400;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin:8px 0 4px">Last administered</div>
+      <div class="form-row">
+        <div class="form-group"><label>Rabies</label><input type="text" id="ev-rabies" placeholder="e.g. Apr 2025"></div>
+        <div class="form-group"><label>EEE / WEE</label><input type="text" id="ev-eee" placeholder="e.g. Apr 2025"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Flu / Rhino</label><input type="text" id="ev-flu" placeholder="e.g. Apr 2025"></div>
+        <div class="form-group"><label>West Nile</label><input type="text" id="ev-wn" placeholder="e.g. Apr 2025"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Tetanus</label><input type="text" id="ev-tetanus" placeholder="e.g. Apr 2025"></div>
+        <div class="form-group"><label>Next due</label><input type="text" id="ev-next" placeholder="e.g. Oct 2025"></div>
+      </div>
+      <div class="form-group" style="margin-top:4px"><label>Status</label>
+        <select id="ev-status" onchange="updateStatusPreview(this.value)" style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none;width:100%">
+          <option value="Current">Current</option><option value="Due soon">Due soon</option>
+          <option value="Overdue">Overdue</option><option value="Scheduled">Scheduled</option><option value="Exempt">Exempt</option>
+        </select>
+      </div>
+      <div style="margin-top:6px;font-size:12px;color:var(--text-muted)">Preview: <span id="ev-status-preview"></span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveVaccRow()">Save changes</button>
+    </div>
+  </div>
+
+  <!-- SHARE LESSONS -->
+  <div class="modal-box" id="modal-share-lessons" style="display:none;max-width:680px">
+    <div class="modal-header"><span>&#128228; Share monthly lesson report</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div id="share-preview" style="font-size:12px;line-height:1.7;background:var(--cream);padding:16px;border-radius:4px;border:1px solid var(--border);white-space:pre;font-family:monospace;overflow-x:auto"></div>
       <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">Click Copy to paste into an email or message.</div>
     </div>
     <div class="modal-footer">
@@ -1698,18 +2068,31 @@ const scheduleData = [
 ];
 
 // ---- NAVIGATION ----
+function toggleSidebar() {
+  var sidebar = document.querySelector('.sidebar');
+  var overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
 function showPage(id, el) {
   document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
   document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
   var page = document.getElementById('page-' + id);
   if (page) page.classList.add('active');
   if (el) el.classList.add('active');
+  // Close sidebar on mobile after navigation
+  var sidebar = document.querySelector('.sidebar');
+  var overlay = document.getElementById('sidebar-overlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('open');
   var titles = {
     dashboard:'Dashboard', 'horse-profiles':'Horse Profiles', clients:'Clients', archive:'Archive',
     boarding:'Boarding & Training', schedule:'Lesson Schedule', vaccinations:'Vaccinations',
     lessons:'Lessons Log', waivers:'Waivers & Documents', coggins:'Coggins / EIA Records'
   };
   document.getElementById('topbar-title').textContent = titles[id] || id;
+  updateTopbar('page-' + id);
   if (id === 'horse-profiles') renderHorseProfiles();
   if (id === 'lessons') renderLessons();
   if (id === 'archive') renderArchive();
@@ -1782,11 +2165,22 @@ function handleAdd() {
   var id = active.id;
   if (id === 'page-horse-profiles') openModal('modal-add-horse');
   else if (id === 'page-clients') openModal('modal-add-client');
-  else if (id === 'page-schedule') openModal('modal-add-sched');
   else if (id === 'page-lessons') openModal('modal-add-lesson');
-  else if (id === 'page-vaccinations') openModal('modal-add-vacc');
+  else if (id === 'page-vaccinations') openVaccModal();
   else if (id === 'page-boarding') openModal('modal-add-boarder');
-  else openModal('modal-add-client');
+  else if (id === 'page-farrier') openFarrierModal();
+  else if (id === 'page-vet') openAddVetModal();
+  // else do nothing for pages that manage their own buttons
+}
+
+// Show/hide the topbar Add New button and search based on current page
+function updateTopbar(pageId) {
+  var addBtn = document.querySelector('.topbar .btn-primary');
+  var search = document.querySelector('.topbar-search');
+  var noAddPages = ['page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations'];
+  var noSearchPages = ['page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations','page-boarding','page-lessons','page-horse-profiles'];
+  if (addBtn) addBtn.style.display = noAddPages.includes(pageId) ? 'none' : 'inline-flex';
+  if (search) search.style.display = noSearchPages.includes(pageId) ? 'none' : 'flex';
 }
 
 // ---- POPULATE SELECTS (only active, non-archived) ----
@@ -1927,6 +2321,7 @@ function editHorse(idx) {
   document.getElementById('h-coggins').value = h.coggins || 'Current';
   document.getElementById('h-vacc').value = h.vacc || 'Current';
   document.getElementById('h-notes').value = h.notes || '';
+  var fn = document.getElementById('h-farrier-notes'); if(fn) fn.value = h.farrierNotes || '';
   document.getElementById('modal-add-horse').querySelector('.modal-header span').textContent = 'Edit — ' + h.name;
   document.getElementById('horse-save-btn').textContent = 'Save changes';
   openModal('modal-add-horse');
@@ -1963,6 +2358,7 @@ function saveHorse() {
     fee: parseFloat(document.getElementById('h-fee').value) || 2200,
     coggins: document.getElementById('h-coggins').value, vacc: document.getElementById('h-vacc').value,
     notes: document.getElementById('h-notes').value.trim(),
+    farrierNotes: document.getElementById('h-farrier-notes') ? document.getElementById('h-farrier-notes').value.trim() : '',
     photo: (editingHorseIdx >= 0 && horses[editingHorseIdx]) ? (horses[editingHorseIdx].photo || '') : ''
   };
   if (editingHorseIdx >= 0) { horses[editingHorseIdx] = h; toast('✅ ' + name + ' updated!'); editingHorseIdx = -1; }
@@ -1970,7 +2366,7 @@ function saveHorse() {
   syncHorseSelects(); renderHorseProfiles(); saveToStorage(); closeModal();
   document.getElementById('modal-add-horse').querySelector('.modal-header span').textContent = 'Add new horse';
   document.getElementById('horse-save-btn').textContent = 'Add horse';
-  ['h-name','h-showname','h-regname','h-breed','h-color','h-height','h-dob','h-usef','h-eia','h-notes'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
+  ['h-name','h-showname','h-regname','h-breed','h-color','h-height','h-dob','h-usef','h-eia','h-notes','h-farrier-notes'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
   document.getElementById('h-fee').value = '';
 }
 
@@ -2765,17 +3161,7 @@ function switchVetTab(el, show) {
 // ==========================================
 // FARRIER
 // ==========================================
-var farrierVisits = [
-  {id:'fv1', date:'2026-03-01', horse:'Stanley',   farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
-  {id:'fv2', date:'2026-03-01', horse:'Gigi',       farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
-  {id:'fv3', date:'2026-03-01', horse:'Valencio',   farrier:'Joshua Smith', service:'Trim only',            status:'completed', notes:''},
-  {id:'fv4', date:'2026-03-01', horse:'Diplo',      farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
-  {id:'fv5', date:'2026-03-01', horse:'Coco',       farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
-  {id:'fv6', date:'2026-03-01', horse:'Kingston',   farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
-  {id:'fv7', date:'2026-03-01', horse:'Rosie',      farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
-  {id:'fv8', date:'2026-03-01', horse:'Milton',     farrier:'Joshua Smith', service:'Trim only',            status:'completed', notes:''},
-  {id:'fv9', date:'2026-03-01', horse:'Mando',      farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
-];
+var farrierVisits = [];
 
 var editingFarrierIdx = -1;
 var FARRIER_WEEKS = 5;
@@ -2798,75 +3184,31 @@ function daysDiff(dateStr) {
 }
 
 function renderFarrier() {
-  renderFarrierReminders();
+  // Populate horse filter dropdown
+  var sel = document.getElementById('farrier-horse-filter');
+  if (sel) {
+    var curVal = sel.value;
+    while (sel.options.length > 1) sel.remove(1);
+    horses.forEach(function(h) {
+      var o = document.createElement('option'); o.value = h.name; o.textContent = h.name; sel.appendChild(o);
+    });
+    if (curVal && Array.from(sel.options).some(function(o){return o.value===curVal;})) sel.value = curVal;
+  }
+  // Show farrier notes for selected horse
+  var noteEl = document.getElementById('farrier-horse-note');
+  if (noteEl && sel && sel.value !== 'all') {
+    var h = horses.find(function(h){return h.name===sel.value;});
+    if (h && h.farrierNotes) {
+      noteEl.textContent = '📝 ' + h.farrierNotes;
+      noteEl.style.display = 'block';
+    } else {
+      noteEl.style.display = 'none';
+    }
+  } else if (noteEl) {
+    noteEl.style.display = 'none';
+  }
   renderFarrierTable('scheduled');
   renderFarrierTable('completed');
-}
-
-function renderFarrierReminders() {
-  var list = document.getElementById('farrier-reminders-list');
-  var card = document.getElementById('farrier-reminders-card');
-  if (!list) return;
-
-  // For each active horse, find last completed visit and compute next due
-  var activeHorseNames = horses.map(function(h) { return h.name; });
-  var reminders = [];
-
-  activeHorseNames.forEach(function(name) {
-    var completed = farrierVisits.filter(function(v) {
-      return v.horse === name && v.status === 'completed';
-    }).sort(function(a,b) { return b.date.localeCompare(a.date); });
-
-    var lastDate = completed.length ? completed[0].date : null;
-    var nextDue = lastDate ? addWeeks(lastDate, FARRIER_WEEKS) : null;
-    var diff = nextDue ? daysDiff(nextDue) : null;
-
-    // Show if overdue or due within 2 weeks
-    if (diff !== null && diff <= 14) {
-      reminders.push({ horse: name, lastDate: lastDate, nextDue: nextDue, diff: diff });
-    } else if (!lastDate) {
-      reminders.push({ horse: name, lastDate: null, nextDue: null, diff: null });
-    }
-  });
-
-  if (!reminders.length) {
-    if(card) card.style.display = 'none';
-    return;
-  }
-  if(card) card.style.display = 'block';
-
-  list.innerHTML = reminders.map(function(r) {
-    var statusHtml, rowStyle = '';
-    if (r.diff === null) {
-      statusHtml = '<span class="badge badge-gray">No visits on record</span>';
-    } else if (r.diff < 0) {
-      statusHtml = '<span class="badge badge-red">Overdue by ' + Math.abs(r.diff) + ' days</span>';
-      rowStyle = 'color:var(--red)';
-    } else if (r.diff === 0) {
-      statusHtml = '<span class="badge badge-red">Due today</span>';
-      rowStyle = 'color:var(--red)';
-    } else {
-      statusHtml = '<span class="badge badge-amber">Due in ' + r.diff + ' days (' + farrierDateStr(r.nextDue) + ')</span>';
-    }
-    return '<div class="entity-row">' +
-      '<div class="entity-info"><div class="entity-name" style="' + rowStyle + '">' + r.horse + '</div>' +
-      '<div class="entity-sub">Last visit: ' + (r.lastDate ? farrierDateStr(r.lastDate) : 'None recorded') + '</div></div>' +
-      statusHtml +
-      '<button class="btn btn-sm btn-primary" style="margin-left:8px" data-horse="' + r.horse.replace(/"/g,'') + '" onclick="quickScheduleFarrierBtn(this)">Schedule</button>' +
-      '</div>';
-  }).join('');
-}
-
-function quickScheduleFarrier(horseName) {
-  populateFarrierHorseSelect();
-  document.getElementById('fv-horse').value = horseName;
-  document.getElementById('fv-status').value = 'scheduled';
-  document.getElementById('fv-date').value = new Date().toISOString().slice(0,10);
-  openModal('modal-add-farrier-visit');
-}
-
-function quickScheduleFarrierBtn(btn) {
-  quickScheduleFarrier(btn.getAttribute('data-horse'));
 }
 
 function renderFarrierTable(status) {
@@ -2878,8 +3220,14 @@ function renderFarrierTable(status) {
   if (!tbody) return;
 
   var activeHorseNames = horses.map(function(h) { return h.name; });
+  var horseFilter = document.getElementById('farrier-horse-filter') ? document.getElementById('farrier-horse-filter').value : 'all';
   var list = farrierVisits
-    .filter(function(v) { return v.status === status && activeHorseNames.includes(v.horse); })
+    .filter(function(v) {
+      if (v.status !== status) return false;
+      if (!activeHorseNames.includes(v.horse)) return false;
+      if (horseFilter !== 'all' && v.horse !== horseFilter) return false;
+      return true;
+    })
     .sort(function(a,b) { return isScheduled ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date); });
 
   if (!list.length) { tbody.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
@@ -2896,9 +3244,11 @@ function renderFarrierTable(status) {
       ? '<button class="btn btn-sm" onclick="markFarrierComplete(' + idx + ')" style="color:var(--green-badge);border-color:var(--green-badge);margin-right:2px" title="Mark complete">&#10003;</button>'
       : '';
 
+    var hObj = horses.find(function(h){return h.name===v.horse;});
+    var hNotes = hObj && hObj.farrierNotes ? ' <span style="font-size:11px;color:var(--amber)">📝 '+hObj.farrierNotes+'</span>' : '';
     return '<tr>' +
       '<td style="' + dateStyle + '">' + farrierDateStr(v.date) + '</td>' +
-      '<td><strong>' + v.horse + '</strong></td>' +
+      '<td><strong>' + v.horse + '</strong>' + hNotes + '</td>' +
       '<td>' + (v.farrier||'–') + '</td>' +
       '<td><span class="badge badge-gray" style="font-size:10px">' + (v.service||'–') + '</span></td>' +
       '<td style="font-size:12px;color:var(--text-muted)">' + (v.notes||'–') + '</td>' +
@@ -2914,6 +3264,18 @@ function markFarrierComplete(idx) {
   renderFarrier();
   dbSaveFarrier(farrierVisits[idx]);
   toast('✅ Visit marked as completed!');
+}
+
+function openFarrierModal(defaultHorse, defaultStatus) {
+  populateFarrierHorseSelect();
+  document.getElementById('fv-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('fv-horse').value = defaultHorse || '';
+  document.getElementById('fv-status').value = defaultStatus || 'scheduled';
+  document.getElementById('fv-notes').value = '';
+  document.getElementById('modal-add-farrier-visit').querySelector('.modal-header span').textContent = 'Add visit / appointment';
+  document.getElementById('farrier-visit-save-btn').textContent = 'Save';
+  editingFarrierIdx = -1;
+  openModal('modal-add-farrier-visit');
 }
 
 function saveFarrierVisit() {
