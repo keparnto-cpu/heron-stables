@@ -4,12 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Heron Stables</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --navy: #1a1f2e;
-  --navy-mid: #232a3b;
-  --navy-light: #2e3650;
+  --navy: #6888BE;
+  --navy-mid: #5a78ae;
+  --navy-light: #4d6a9e;
   --gold: #c9a96e;
   --gold-pale: #f5eddc;
   --cream: #faf7f2;
@@ -34,16 +35,16 @@
   --brown: #6b4c2a;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--text); font-size: 14px; line-height: 1.5; display: flex; height: 100vh; overflow: hidden; }
+body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--text); font-size: 17px; line-height: 1.5; display: flex; height: 100vh; overflow: hidden; }
 
 /* Sidebar */
 .sidebar { width: var(--sidebar-w); background: var(--navy); display: flex; flex-direction: column; flex-shrink: 0; }
 .sidebar-logo { padding: 22px 22px 18px; border-bottom: 1px solid rgba(255,255,255,0.07); }
-.sidebar-logo-title { font-family: 'Cormorant Garamond', serif; font-size: 21px; color: #fff; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; }
+.sidebar-logo-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; color: #fff; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; }
 .sidebar-logo-sub { font-size: 9px; color: var(--gold); margin-top: 4px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 300; }
 .sidebar-nav { flex: 1; padding: 10px 0; overflow-y: auto; }
 .nav-section-label { font-size: 9px; font-weight: 400; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.25); padding: 16px 22px 5px; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 22px; font-size: 12px; color: rgba(255,255,255,0.55); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; letter-spacing: 0.04em; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 22px; font-size: 15px; color: rgba(255,255,255,0.55); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; letter-spacing: 0.04em; }
 .nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.85); }
 .nav-item.active { background: rgba(201,169,110,0.1); color: #fff; border-left-color: var(--gold); font-weight: 500; }
 .nav-icon { width: 16px; text-align: center; font-size: 13px; opacity: 0.8; }
@@ -56,16 +57,16 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 /* Main */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .topbar { height: var(--topbar-h); background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; gap: 16px; flex-shrink: 0; }
-.topbar-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; color: var(--text); flex: 1; letter-spacing: 0.06em; }
+.topbar-title { font-family: 'Cormorant Garamond', serif; font-size: 25px; font-weight: 400; color: var(--text); flex: 1; letter-spacing: 0.06em; }
 .topbar-search { flex: 1; max-width: 320px; position: relative; }
 .topbar-search input { width: 100%; padding: 7px 12px 7px 34px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; background: var(--cream); font-family: 'Jost', sans-serif; outline: none; color: var(--text); }
 .topbar-search input:focus { border-color: var(--gold); }
 .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 13px; }
-.btn { padding: 7px 18px; border-radius: 3px; font-size: 11px; font-family: 'Jost', sans-serif; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); transition: all 0.15s; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; }
+.btn { padding: 7px 18px; border-radius: 3px; font-size: 13px; font-family: 'Jost', sans-serif; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); transition: all 0.15s; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; }
 .btn:hover { background: var(--cream-dark); border-color: var(--gold); }
 .btn-primary { background: var(--navy); color: #fff; border-color: var(--navy); }
 .btn-primary:hover { background: var(--navy-mid); border-color: var(--gold); }
-.btn-sm { padding: 5px 12px; font-size: 10px; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
 
 .content { flex: 1; overflow-y: auto; padding: 24px; }
 
@@ -77,7 +78,7 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
 .metric-card { background: var(--white); border: 1px solid var(--border); border-radius: 4px; padding: 16px 18px; }
 .metric-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-.metric-value { font-size: 28px; font-weight: 500; color: var(--text); font-family: 'Cormorant Garamond', serif; }
+.metric-value { font-size: 31px; font-weight: 500; color: var(--text); font-family: 'Cormorant Garamond', serif; }
 .metric-sub { font-size: 11px; color: var(--green); margin-top: 4px; }
 .metric-sub.warn { color: var(--amber); }
 .metric-sub.danger { color: var(--red); }
@@ -86,14 +87,14 @@ body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--t
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 .card { background: var(--white); border: 1px solid var(--border); border-radius: 4px; padding: 18px; }
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-.card-title { font-size: 14px; font-weight: 500; color: var(--text); }
+.card-title { font-size: 17px; font-weight: 500; color: var(--text); }
 .view-all { font-size: 12px; color: var(--green); cursor: pointer; text-decoration: none; }
 .view-all:hover { text-decoration: underline; }
 
 /* Table */
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); background: var(--cream); }
+th { text-align: left; padding: 10px 12px; font-size: 13px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); background: var(--cream); }
 td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: var(--cream); }
@@ -157,7 +158,7 @@ tr:hover td { background: var(--cream); }
 
 /* Tabs */
 .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-.tab { padding: 10px 18px; font-size: 11px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; letter-spacing: 0.1em; text-transform: uppercase; }
+.tab { padding: 10px 18px; font-size: 13px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; letter-spacing: 0.1em; text-transform: uppercase; }
 .tab:hover { color: var(--text); }
 .tab.active { color: var(--navy); border-bottom-color: var(--gold); font-weight: 500; }
 
@@ -167,7 +168,7 @@ tr:hover td { background: var(--cream); }
 
 /* Section header */
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.section-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; color: var(--text); letter-spacing: 0.04em; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: 27px; font-weight: 400; color: var(--text); letter-spacing: 0.04em; }
 
 /* Vacc table highlight */
 .overdue { color: var(--red) !important; font-weight: 500; }
@@ -197,6 +198,14 @@ tr:hover td { background: var(--cream); }
 #modal-overlay.open { display: flex !important; }
 .doc-link { color: var(--green); font-weight: 500; text-decoration: none; }
 .doc-link:hover { text-decoration: underline; }
+.location-wrap { position: relative; }
+.location-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: var(--white); border: 1px solid var(--border); border-top: none; border-radius: 0 0 4px 4px; z-index: 500; max-height: 220px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+.location-suggestion { padding: 9px 12px; font-size: 13px; cursor: pointer; color: var(--text); border-bottom: 1px solid var(--border); font-family: 'Jost', sans-serif; }
+.location-suggestion:last-child { border-bottom: none; }
+.location-suggestion:hover { background: var(--gold-pale); }
+.location-suggestion strong { display: block; font-weight: 500; }
+.location-suggestion span { font-size: 11px; color: var(--text-muted); }
+.doc-link:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -225,26 +234,30 @@ tr:hover td { background: var(--cream); }
     </div>
 
     <div class="nav-section-label">Operations</div>
-    <div class="nav-item" onclick="showPage('boarding', this)">
+    <div class="nav-item" onclick="checkOpsPassword(this, 'boarding')">
       <span class="nav-icon">🏠</span> Boarding & Training
-    </div>
-    <div class="nav-item" onclick="showPage('schedule', this)">
-      <span class="nav-icon">📅</span> Schedule
-    </div>
-    <div class="nav-item" onclick="showPage('vaccinations', this)">
-      <span class="nav-icon">💉</span> Vaccinations <span class="nav-badge">2</span>
     </div>
     <div class="nav-item" onclick="showPage('lessons', this)">
       <span class="nav-icon">🎓</span> Lessons Log
     </div>
+    <div class="nav-item" onclick="showPage('iea', this)">
+      <span class="nav-icon">🏆</span> IEA Shows
+    </div>
+    <div class="nav-item" onclick="showPage('shows', this)">
+      <span class="nav-icon">🎪</span> Shows
+    </div>
+    <div class="nav-item" onclick="showPage('farrier', this)">
+      <span class="nav-icon">🔨</span> Farrier
+    </div>
+    <div class="nav-item" onclick="showPage('vet', this)">
+      <span class="nav-icon">🩺</span> Veterinary
+    </div>
 
     <div class="nav-section-label">Documents</div>
-    <div class="nav-item" onclick="showPage('waivers', this)">
-      <span class="nav-icon">📄</span> Waivers & Docs
+    <div class="nav-item" onclick="checkDocsPassword(this)">
+      <span class="nav-icon">📄</span> Documents
     </div>
-    <div class="nav-item" onclick="showPage('coggins', this)">
-      <span class="nav-icon">📋</span> Coggins Records
-    </div>
+
 
 
   </nav>
@@ -573,212 +586,6 @@ tr:hover td { background: var(--cream); }
       </div>
     </div>
 
-    <!-- SCHEDULE -->
-    <div class="page" id="page-schedule">
-      <div class="section-header">
-        <div class="section-title">Lesson schedule</div>
-        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-sched')">+ Add lesson</button>
-      </div>
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-header">
-          <div class="card-title">This week — May 5–11, 2026</div>
-        </div>
-        <table>
-          <thead><tr><th>Day</th><th>Time</th><th>Client</th><th>Type</th><th>Horse</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
-          <tbody>
-            <tr><td>Mon 5</td><td>8:00 AM</td><td>Erin Polos</td><td>Jump lesson</td><td>Stanley</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Mon 5</td><td>10:00 AM</td><td>Sherri Pyka</td><td>Flatwork</td><td>Diplo</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Mon 5</td><td>12:00 PM</td><td>Bridget Lang</td><td>Trail ride</td><td>Coco</td><td><span class="badge badge-amber">Pending</span></td></tr>
-            <tr><td>Mon 5</td><td>2:00 PM</td><td>Kristen Caporaso</td><td>Dressage</td><td>Kingston</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Mon 5</td><td>4:00 PM</td><td>Carolline Schaffer</td><td>Trot work</td><td>Gigi</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Tue 6</td><td>9:00 AM</td><td>Emma Brown</td><td>Jump lesson</td><td>Stanley</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Tue 6</td><td>11:00 AM</td><td>Caryn Biehl</td><td>Flatwork</td><td>Rosie</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Tue 6</td><td>3:00 PM</td><td>Courtney McCaffrey</td><td>Hunter lesson</td><td>Mando</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Wed 7</td><td>10:00 AM</td><td>Kate Tsirelman</td><td>Flatwork</td><td>Diplo</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Wed 7</td><td>2:00 PM</td><td>Henny Lipschutz</td><td>Jump lesson</td><td>Coco</td><td><span class="badge badge-amber">Pending</span></td></tr>
-            <tr><td>Thu 8</td><td>9:00 AM</td><td>Hannah Houck</td><td>Flatwork</td><td>Kingston</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Thu 8</td><td>4:00 PM</td><td>Mary Trezza</td><td>Lesson</td><td>Gigi</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Fri 9</td><td>8:00 AM</td><td>Nancy McCaffrey</td><td>Jump lesson</td><td>Stanley</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Sat 10</td><td>9:00 AM</td><td>Annemarie Brennan</td><td>Flatwork</td><td>Rosie</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-            <tr><td>Sat 10</td><td>11:00 AM</td><td>Sheila Sadighi</td><td>Lesson</td><td>Mando</td><td><span class="badge badge-green">Confirmed</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- VACCINATIONS -->
-    <div class="page" id="page-vaccinations">
-      <div class="section-header">
-        <div class="section-title">Vaccination records</div>
-        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-vacc')">+ Log vaccination</button>
-      </div>
-      <div class="card">
-        <div style="margin-bottom:12px;font-size:13px;color:var(--text-muted)">Spring 2025 vaccination signup sheet on file. Next round due fall 2025.</div>
-        <table>
-          <thead><tr><th>Horse</th><th>Rabies</th><th>EEE/WEE</th><th>Flu/Rhino</th><th>West Nile</th><th>Tetanus</th><th>Next due</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>Stanley</strong></td>
-              <td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td>
-              <td>Oct 2025</td>
-              <td><span class="badge badge-green">Current</span></td>
-            </tr>
-            <tr>
-              <td><strong>Gigi</strong></td>
-              <td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td>
-              <td>Oct 2025</td>
-              <td><span class="badge badge-green">Current</span></td>
-            </tr>
-            <tr>
-              <td><strong>Diplo</strong></td>
-              <td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td>
-              <td>Oct 2025</td>
-              <td><span class="badge badge-green">Current</span></td>
-            </tr>
-            <tr>
-              <td><strong>Coco</strong></td>
-              <td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td>
-              <td>Oct 2025</td>
-              <td><span class="badge badge-green">Current</span></td>
-            </tr>
-            <tr>
-              <td><strong>Kingston</strong></td>
-              <td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td>
-              <td>Oct 2025</td>
-              <td><span class="badge badge-green">Current</span></td>
-            </tr>
-            <tr>
-              <td><strong>Rosie</strong></td>
-              <td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td>
-              <td>Oct 2025</td>
-              <td><span class="badge badge-green">Current</span></td>
-            </tr>
-            <tr>
-              <td><strong>Milton</strong></td>
-              <td>Nov 2024</td><td>Nov 2024</td><td>Nov 2024</td><td>Nov 2024</td><td>Nov 2024</td>
-              <td class="due-soon">May 19, 2025</td>
-              <td><span class="badge badge-amber">Due soon</span></td>
-            </tr>
-            <tr>
-              <td><strong>Valencio</strong></td>
-              <td>Nov 2024</td><td>Nov 2024</td><td>Nov 2024</td><td>Nov 2024</td><td>Nov 2024</td>
-              <td class="overdue">Apr 2025</td>
-              <td><span class="badge badge-red">Overdue</span></td>
-            </tr>
-            <tr>
-              <td><strong>Destiny</strong></td>
-              <td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td>
-              <td>Oct 2025</td>
-              <td><span class="badge badge-green">Current</span></td>
-            </tr>
-            <tr>
-              <td><strong>Q</strong></td>
-              <td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td><td>Apr 2025</td>
-              <td>Oct 2025</td>
-              <td><span class="badge badge-green">Current</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card" style="margin-top:16px">
-        <div class="card-title" style="margin-bottom:12px">Veterinarians on file</div>
-        <div class="entity-row">
-          <div class="avatar av-green">NJ</div>
-          <div class="entity-info">
-            <div class="entity-name">Dr. Nicole Jochec</div>
-            <div class="entity-sub">Running Equine · (908) 832-5484 · info@runningsequine.com</div>
-          </div>
-          <span class="badge badge-green">Primary vet</span>
-        </div>
-        <div class="entity-row">
-          <div class="avatar av-blue">TB</div>
-          <div class="entity-info">
-            <div class="entity-name">Dr. Travis Bowers</div>
-            <div class="entity-sub">Veterinarian</div>
-          </div>
-          <span class="badge badge-gray">On file</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- WAIVERS -->
-    <div class="page" id="page-waivers">
-      <div class="section-header">
-        <div class="section-title">Waivers &amp; documents</div>
-        <button class="btn btn-primary btn-sm" onclick="openUploadModal()">+ Upload doc</button>
-      </div>
-      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Click any document name to open it. Documents must be uploaded to your GitHub repo to be viewable.</p>
-      <div class="tabs">
-        <div class="tab active" onclick="switchDocTab(this,'docs-waivers')">Waivers</div>
-        <div class="tab" onclick="switchDocTab(this,'docs-board')">Boarding agreements</div>
-        <div class="tab" onclick="switchDocTab(this,'docs-other')">Other docs</div>
-      </div>
-      <div id="docs-waivers">
-        <div class="card">
-          <table>
-            <thead><tr><th>Client</th><th>Document</th><th>Date on file</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr><td>Alexandra Kutovoy (for Lukas Torres)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Alexandra_Kutovoy_for_Lukas_Torres_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Anna Baskevich</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Anna_Baskevich_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Bridget Lang</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Bridget_Lang_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Caryn Biehl</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Caryn_Biehl_Risk_Waiver.pdf" target="_blank" class="doc-link">Risk waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Courtney McCaffrey</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Courtney_McCaffrey_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Courtney Stern (for Beatrice)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Courtney_stern_for_Beatrice_stern_waiver_.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Danielle Blomquist (for Piper Duff)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Danielle_Blomquist_for_Piper_Duff_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Emma Brown</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Emma_Brown_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Erin Polos</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Erin_Polos_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Gloria Woo</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Gloria_Woo_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Heidi Miller (for Alina)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Heidi_Miller_and_Alina_Miller_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Isabella Paradise</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Isabella_Paradise_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>–</td><td><span class="badge badge-amber">Pending</span></td></tr>
-              <tr><td>Jacquelin Sawyer</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Jacquelin_Sawyer_waiver_.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Juno Cox</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Juno_Cox_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>–</td><td><span class="badge badge-red">Missing</span></td></tr>
-              <tr><td>Kate Tsirelman</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Kate_Tsirelman_liability_release.pdf" target="_blank" class="doc-link">Liability release &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Kathryn Baker (for Cordelia)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Kathryn_Baker_for_Cordelia_baker_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Kristen Caporaso</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Kristen_Caporaso_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Lucas Holzmann</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Lucas_Holzmann_waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Mary Trezza</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Mary_Trezza_Waiver_.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Meredith Sternberg</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Meredith_Sternberg_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Michelle Figuereido (for Noelle)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Michelle_Figuereido_And_Noelle_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Sheila Sadighi</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Sheila_sadighi_waiver_.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Sherri Pyka</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Sherri_Pyka_waivere.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Soleil Margolin</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Soleil_Margolin_liability_release.pdf" target="_blank" class="doc-link">Liability release &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Stephanie O'Brien</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Stephanie_OBrien_Waiver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Steve Rossi (for Dane)</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Steve_Rossi_for_Dane_Rossi_waiver_.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Vivienne DuBarry</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Vivienne_DuBarry_Waivver.pdf" target="_blank" class="doc-link">Liability waiver &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Abigail O'Brien</td><td>Liability waiver</td><td>–</td><td><span class="badge badge-red">Missing</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div id="docs-board" style="display:none">
-        <div class="card">
-          <table>
-            <thead><tr><th>Client</th><th>Horse</th><th>Agreement</th><th>Date</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr><td>Bridget Lang</td><td>–</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Bridget_Lang_boarding_agreement.pdf" target="_blank" class="doc-link">Boarding agreement &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Bobbi Healey</td><td>Mando</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Bobby_Healey_and_Mando_Board_agreement.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Carolline Schaffer</td><td>–</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Caroline_Schaeffer_Boarding_and_training_agreement.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Erin Polos</td><td>–</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Erin_Polos_Board_and_training_agreement.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Hermine Heller</td><td>Rosie</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Hermine_Heller_For_Rosie_Boarding_and_training_agreement.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>ia Oehm</td><td>Captain Union Jack</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/ia_Oehm_Board_agreement_for_Captain_Union_Jack.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Kristen Caporaso</td><td>–</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Heron_Stables_Contract_Kristen_Caporaso_.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Melissa Girnius</td><td>Gigi</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/melissa_Girnius_Agreement_for_gigi.pdf" target="_blank" class="doc-link">Board + training &#8599;</a></td><td>Oct 2025</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Sherri Pyka</td><td>–</td><td><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Sherri_Pyka_Boarding_Agreement.pdf" target="_blank" class="doc-link">Boarding agreement &#8599;</a></td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div id="docs-other" style="display:none">
-        <div class="card">
-          <div class="doc-row"><div class="doc-icon">📄</div><div><div class="doc-name"><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Vaccination_signup_sheet_Spring_2025_2.pdf" target="_blank" class="doc-link">Vaccination signup sheet — Spring 2025 &#8599;</a></div><div class="doc-sub">All horses</div></div><span class="badge badge-green">On file</span></div>
-          <div class="doc-row"><div class="doc-icon">📄</div><div><div class="doc-name"><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/bill_of_sale_Valencio.pdf" target="_blank" class="doc-link">Bill of sale — Valencio &#8599;</a></div></div><span class="badge badge-green">On file</span></div>
-          <div class="doc-row"><div class="doc-icon">📄</div><div><div class="doc-name"><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/STANLEY_Bill_of_sale_signed___.pdf" target="_blank" class="doc-link">Bill of sale — Stanley &#8599;</a></div></div><span class="badge badge-green">On file</span></div>
-          <div class="doc-row"><div class="doc-icon">📄</div><div><div class="doc-name"><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/GastosdeGestion.pdf" target="_blank" class="doc-link">Gastos de Gestion &#8599;</a></div></div><span class="badge badge-green">On file</span></div>
-          <div class="doc-row"><div class="doc-icon">📄</div><div><div class="doc-name"><a href="https://github.com/keparnto-cpu/heron-stables/raw/main/Emma_Blumer.pdf" target="_blank" class="doc-link">Emma Blumer — Record &#8599;</a></div></div><span class="badge badge-green">On file</span></div>
-        </div>
-      </div>
-    </div>
-
     <!-- COGGINS -->
     <div class="page" id="page-coggins">
       <div class="section-header">
@@ -803,6 +610,323 @@ tr:hover td { background: var(--cream); }
       <div style="margin-top:12px;font-size:12px;color:var(--text-muted);padding:0 4px">
         All EIA (Coggins) tests must be renewed annually. Contact Dr. Nicole Jochec at Running Equine (908) 832-5484 to schedule testing.
       </div>
+    </div>
+
+    <!-- IEA SHOWS -->
+    <div class="page" id="page-iea">
+      <div class="section-header">
+        <div class="section-title">IEA Shows</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-iea-show')">+ Add show</button>
+      </div>
+
+      <!-- Show selector row -->
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:220px">
+          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Select show</label>
+          <div style="display:flex;gap:6px">
+            <select id="iea-show-select" onchange="loadIeaShow(this.value)" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+              <option value="">— Select a show —</option>
+            </select>
+            <button class="btn btn-sm" onclick="deleteIeaShow()" style="color:var(--red);border-color:var(--red);white-space:nowrap">&#10005; Delete show</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:180px">
+          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Location <span style="color:var(--gold);font-size:9px;letter-spacing:0.08em">(editable)</span></label>
+          <div class="location-wrap">
+            <input type="text" id="iea-show-location" placeholder="Type barn or venue name…" autocomplete="off" oninput="updateCurrentShow('location',this.value);locationSearch(this,'iea-loc-inline-suggestions')" onblur="hideLocationSuggestions('iea-loc-inline-suggestions',300)" style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif;width:100%" disabled>
+            <div id="iea-loc-inline-suggestions" class="location-suggestions" style="display:none"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px">
+          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Date <span style="color:var(--gold);font-size:9px;letter-spacing:0.08em">(editable)</span></label>
+          <input type="date" id="iea-show-date" onchange="updateCurrentShow('date', this.value)" style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif" disabled>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px">
+          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Notes <span style="color:var(--gold);font-size:9px;letter-spacing:0.08em">(editable)</span></label>
+          <input type="text" id="iea-show-notes-inline" placeholder="Any notes…" oninput="updateCurrentShow('notes', this.value)" style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif" disabled>
+        </div>
+      </div>
+
+      <!-- Participants table -->
+      <div class="card" id="iea-participants-card" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:0.04em">Participants</div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-iea-rider')">+ Add rider</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Rider</th>
+              <th>Division</th>
+              <th>Horse drawn</th>
+              <th>Class</th>
+              <th>Result</th>
+              <th>Notes</th>
+              <th style="text-align:right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="iea-riders-table"></tbody>
+        </table>
+        <div class="empty" id="iea-riders-empty" style="display:none"><div class="empty-icon">🏇</div>No riders added yet.</div>
+      </div>
+
+      <div id="iea-no-show" style="text-align:center;padding:48px;color:var(--text-muted);font-size:13px">
+        <div style="font-size:32px;margin-bottom:8px">🏆</div>
+        Select a show above or add a new one to get started.
+      </div>
+    </div>
+
+    <!-- SHOWS -->
+    <div class="page" id="page-shows">
+      <div class="section-header">
+        <div class="section-title">Shows</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-show')">+ Add show</button>
+      </div>
+
+      <!-- Show selector row -->
+      <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:4px;flex:2;min-width:240px">
+          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Select show</label>
+          <div style="display:flex;gap:6px">
+            <select id="show-select" onchange="loadShow(this.value)" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+              <option value="">— Select a show —</option>
+            </select>
+            <button class="btn btn-sm" onclick="deleteShow()" style="color:var(--red);border-color:var(--red);white-space:nowrap">&#10005; Delete</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px">
+          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Location <span style="color:var(--gold);font-size:9px">(editable)</span></label>
+          <div class="location-wrap">
+            <input type="text" id="show-location" placeholder="Type barn or venue name…" autocomplete="off" oninput="updateCurrentShow2('location',this.value);locationSearch(this,'show-loc-inline-suggestions')" onblur="hideLocationSuggestions('show-loc-inline-suggestions',300)" disabled style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif;width:100%">
+            <div id="show-loc-inline-suggestions" class="location-suggestions" style="display:none"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:140px">
+          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Date <span style="color:var(--gold);font-size:9px">(editable)</span></label>
+          <input type="date" id="show-date" onchange="updateCurrentShow2('date',this.value)" disabled style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px">
+          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Notes <span style="color:var(--gold);font-size:9px">(editable)</span></label>
+          <input type="text" id="show-notes-inline" placeholder="Any notes…" oninput="updateCurrentShow2('notes',this.value)" disabled style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif">
+        </div>
+      </div>
+
+      <div id="show-no-show" style="text-align:center;padding:48px;color:var(--text-muted);font-size:13px">
+        <div style="font-size:32px;margin-bottom:8px">🎪</div>
+        Select a show above or add a new one to get started.
+      </div>
+
+      <!-- Show content tabs -->
+      <div id="show-content" style="display:none">
+        <div class="tabs" id="show-tabs">
+          <div class="tab active" onclick="switchShowTab(this,'show-participants')">Participants</div>
+          <div class="tab" onclick="switchShowTab(this,'show-categories')">Classes & Categories</div>
+          <div class="tab" onclick="switchShowTab(this,'show-expenses')">Expenses</div>
+        </div>
+
+        <!-- PARTICIPANTS TAB -->
+        <div id="show-participants">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:0.04em">Participants</div>
+              <button class="btn btn-primary btn-sm" onclick="populateShowRiderSelect();populateShowHorseSelect(showsData.find(function(s){return s.id===currentShowId;}));populateShowClassSelect(showsData.find(function(s){return s.id===currentShowId;}));openModal('modal-add-show-rider')">+ Add rider</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Rider</th><th>Horse</th><th>Class / Category</th><th>Division</th><th>Result</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="show-riders-table"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="show-riders-empty" style="display:none"><div class="empty-icon">🐴</div>No riders added yet.</div>
+          </div>
+        </div>
+
+        <!-- CATEGORIES TAB -->
+        <div id="show-categories" style="display:none">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:0.04em">Classes &amp; categories</div>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-show-category')">+ Add class</button>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">These classes feed the dropdown when adding participants.</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Class / Category</th><th>Division</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="show-categories-table"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="show-categories-empty" style="display:none"><div class="empty-icon">📋</div>No classes added yet.</div>
+          </div>
+        </div>
+
+        <!-- EXPENSES TAB -->
+        <div id="show-expenses" style="display:none">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:0.04em">Expenses</div>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-show-expense')">+ Add expense</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Category</th><th>Description</th><th>Amount</th><th>Paid by</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+                <tbody id="show-expenses-table"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="show-expenses-empty" style="display:none"><div class="empty-icon">💰</div>No expenses logged yet.</div>
+            <div id="show-expenses-total" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);text-align:right;font-size:14px;font-family:'Cormorant Garamond',serif;letter-spacing:0.04em"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FARRIER -->
+    <div class="page" id="page-farrier">
+      <div class="section-header">
+        <div class="section-title">Farrier schedule</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-farrier-visit')">+ Log visit</button>
+      </div>
+
+      <!-- Reminders -->
+      <div id="farrier-reminders-card" class="card" style="margin-bottom:16px;border-left:3px solid var(--amber)">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;margin-bottom:10px;color:var(--amber)">⚠ Upcoming &amp; overdue (5-week cycle)</div>
+        <div id="farrier-reminders-list"></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" id="farrier-tabs">
+        <div class="tab active" onclick="switchFarrierTab(this,'farrier-schedule-tab')">Scheduled visits</div>
+        <div class="tab" onclick="switchFarrierTab(this,'farrier-history-tab')">History</div>
+      </div>
+
+      <!-- SCHEDULED VISITS -->
+      <div id="farrier-schedule-tab">
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Horse</th><th>Farrier</th><th>Service</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody id="farrier-upcoming-table"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="farrier-upcoming-empty" style="display:none"><div class="empty-icon">📅</div>No upcoming visits scheduled.</div>
+        </div>
+      </div>
+
+      <!-- HISTORY -->
+      <div id="farrier-history-tab" style="display:none">
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Horse</th><th>Farrier</th><th>Service</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody id="farrier-history-table"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="farrier-history-empty" style="display:none"><div class="empty-icon">📋</div>No past visits recorded.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VET -->
+    <div class="page" id="page-vet">
+      <div class="section-header">
+        <div class="section-title">Veterinary visits</div>
+        <button class="btn btn-primary btn-sm" onclick="openAddVetModal()">+ Log visit</button>
+      </div>
+
+      <!-- Filter row -->
+      <div class="filter-row" style="margin-bottom:16px">
+        <select class="filter-select" id="vet-horse-filter" onchange="renderVetVisits();renderVacc()">
+          <option value="all">All horses</option>
+        </select>
+        <select class="filter-select" id="vet-cat-filter" onchange="renderVetVisits()">
+          <option value="all">All categories</option>
+          <option value="Routine">Routine</option>
+          <option value="Deworming">Deworming</option>
+          <option value="Emergency">Emergency</option>
+          <option value="Dental">Dental</option>
+          <option value="Coggins">Coggins</option>
+          <option value="Other">Other</option>
+        </select>
+        <span id="vet-count" style="font-size:12px;color:var(--text-muted);align-self:center;margin-left:4px"></span>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" id="vet-tabs">
+        <div class="tab active" onclick="switchVetTab(this,'vet-upcoming-tab')">Upcoming</div>
+        <div class="tab" onclick="switchVetTab(this,'vet-history-tab')">History</div>
+        <div class="tab" onclick="switchVetTab(this,'vet-vaccinations-tab')">Vaccinations</div>
+        <div class="tab" onclick="switchVetTab(this,'vet-coggins-tab')">Coggins</div>
+      </div>
+
+      <!-- UPCOMING -->
+      <div id="vet-upcoming-tab">
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Horse</th><th>Vet</th><th>Category</th><th>Description</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody id="vet-upcoming-table"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="vet-upcoming-empty" style="display:none"><div class="empty-icon">📅</div>No upcoming vet visits scheduled.</div>
+        </div>
+      </div>
+
+      <!-- HISTORY -->
+      <div id="vet-history-tab" style="display:none">
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Horse</th><th>Vet</th><th>Category</th><th>Description</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody id="vet-history-table"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="vet-history-empty" style="display:none"><div class="empty-icon">📋</div>No past vet visits recorded.</div>
+        </div>
+      </div>
+
+      <!-- VACCINATIONS TAB -->
+      <div id="vet-vaccinations-tab" style="display:none">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-size:13px;color:var(--text-muted)">Spring 2025 vaccination signup sheet on file. Click &#9999; on any row to edit.</div>
+            <button class="btn btn-primary btn-sm" onclick="openVaccModal()">+ Log vaccination</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Horse</th><th>Rabies</th><th>EEE/WEE</th><th>Flu/Rhino</th><th>West Nile</th><th>Tetanus</th><th>Next due</th><th>Status</th><th style="text-align:right">Edit</th></tr></thead>
+              <tbody id="vacc-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- COGGINS TAB -->
+      <div id="vet-coggins-tab" style="display:none">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-size:13px;color:var(--text-muted)">EIA / Coggins records. Annual renewal required.</div>
+            <button class="btn btn-primary btn-sm" onclick="toast('Upload Coggins PDFs to your GitHub repo to make them clickable.','var(--amber)')">+ Upload record</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Horse</th><th>EIA / Accession #</th><th>Test date</th><th>Result</th><th>Valid until</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Stanley (A Happy Medium)</strong></td><td>EIA21459861</td><td>2021</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current (May 2025)</span></td></tr>
+                <tr><td><strong>Diplo</strong></td><td>EIA22491692</td><td>2022</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
+                <tr><td><strong>Destiny</strong></td><td>EIA23095032</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
+                <tr><td><strong>Kingston</strong></td><td>EIA23095198</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
+                <tr><td><strong>Valencio</strong></td><td>EIA23095292</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-red">Renew now</span></td></tr>
+                <tr><td><strong>Coco</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
+                <tr><td><strong>Milton</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-amber">Check</span></td></tr>
+                <tr><td><strong>Q</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">Contact Dr. Nicole Jochec at Running Equine (908) 832-5484 to schedule testing.</div>
+        </div>
+      </div>
+
     </div>
 
     <!-- LESSONS LOG -->
@@ -880,220 +1004,19 @@ tr:hover td { background: var(--cream); }
   </div><!-- end content -->
 </div><!-- end main -->
 
-<!-- ========== MODALS ========== -->
-
-<!-- Overlay -->
-<div id="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center" onclick="closeModalOverlay(event)">
-
-  <!-- ADD HORSE MODAL -->
-  <div class="modal-box" id="modal-add-horse" style="display:none;max-width:600px">
-    <div class="modal-header"><span>Add new horse</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
-    <div class="modal-body">
-      <div style="font-size:11px;font-weight:500;color:var(--green);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Identity</div>
-      <div class="form-row">
-        <div class="form-group"><label>Barn name *</label><input type="text" id="h-name" placeholder="e.g. Bella"></div>
-        <div class="form-group"><label>Show name</label><input type="text" id="h-showname" placeholder="e.g. Heron's Bella"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Registered name</label><input type="text" id="h-regname" placeholder="Full registered name"></div>
-        <div class="form-group"><label>USEF number</label><input type="text" id="h-usef" placeholder="e.g. 5432198"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>EIA / Coggins #</label><input type="text" id="h-eia" placeholder="e.g. EIA21459861"></div>
-        <div class="form-group"><label>Owner</label><select id="h-owner"><option value="">Select owner…</option></select></div>
-      </div>
-      <div style="font-size:11px;font-weight:500;color:var(--green);text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 4px">Physical description</div>
-      <div class="form-row">
-        <div class="form-group"><label>Breed</label><input type="text" id="h-breed" placeholder="e.g. Warmblood"></div>
-        <div class="form-group"><label>Color / markings</label><input type="text" id="h-color" placeholder="e.g. Bay, four white socks"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Sex</label><select id="h-sex"><option value="">–</option><option>Mare</option><option>Gelding</option><option>Stallion</option><option>Filly</option><option>Colt</option></select></div>
-        <div class="form-group"><label>Height (hands)</label><input type="text" id="h-height" placeholder="e.g. 16.2"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Date of birth</label><input type="date" id="h-dob"></div>
-        <div class="form-group"><label>Monthly fee ($)</label><input type="number" id="h-fee" placeholder="2200"></div>
-      </div>
-      <div style="font-size:11px;font-weight:500;color:var(--green);text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 4px">Board & health</div>
-      <div class="form-row">
-        <div class="form-group"><label>Board type</label><select id="h-board"><option>Full board</option><option>Full board + Training</option><option>Pasture board</option><option>Training only</option></select></div>
-        <div class="form-group"><label>Coggins status</label><select id="h-coggins">
-          <option value="Current">Current</option>
-          <option value="Renew">Renew needed</option>
-          <option value="Check">Needs check</option>
-          <option value="Overdue">Overdue</option>
-        </select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Vaccination status</label><select id="h-vacc">
-          <option value="Current">Current</option>
-          <option value="Due soon">Due soon</option>
-          <option value="Overdue">Overdue</option>
-        </select></div>
-        <div class="form-group"></div>
-      </div>
-      <div class="form-group"><label>Notes / care instructions</label><textarea id="h-notes" rows="2" placeholder="Special care, feeding, health notes…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;background:var(--cream);color:var(--text)"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" id="horse-save-btn" onclick="saveHorse()">Add horse</button>
+<!-- PASSWORD MODAL -->
+<div id="pwd-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:var(--white);border-radius:4px;border:1px solid var(--border);width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.25);padding:28px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--text);margin-bottom:6px;letter-spacing:0.04em">🔒 Protected area</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:18px">Enter the password to continue.</div>
+    <input type="password" id="pwd-input" placeholder="Password" onkeydown="if(event.key==='Enter')submitPassword()" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:14px;background:var(--cream);color:var(--text);outline:none;margin-bottom:10px">
+    <div id="pwd-error" style="display:none;font-size:12px;color:var(--red);margin-bottom:10px">Incorrect password. Please try again.</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-sm" onclick="closePwdModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="submitPassword()">Unlock</button>
     </div>
   </div>
-
-  <!-- ADD CLIENT MODAL -->
-  <div class="modal-box" id="modal-add-client" style="display:none">
-    <div class="modal-header"><span>Add new client</span><span class="modal-close" onclick="closeModal()">✕</span></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>First name *</label><input type="text" id="c-first" placeholder="First"></div>
-        <div class="form-group"><label>Last name *</label><input type="text" id="c-last" placeholder="Last"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Role *</label><select id="c-role">
-          <option>rider</option><option>lesson student</option><option>horse owner</option>
-          <option>bill payer</option><option>parent</option><option>staff</option>
-          <option>trainer</option><option>vendor</option><option>veterinarian</option><option>farrier</option>
-        </select></div>
-        <div class="form-group"><label>Phone</label><input type="tel" id="c-phone" placeholder="(000) 000-0000"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Email</label><input type="email" id="c-email" placeholder="email@example.com"></div>
-        <div class="form-group"><label>City</label><input type="text" id="c-city" placeholder="City"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>State</label><input type="text" id="c-state" placeholder="NJ" style="max-width:80px"></div>
-        <div class="form-group"><label>ZIP</label><input type="text" id="c-zip" placeholder="00000" style="max-width:100px"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" id="client-save-btn" onclick="saveClient()">Add client</button>
-    </div>
-  </div>
-
-  <!-- ADD LESSON MODAL -->
-  <div class="modal-box" id="modal-add-lesson" style="display:none">
-    <div class="modal-header"><span>Log a lesson</span><span class="modal-close" onclick="closeModal()">✕</span></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>Date *</label><input type="date" id="l-date"></div>
-        <div class="form-group"><label>Trainer *</label><select id="l-trainer">
-          <option>Alex Charles</option><option>Patricia Amador</option><option>Bridget Lang</option><option>Other</option>
-        </select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Rider *</label><select id="l-rider"><option value="">Select rider…</option></select></div>
-        <div class="form-group"><label>Horse *</label><select id="l-horse">
-          <option value="">Select horse…</option>
-          <option>Stanley</option><option>Gigi</option><option>Valencio</option><option>Milton</option>
-          <option>Diplo</option><option>Coco</option><option>Kingston</option><option>Destiny</option>
-          <option>Q</option><option>Rosie</option><option>Captain Union Jack</option><option>Mando</option>
-        </select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Lesson type</label><select id="l-type">
-          <option>Jump lesson</option><option>Flatwork</option><option>Dressage</option>
-          <option>Hunter lesson</option><option>Trail ride</option><option>Trot work</option>
-          <option>Canter work</option><option>Show prep</option><option>Private lesson</option><option>Group lesson</option>
-        </select></div>
-        <div class="form-group"><label>Duration</label><select id="l-duration">
-          <option>30 min</option><option>45 min</option><option>1 hour</option>
-          <option>1.5 hours</option><option>2 hours</option>
-        </select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Fee ($)</label><input type="number" id="l-fee" placeholder="e.g. 120" value="120"></div>
-        <div class="form-group"><label>Paid?</label><select id="l-paid"><option value="unpaid">Unpaid</option><option value="paid">Paid</option><option value="pending">Pending</option></select></div>
-      </div>
-      <div class="form-group"><label>Notes / observations</label><textarea id="l-notes" rows="3" placeholder="e.g. Good progress on lead changes, work on sitting trot…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;background:var(--cream);color:var(--text)"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" id="lesson-save-btn" onclick="saveLesson()">Log lesson</button>
-    </div>
-  </div>
-
-  <!-- ADD SCHEDULE LESSON MODAL -->
-  <div class="modal-box" id="modal-add-sched" style="display:none">
-    <div class="modal-header"><span>Add scheduled lesson</span><span class="modal-close" onclick="closeModal()">✕</span></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>Date *</label><input type="date" id="s-date"></div>
-        <div class="form-group"><label>Time *</label><input type="time" id="s-time" value="09:00"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Client *</label><select id="s-client"><option value="">Select client…</option></select></div>
-        <div class="form-group"><label>Horse *</label><select id="s-horse">
-          <option value="">Select horse…</option>
-          <option>Stanley</option><option>Gigi</option><option>Valencio</option><option>Milton</option>
-          <option>Diplo</option><option>Coco</option><option>Kingston</option><option>Destiny</option>
-          <option>Q</option><option>Rosie</option><option>Captain Union Jack</option><option>Mando</option>
-        </select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Type</label><select id="s-type">
-          <option>Jump lesson</option><option>Flatwork</option><option>Dressage</option>
-          <option>Hunter lesson</option><option>Trail ride</option><option>Trot work</option><option>Show prep</option>
-        </select></div>
-        <div class="form-group"><label>Status</label><select id="s-status">
-          <option value="Confirmed">Confirmed</option><option value="Pending">Pending</option>
-        </select></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" id="sched-save-btn" onclick="saveSchedule()">Add to schedule</button>
-    </div>
-  </div>
-
-  <!-- ADD VACC MODAL -->
-  <div class="modal-box" id="modal-add-vacc" style="display:none">
-    <div class="modal-header"><span>Log vaccination</span><span class="modal-close" onclick="closeModal()">✕</span></div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>Horse *</label><select id="v-horse">
-          <option value="">Select horse…</option>
-          <option>Stanley</option><option>Gigi</option><option>Valencio</option><option>Milton</option>
-          <option>Diplo</option><option>Coco</option><option>Kingston</option><option>Destiny</option>
-          <option>Q</option><option>Rosie</option><option>Captain Union Jack</option><option>Mando</option>
-        </select></div>
-        <div class="form-group"><label>Date administered *</label><input type="date" id="v-date"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Vaccine(s)</label><select id="v-type" multiple style="height:100px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-size:13px;width:100%;background:var(--cream)">
-          <option selected>Rabies</option><option selected>EEE/WEE</option><option selected>Flu/Rhino</option>
-          <option selected>West Nile</option><option selected>Tetanus</option>
-        </select></div>
-        <div class="form-group"><label>Administered by</label><select id="v-vet">
-          <option>Dr. Nicole Jochec</option><option>Dr. Travis Bowers</option><option>Other</option>
-        </select></div>
-      </div>
-      <div class="form-group"><label>Notes</label><input type="text" id="v-notes" placeholder="Any reactions or observations…"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveVacc()">Save record</button>
-    </div>
-  </div>
-
-  <!-- SHARE LESSONS MODAL (export preview) -->
-  <div class="modal-box" id="modal-share-lessons" style="display:none;max-width:680px">
-    <div class="modal-header"><span>📤 Share monthly lesson report</span><span class="modal-close" onclick="closeModal()">✕</span></div>
-    <div class="modal-body">
-      <div id="share-preview" style="font-size:13px;line-height:1.7;background:var(--cream);padding:16px;border-radius:8px;border:1px solid var(--border)"></div>
-      <div style="margin-top:14px;font-size:12px;color:var(--text-muted)">This report will be copied to your clipboard so you can paste it into an email or message to the owner.</div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Close</button>
-      <button class="btn btn-primary" onclick="copyReport()">📋 Copy to clipboard</button>
-    </div>
-  </div>
-
-</div><!-- end modal overlay -->
-
-<!-- TOAST -->
-<div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:2000;box-shadow:0 4px 16px rgba(0,0,0,0.15)"></div>
+</div>
 
 
 <!-- ========== MODALS ========== -->
@@ -1233,7 +1156,23 @@ tr:hover td { background: var(--cream); }
         <div class="form-group"><label>Duration</label><select id="l-duration"><option>30 min</option><option>45 min</option><option selected>1 hour</option><option>1.5 hours</option><option>2 hours</option></select></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Fee ($)</label><input type="number" id="l-fee" value="120"></div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Fee</label>
+          <div style="display:flex;gap:8px;align-items:stretch">
+            <select id="l-fee-select" onchange="applyFeePreset(this.value)" style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none;flex-shrink:0">
+              <option value="">— Select preset —</option>
+              <option value="$100">$100</option>
+              <option value="$120">$120</option>
+              <option value="$140">$140</option>
+              <option value="$150">$150</option>
+              <option value="Board">Board</option>
+              <option value="Complimentary">Complimentary</option>
+              <option value="Half lesson - $60">Half lesson - $60</option>
+              <option value="custom">Custom / other…</option>
+            </select>
+            <input type="text" id="l-fee" placeholder="or type any amount / note" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none" value="$120">
+          </div>
+        </div>
         <div class="form-group"><label>Paid?</label><select id="l-paid"><option value="unpaid">Unpaid</option><option value="paid">Paid</option><option value="pending">Pending</option></select></div>
       </div>
       <div class="form-group"><label>Notes / observations</label><textarea id="l-notes" rows="2" placeholder="e.g. Good progress on lead changes…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;background:var(--cream);color:var(--text)"></textarea></div>
@@ -1317,16 +1256,25 @@ tr:hover td { background: var(--cream); }
 // HERON STABLES — COMPLETE APP LOGIC v3
 // ==========================================
 
-// ---- LOCALSTORAGE PERSISTENCE ----
+// ==========================================
+// SUPABASE DATABASE
+// ==========================================
+const SUPA_URL = 'https://xgfaasctckbtlsmahpec.supabase.co';
+const SUPA_KEY = 'sb_publishable_daKxiLoMfclrYLIGF-78sg_rQpQMu80';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// Keep localStorage as fallback during transition
 const LS_KEY = 'heronStables_v1';
 
 function saveToStorage() {
+  // Also save to localStorage as offline backup
   try {
     localStorage.setItem(LS_KEY, JSON.stringify({
       clients, archivedClients, horses, archivedHorses,
-      boarders, lessonsData, scheduleData
+      boarders, lessonsData, scheduleData, vaccData,
+      ieaShows, ieaRiderList, showsData, farrierVisits, vetVisits, showRiderList
     }));
-  } catch(e) { console.warn('Storage save failed', e); }
+  } catch(e) {}
 }
 
 function loadFromStorage() {
@@ -1341,8 +1289,297 @@ function loadFromStorage() {
     if (data.boarders) boarders.splice(0, boarders.length, ...data.boarders);
     if (data.lessonsData) lessonsData.splice(0, lessonsData.length, ...data.lessonsData);
     if (data.scheduleData) scheduleData.splice(0, scheduleData.length, ...data.scheduleData);
+    if (data.vaccData) vaccData.splice(0, vaccData.length, ...data.vaccData);
+    if (data.ieaShows) ieaShows.splice(0, ieaShows.length, ...data.ieaShows);
+    if (data.ieaRiderList) ieaRiderList.splice(0, ieaRiderList.length, ...data.ieaRiderList);
+    if (data.showsData) showsData.splice(0, showsData.length, ...data.showsData);
+    if (data.farrierVisits) farrierVisits.splice(0, farrierVisits.length, ...data.farrierVisits);
+    if (data.vetVisits) vetVisits.splice(0, vetVisits.length, ...data.vetVisits);
+    if (data.showRiderList) showRiderList.splice(0, showRiderList.length, ...data.showRiderList);
     return true;
-  } catch(e) { console.warn('Storage load failed', e); return false; }
+  } catch(e) { return false; }
+}
+
+// ── SUPABASE DB OPERATIONS ──
+async function dbSave(table, data) {
+  try {
+    const { error } = await sb.from(table).upsert(data, {onConflict: 'id'});
+    if (error) console.warn('DB save error:', table, error.message);
+  } catch(e) { console.warn('DB save exception:', e); }
+}
+
+async function dbDelete(table, id) {
+  try {
+    const { error } = await sb.from(table).delete().eq('id', id);
+    if (error) console.warn('DB delete error:', table, error.message);
+  } catch(e) { console.warn('DB delete exception:', e); }
+}
+
+async function dbLoadAll() {
+  try {
+    showLoadingToast('Loading your data…');
+    const [hRes, cRes, bRes, lRes, vRes, fRes, vetRes, ieaRes, showRes, riderRes, schedRes] = await Promise.all([
+      sb.from('horses').select('*').order('created_at'),
+      sb.from('clients').select('*').order('created_at'),
+      sb.from('boarders').select('*').order('created_at'),
+      sb.from('lessons').select('*').order('date'),
+      sb.from('vacc_data').select('*'),
+      sb.from('farrier_visits').select('*').order('date'),
+      sb.from('vet_visits').select('*').order('date'),
+      sb.from('iea_shows').select('*').order('created_at', {ascending: false}),
+      sb.from('shows').select('*').order('created_at', {ascending: false}),
+      sb.from('rider_lists').select('*'),
+      sb.from('schedule_data').select('*').order('created_at'),
+    ]);
+
+    // Horses
+    if (hRes.data && hRes.data.length) {
+      var active = hRes.data.filter(function(h) { return !h.archived; }).map(dbToHorse);
+      var archived = hRes.data.filter(function(h) { return h.archived; }).map(dbToHorse);
+      horses.splice(0, horses.length, ...active);
+      archivedHorses.splice(0, archivedHorses.length, ...archived);
+    }
+
+    // Clients
+    if (cRes.data && cRes.data.length) {
+      var activeC = cRes.data.filter(function(c) { return !c.archived; }).map(dbToClient);
+      var archivedC = cRes.data.filter(function(c) { return c.archived; }).map(dbToClient);
+      clients.splice(0, clients.length, ...activeC);
+      archivedClients.splice(0, archivedClients.length, ...archivedC);
+    }
+
+    // Boarders
+    if (bRes.data && bRes.data.length) {
+      var activeB = bRes.data.filter(function(b) { return !b.archived; });
+      boarders.splice(0, boarders.length, ...activeB.map(function(b) { return {horse:b.horse,owner:b.owner,type:b.type,since:b.since,fee:b.fee,agreement:b.agreement,notes:b.notes,_id:b.id}; }));
+    }
+
+    // Lessons
+    if (lRes.data && lRes.data.length) {
+      lessonsData.splice(0, lessonsData.length, ...lRes.data.map(function(l) { return {date:l.date,trainer:l.trainer,rider:l.rider,horse:l.horse,type:l.type,duration:l.duration,fee:l.fee,paid:l.paid,notes:l.notes,_id:l.id}; }));
+    }
+
+    // Vacc data
+    if (vRes.data && vRes.data.length) {
+      vaccData.splice(0, vaccData.length, ...vRes.data.map(function(v) { return {horse:v.horse,rabies:v.rabies,eee:v.eee,flu:v.flu,wn:v.wn,tetanus:v.tetanus,next:v.next_due,status:v.status,_id:v.id}; }));
+    }
+
+    // Farrier visits
+    if (fRes.data && fRes.data.length) {
+      farrierVisits.splice(0, farrierVisits.length, ...fRes.data.map(function(f) { return {id:f.id,date:f.date,horse:f.horse,farrier:f.farrier,service:f.service,status:f.status,notes:f.notes,_id:f.id}; }));
+    }
+
+    // Vet visits
+    if (vetRes.data && vetRes.data.length) {
+      vetVisits.splice(0, vetVisits.length, ...vetRes.data.map(function(v) { return {id:v.id,date:v.date,horse:v.horse,vet:v.vet,category:v.category,status:v.status,desc:v.description,notes:v.notes,_id:v.id}; }));
+    }
+
+    // IEA Shows
+    if (ieaRes.data && ieaRes.data.length) {
+      ieaShows.splice(0, ieaShows.length, ...ieaRes.data.map(function(s) { return {id:s.id,name:s.name,date:s.date,location:s.location,notes:s.notes,riders:s.riders||[]}; }));
+    }
+
+    // Shows
+    if (showRes.data && showRes.data.length) {
+      showsData.splice(0, showsData.length, ...showRes.data.map(function(s) { return {id:s.id,name:s.name,date:s.date,location:s.location,notes:s.notes,riders:s.riders||[],categories:s.categories||[],expenses:s.expenses||[]}; }));
+    }
+
+    // Rider lists
+    if (riderRes.data) {
+      var ieaList = riderRes.data.find(function(r) { return r.list_type === 'iea'; });
+      var showList = riderRes.data.find(function(r) { return r.list_type === 'shows'; });
+      if (ieaList && ieaList.names) ieaRiderList.splice(0, ieaRiderList.length, ...ieaList.names);
+      if (showList && showList.names) showRiderList.splice(0, showRiderList.length, ...showList.names);
+    }
+
+    // Schedule
+    if (schedRes.data && schedRes.data.length) {
+      scheduleData.splice(0, scheduleData.length, ...schedRes.data.map(function(s) { return {day:s.day,time:s.time,client:s.client,type:s.type,horse:s.horse,status:s.status,_id:s.id}; }));
+    }
+
+    hideLoadingToast();
+    renderAll();
+    return true;
+  } catch(e) {
+    console.warn('DB load failed:', e);
+    hideLoadingToast();
+    return false;
+  }
+}
+
+function dbToHorse(h) {
+  return {name:h.name,showname:h.showname,regname:h.regname,owner:h.owner,board:h.board,breed:h.breed,color:h.color,sex:h.sex,height:h.height,dob:h.dob,usef:h.usef,eia:h.eia,fee:h.fee,coggins:h.coggins,vacc:h.vacc,notes:h.notes,photo:h.photo,archivedOn:h.archived_on,_id:h.id};
+}
+function dbToClient(c) {
+  return {name:c.name,roles:c.roles,phone:c.phone,email:c.email,city:c.city,state:c.state,archivedOn:c.archived_on,_id:c.id};
+}
+function horseToDb(h) {
+  return {name:h.name,showname:h.showname||h.name,regname:h.regname||'',owner:h.owner||'',board:h.board||'Full board',breed:h.breed||'',color:h.color||'',sex:h.sex||'',height:h.height||'',dob:h.dob||'',usef:h.usef||'',eia:h.eia||'',fee:parseFloat(h.fee)||2200,coggins:h.coggins||'Current',vacc:h.vacc||'Current',notes:h.notes||'',photo:h.photo||'',archived:false,archived_on:null};
+}
+function clientToDb(c) {
+  return {name:c.name,roles:c.roles||'',phone:c.phone||'',email:c.email||'',city:c.city||'',state:c.state||'',archived:false,archived_on:null};
+}
+
+function showLoadingToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = 'var(--navy)';
+  t.style.display = 'block';
+}
+function hideLoadingToast() {
+  setTimeout(function() { document.getElementById('toast').style.display = 'none'; }, 500);
+}
+
+function renderAll() {
+  renderHorseProfiles();
+  renderClients();
+  renderBoarders();
+  renderLessons();
+  renderVacc();
+  renderFarrier();
+  renderVetVisits();
+  renderArchive();
+  populateSelects();
+  syncHorseSelects();
+  populateIeaShowSelect();
+  populateIeaRiderSelect();
+  populateShowSelect();
+  populateFarrierHorseSelect();
+  populateVetHorseSelects();
+  saveToStorage(); // sync to localStorage backup
+}
+
+// ── DB-AWARE SAVE WRAPPERS ──
+async function dbSaveHorse(horse) {
+  var row = horseToDb(horse);
+  if (horse._id) row.id = horse._id;
+  else row.id = horse._id = crypto.randomUUID ? crypto.randomUUID() : 'h'+Date.now();
+  await dbSave('horses', row);
+  saveToStorage();
+}
+
+async function dbArchiveHorse(horse) {
+  if (!horse._id) return;
+  await sb.from('horses').update({archived: true, archived_on: horse.archivedOn}).eq('id', horse._id);
+  saveToStorage();
+}
+
+async function dbRestoreHorse(horse) {
+  if (!horse._id) return;
+  await sb.from('horses').update({archived: false, archived_on: null}).eq('id', horse._id);
+  saveToStorage();
+}
+
+async function dbDeleteHorse(horse) {
+  if (!horse._id) return;
+  await dbDelete('horses', horse._id);
+  saveToStorage();
+}
+
+async function dbSaveClient(client) {
+  var row = clientToDb(client);
+  if (client._id) row.id = client._id;
+  else row.id = client._id = crypto.randomUUID ? crypto.randomUUID() : 'c'+Date.now();
+  await dbSave('clients', row);
+  saveToStorage();
+}
+
+async function dbArchiveClient(client) {
+  if (!client._id) return;
+  await sb.from('clients').update({archived: true, archived_on: client.archivedOn}).eq('id', client._id);
+  saveToStorage();
+}
+
+async function dbRestoreClient(client) {
+  if (!client._id) return;
+  await sb.from('clients').update({archived: false, archived_on: null}).eq('id', client._id);
+  saveToStorage();
+}
+
+async function dbSaveLesson(lesson) {
+  var row = {date:lesson.date,trainer:lesson.trainer,rider:lesson.rider,horse:lesson.horse,type:lesson.type,duration:lesson.duration,fee:lesson.fee,paid:lesson.paid,notes:lesson.notes};
+  if (lesson._id) row.id = lesson._id;
+  else row.id = lesson._id = crypto.randomUUID ? crypto.randomUUID() : 'l'+Date.now();
+  await dbSave('lessons', row);
+  saveToStorage();
+}
+
+async function dbDeleteLesson(lesson) {
+  if (lesson && lesson._id) await dbDelete('lessons', lesson._id);
+  saveToStorage();
+}
+
+async function dbSaveBoarder(boarder) {
+  var row = {horse:boarder.horse,owner:boarder.owner,type:boarder.type,since:boarder.since,fee:boarder.fee,agreement:boarder.agreement,notes:boarder.notes,archived:false};
+  if (boarder._id) row.id = boarder._id;
+  else row.id = boarder._id = crypto.randomUUID ? crypto.randomUUID() : 'b'+Date.now();
+  await dbSave('boarders', row);
+  saveToStorage();
+}
+
+async function dbSaveVacc(vacc) {
+  var row = {horse:vacc.horse,rabies:vacc.rabies,eee:vacc.eee,flu:vacc.flu,wn:vacc.wn,tetanus:vacc.tetanus,next_due:vacc.next,status:vacc.status};
+  if (vacc._id) row.id = vacc._id;
+  else row.id = vacc._id = crypto.randomUUID ? crypto.randomUUID() : 'v'+Date.now();
+  await dbSave('vacc_data', row);
+  saveToStorage();
+}
+
+async function dbSaveFarrier(visit) {
+  var row = {date:visit.date,horse:visit.horse,farrier:visit.farrier,service:visit.service,status:visit.status,notes:visit.notes};
+  if (visit._id) row.id = visit._id;
+  else row.id = visit._id = crypto.randomUUID ? crypto.randomUUID() : 'fv'+Date.now();
+  await dbSave('farrier_visits', row);
+  saveToStorage();
+}
+
+async function dbDeleteFarrier(visit) {
+  if (visit && visit._id) await dbDelete('farrier_visits', visit._id);
+  saveToStorage();
+}
+
+async function dbSaveVet(visit) {
+  var row = {date:visit.date,horse:visit.horse,vet:visit.vet,category:visit.category,status:visit.status,description:visit.desc,notes:visit.notes};
+  if (visit._id) row.id = visit._id;
+  else row.id = visit._id = crypto.randomUUID ? crypto.randomUUID() : 'vv'+Date.now();
+  await dbSave('vet_visits', row);
+  saveToStorage();
+}
+
+async function dbDeleteVet(visit) {
+  if (visit && visit._id) await dbDelete('vet_visits', visit._id);
+  saveToStorage();
+}
+
+async function dbSaveIeaShow(show) {
+  var row = {name:show.name,date:show.date||'',location:show.location||'',notes:show.notes||'',riders:show.riders||[]};
+  if (show.id && show.id.length > 10) row.id = show.id;
+  else show.id = row.id = crypto.randomUUID ? crypto.randomUUID() : 'is'+Date.now();
+  await dbSave('iea_shows', row);
+  saveToStorage();
+}
+
+async function dbDeleteIeaShow(id) {
+  await dbDelete('iea_shows', id);
+  saveToStorage();
+}
+
+async function dbSaveShow(show) {
+  var row = {name:show.name,date:show.date||'',location:show.location||'',notes:show.notes||'',riders:show.riders||[],categories:show.categories||[],expenses:show.expenses||[]};
+  if (show.id && show.id.length > 10) row.id = show.id;
+  else show.id = row.id = crypto.randomUUID ? crypto.randomUUID() : 'sh'+Date.now();
+  await dbSave('shows', row);
+  saveToStorage();
+}
+
+async function dbDeleteShow(id) {
+  await dbDelete('shows', id);
+  saveToStorage();
+}
+
+async function dbSaveRiderList(type, list) {
+  await sb.from('rider_lists').upsert({list_type:type, names:list}, {onConflict:'list_type'});
+  saveToStorage();
 }
 
 // ---- DEFAULT DATA ----
@@ -1477,6 +1714,10 @@ function showPage(id, el) {
   if (id === 'lessons') renderLessons();
   if (id === 'archive') renderArchive();
   if (id === 'boarding') renderBoarders();
+  if (id === 'iea') { populateIeaShowSelect(); populateIeaRiderSelect(); }
+  if (id === 'shows') { populateShowSelect(); populateShowRiderSelect(); }
+  if (id === 'farrier') { populateFarrierHorseSelect(); renderFarrier(); }
+  if (id === 'vet') { populateVetHorseSelects(); renderVetVisits(); }
 }
 
 // ---- MODAL ----
@@ -1578,6 +1819,7 @@ function populateSelects() {
 
 function syncHorseSelects() {
   var names = horses.map(function(h) { return h.name; }); // only active horses
+  populateFarrierHorseSelect();
   ['l-horse','s-horse','v-horse','b-horse'].forEach(function(id) {
     var s = document.getElementById(id);
     if (!s) return;
@@ -1699,8 +1941,10 @@ function archiveHorse(idx) {
   horses.splice(idx, 1);
   syncHorseSelects();
   renderHorseProfiles();
+  renderVacc();
+  renderBoarders();
   renderArchive();
-  saveToStorage();
+  dbArchiveHorse(h);
   toast('📦 ' + h.name + ' archived');
 }
 
@@ -1808,9 +2052,17 @@ function saveClient() {
     phone: document.getElementById('c-phone').value.trim(), email: document.getElementById('c-email').value.trim(),
     city: document.getElementById('c-city').value.trim(), state: document.getElementById('c-state').value.trim()
   };
-  if (editingClientIdx >= 0) { clients[editingClientIdx] = c; toast('✅ ' + c.name + ' updated!'); editingClientIdx = -1; }
-  else { clients.push(c); toast('👤 ' + c.name + ' added!'); }
-  populateSelects(); renderClients(); saveToStorage(); closeModal();
+  if (editingClientIdx >= 0) {
+    c._id = clients[editingClientIdx]._id;
+    clients[editingClientIdx] = c;
+    toast('✅ ' + c.name + ' updated!');
+    editingClientIdx = -1;
+  } else {
+    clients.push(c);
+    toast('👤 ' + c.name + ' added!');
+  }
+  populateSelects(); renderClients(); closeModal();
+  dbSaveClient(c);
   document.getElementById('modal-add-client').querySelector('.modal-header span').textContent = 'Add new client';
   document.getElementById('client-save-btn').textContent = 'Add client';
   ['c-first','c-last','c-phone','c-email','c-city','c-state'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
@@ -1824,7 +2076,8 @@ function archiveClient(idx) {
   c.archivedOn = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   archivedClients.push(c);
   clients.splice(idx, 1);
-  populateSelects(); renderClients(); renderArchive(); saveToStorage();
+  populateSelects(); renderClients(); renderArchive();
+  dbArchiveClient(c);
   toast('📦 ' + c.name + ' archived');
 }
 
@@ -1846,9 +2099,11 @@ function renderBoarders() {
   var tbody = document.getElementById('boarders-table');
   var empty = document.getElementById('boarders-empty');
   if (!tbody) return;
-  if (!boarders.length) { tbody.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
+  var activeHorseNames = horses.map(function(h) { return h.name; });
+  var visibleBoarders = boarders.map(function(b, i) { return {b:b, i:i}; }).filter(function(x) { return activeHorseNames.includes(x.b.horse) || x.b.horse === '–' || x.b.horse === ''; });
+  if (!visibleBoarders.length) { tbody.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
   if (empty) empty.style.display = 'none';
-  tbody.innerHTML = boarders.map(function(b, i) {
+  tbody.innerHTML = visibleBoarders.map(function(x) { var b = x.b; var i = x.i;
     var agCls = b.agreement === 'Signed' ? 'badge-green' : b.agreement === 'Pending' ? 'badge-amber' : 'badge-red';
     var typeCls = b.type.includes('Training') ? 'badge-blue' : 'badge-gray';
     return '<tr><td><strong>' + b.horse + '</strong></td><td>' + (b.owner||'–') + '</td>' +
@@ -1894,7 +2149,8 @@ function saveBoarder() {
   };
   if (editingBoarderIdx >= 0) { boarders[editingBoarderIdx] = b; toast('✅ Boarder updated!'); editingBoarderIdx = -1; }
   else { boarders.push(b); toast('🏠 ' + horse + ' added to boarding!'); }
-  renderBoarders(); saveToStorage(); closeModal();
+  renderBoarders(); closeModal();
+  dbSaveBoarder(b);
   document.getElementById('modal-add-boarder').querySelector('.modal-header span').textContent = 'Add boarder';
   document.getElementById('boarder-save-btn').textContent = 'Add boarder';
 }
@@ -1945,13 +2201,15 @@ function renderArchive() {
 function restoreHorse(i) {
   var h = archivedHorses[i]; if (!h) return;
   delete h.archivedOn; horses.push(h); archivedHorses.splice(i, 1);
-  syncHorseSelects(); renderHorseProfiles(); renderArchive(); saveToStorage();
+  syncHorseSelects(); renderHorseProfiles(); renderVacc(); renderBoarders(); renderArchive();
+  dbRestoreHorse(h);
   toast('✅ ' + h.name + ' restored!');
 }
 function restoreClient(i) {
   var c = archivedClients[i]; if (!c) return;
   delete c.archivedOn; clients.push(c); archivedClients.splice(i, 1);
-  populateSelects(); renderClients(); renderArchive(); saveToStorage();
+  populateSelects(); renderClients(); renderArchive();
+  dbRestoreClient(c);
   toast('✅ ' + c.name + ' restored!');
 }
 
@@ -2048,7 +2306,7 @@ function renderLessons() {
   var total = list.length;
   var hours = list.reduce(function(s,l) { return s + durationToHours(l.duration); }, 0);
   var riders = new Set(list.map(function(l) { return l.rider; })).size;
-  var revenue = list.reduce(function(s,l) { return s + (l.fee||0); }, 0);
+  var revenue = list.reduce(function(s,l) { var f = parseFloat(String(l.fee).replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
   var st = document.getElementById('stat-total'); if(st) st.textContent = total;
   var sh = document.getElementById('stat-hours'); if(sh) sh.textContent = Math.round(hours * 10) / 10;
   var sr = document.getElementById('stat-riders'); if(sr) sr.textContent = riders;
@@ -2071,6 +2329,9 @@ function editLesson(globalIdx) {
   document.getElementById('l-type').value = l.type;
   document.getElementById('l-duration').value = l.duration;
   document.getElementById('l-fee').value = l.fee;
+  var sel = document.getElementById('l-fee-select');
+  var opts = Array.from(sel.options).map(function(o){return o.value;});
+  sel.value = opts.includes(l.fee) ? l.fee : 'custom';
   document.getElementById('l-paid').value = l.paid;
   document.getElementById('l-notes').value = l.notes || '';
   document.getElementById('modal-add-lesson').querySelector('.modal-header span').textContent = 'Edit lesson — ' + l.rider;
@@ -2080,8 +2341,20 @@ function editLesson(globalIdx) {
 
 function deleteLesson(globalIdx) {
   if (globalIdx >= 0 && globalIdx < lessonsData.length) {
-    var name = lessonsData[globalIdx].rider; lessonsData.splice(globalIdx, 1);
-    renderLessons(); saveToStorage(); toast('Lesson removed for ' + name, '#c0392b');
+    var name = lessonsData[globalIdx].rider;
+    var l = lessonsData.splice(globalIdx, 1)[0];
+    renderLessons();
+    dbDeleteLesson(l);
+    toast('Lesson removed for ' + name, '#c0392b');
+  }
+}
+
+function applyFeePreset(val) {
+  if (val && val !== 'custom') {
+    document.getElementById('l-fee').value = val;
+  } else if (val === 'custom') {
+    document.getElementById('l-fee').value = '';
+    document.getElementById('l-fee').focus();
   }
 }
 
@@ -2094,15 +2367,16 @@ function saveLesson() {
   var l = {
     date: date, trainer: document.getElementById('l-trainer').value, rider: rider, horse: horse,
     type: document.getElementById('l-type').value, duration: document.getElementById('l-duration').value,
-    fee: parseFloat(document.getElementById('l-fee').value) || 120,
+    fee: document.getElementById('l-fee').value.trim() || '$120',
     paid: document.getElementById('l-paid').value, notes: document.getElementById('l-notes').value
   };
   if (editingLessonIdx >= 0) { lessonsData[editingLessonIdx] = l; toast('✅ Lesson updated!'); editingLessonIdx = -1; }
   else { lessonsData.push(l); document.getElementById('lesson-month-filter').value = date.slice(0,7); toast('🎓 Lesson logged!'); }
-  renderLessons(); saveToStorage(); closeModal();
+  renderLessons(); closeModal();
+  dbSaveLesson(l);
   document.getElementById('modal-add-lesson').querySelector('.modal-header span').textContent = 'Log a lesson';
   document.getElementById('lesson-save-btn').textContent = 'Log lesson';
-  document.getElementById('l-notes').value = ''; document.getElementById('l-fee').value = '120';
+  document.getElementById('l-notes').value = ''; document.getElementById('l-fee').value = '$120'; document.getElementById('l-fee-select').value = '$120';
   document.getElementById('l-paid').value = 'unpaid'; document.getElementById('l-rider').value = '';
   document.getElementById('dropin-wrap').style.display = 'none'; document.getElementById('l-dropin').value = '';
 }
@@ -2115,9 +2389,9 @@ function exportLessons() {
   list.sort(function(a,b) { return a.date.localeCompare(b.date); });
   if (!list.length) { toast('No lessons to export', '#c0392b'); return; }
   var monthLabel = new Date(month + '-15').toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  var revenue = list.reduce(function(s,l) { return s + (l.fee||0); }, 0);
-  var unpaid = list.filter(function(l) { return l.paid !== 'paid'; }).reduce(function(s,l) { return s + (l.fee||0); }, 0);
-  var rows = list.map(function(l) { var d = new Date(l.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}); return '  ' + d.padEnd(8) + ' | ' + l.rider.padEnd(22) + ' | ' + l.horse.padEnd(14) + ' | ' + l.type.padEnd(16) + ' | $' + String(l.fee).padStart(4) + ' | ' + l.paid; }).join('\n');
+  var revenue = list.reduce(function(s,l) { var f = parseFloat(String(l.fee).replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
+  var unpaid = list.filter(function(l) { return l.paid !== 'paid'; }).reduce(function(s,l) { var f = parseFloat(String(l.fee).replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
+  var rows = list.map(function(l) { var d = new Date(l.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}); return '  ' + d.padEnd(8) + ' | ' + l.rider.padEnd(22) + ' | ' + l.horse.padEnd(14) + ' | ' + l.type.padEnd(16) + ' | ' + String(l.fee).padStart(5) + ' | ' + l.paid; }).join('\n');
   var report = 'HERON STABLES — LESSON REPORT\n' + monthLabel + ' | Trainer: ' + (trainer === 'all' ? 'All' : trainer) + '\n' + '─'.repeat(82) + '\n  Date     | Rider                  | Horse          | Type             | Fee  | Status\n' + '─'.repeat(82) + '\n' + rows + '\n' + '─'.repeat(82) + '\n\n  Total lessons : ' + list.length + '\n  Total revenue : $' + revenue.toLocaleString() + '\n  Still unpaid  : $' + unpaid.toLocaleString() + '\n\nGenerated by Heron Stables Management Portal';
   document.getElementById('share-preview').textContent = report;
   openModal('modal-share-lessons');
@@ -2131,6 +2405,115 @@ function copyReport() {
 // ==========================================
 // VACCINATIONS
 // ==========================================
+var vaccData = [
+  {horse:'Stanley',  rabies:'Apr 2025',eee:'Apr 2025',flu:'Apr 2025',wn:'Apr 2025',tetanus:'Apr 2025',next:'Oct 2025',status:'Current'},
+  {horse:'Gigi',     rabies:'Apr 2025',eee:'Apr 2025',flu:'Apr 2025',wn:'Apr 2025',tetanus:'Apr 2025',next:'Oct 2025',status:'Current'},
+  {horse:'Diplo',    rabies:'Apr 2025',eee:'Apr 2025',flu:'Apr 2025',wn:'Apr 2025',tetanus:'Apr 2025',next:'Oct 2025',status:'Current'},
+  {horse:'Coco',     rabies:'Apr 2025',eee:'Apr 2025',flu:'Apr 2025',wn:'Apr 2025',tetanus:'Apr 2025',next:'Oct 2025',status:'Current'},
+  {horse:'Kingston', rabies:'Apr 2025',eee:'Apr 2025',flu:'Apr 2025',wn:'Apr 2025',tetanus:'Apr 2025',next:'Oct 2025',status:'Current'},
+  {horse:'Rosie',    rabies:'Apr 2025',eee:'Apr 2025',flu:'Apr 2025',wn:'Apr 2025',tetanus:'Apr 2025',next:'Oct 2025',status:'Current'},
+  {horse:'Milton',   rabies:'Nov 2024',eee:'Nov 2024',flu:'Nov 2024',wn:'Nov 2024',tetanus:'Nov 2024',next:'May 2025',status:'Due soon'},
+  {horse:'Valencio', rabies:'Nov 2024',eee:'Nov 2024',flu:'Nov 2024',wn:'Nov 2024',tetanus:'Nov 2024',next:'Apr 2025',status:'Overdue'},
+  {horse:'Destiny',  rabies:'Apr 2025',eee:'Apr 2025',flu:'Apr 2025',wn:'Apr 2025',tetanus:'Apr 2025',next:'Oct 2025',status:'Current'},
+  {horse:'Q',        rabies:'Apr 2025',eee:'Apr 2025',flu:'Apr 2025',wn:'Apr 2025',tetanus:'Apr 2025',next:'Oct 2025',status:'Current'},
+];
+
+var editingVaccIdx = -1;
+
+function vaccStatusBadge(status) {
+  if (status === 'Current') return '<span class="badge badge-green">Current</span>';
+  if (status === 'Overdue') return '<span class="badge badge-red">Overdue</span>';
+  if (status === 'Due soon') return '<span class="badge badge-amber">Due soon</span>';
+  if (status === 'Scheduled') return '<span class="badge" style="background:#e8f0fe;color:#1a56db">Scheduled</span>';
+  return '<span class="badge badge-gray">' + status + '</span>';
+}
+
+function renderVacc() {
+  var tbody = document.getElementById('vacc-table');
+  if (!tbody) return;
+  var activeNames = horses.map(function(h) { return h.name; });
+  var horseFilter = document.getElementById('vet-horse-filter') ? document.getElementById('vet-horse-filter').value : 'all';
+  var visibleData = vaccData.map(function(v, i) { return {v:v, i:i}; }).filter(function(x) {
+    if (!activeNames.includes(x.v.horse)) return false;
+    if (horseFilter !== 'all' && x.v.horse !== horseFilter) return false;
+    return true;
+  });
+  if (!visibleData.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:24px">No records for this horse.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = visibleData.map(function(x) {
+    var v = x.v; var i = x.i;
+    return '<tr>' +
+      '<td><strong>' + v.horse + '</strong></td>' +
+      '<td>' + (v.rabies||'–') + '</td>' +
+      '<td>' + (v.eee||'–') + '</td>' +
+      '<td>' + (v.flu||'–') + '</td>' +
+      '<td>' + (v.wn||'–') + '</td>' +
+      '<td>' + (v.tetanus||'–') + '</td>' +
+      '<td style="' + (v.status==='Overdue'?'color:var(--red);font-weight:500':v.status==='Due soon'?'color:var(--amber);font-weight:500':'') + '">' + (v.next||'–') + '</td>' +
+      '<td>' + vaccStatusBadge(v.status) + '</td>' +
+      '<td style="text-align:right"><button class="btn btn-sm" onclick="editVaccRow(' + i + ')">&#9999; Edit</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function editVaccRow(i) {
+  var v = vaccData[i];
+  if (!v) return;
+  editingVaccIdx = i;
+  document.getElementById('ev-horse').value = v.horse;
+  document.getElementById('ev-rabies').value = v.rabies || '';
+  document.getElementById('ev-eee').value = v.eee || '';
+  document.getElementById('ev-flu').value = v.flu || '';
+  document.getElementById('ev-wn').value = v.wn || '';
+  document.getElementById('ev-tetanus').value = v.tetanus || '';
+  document.getElementById('ev-next').value = v.next || '';
+  document.getElementById('ev-status').value = v.status || 'Current';
+  updateStatusPreview(v.status || 'Current');
+  openModal('modal-edit-vacc');
+}
+
+function updateStatusPreview(val) {
+  var el = document.getElementById('ev-status-preview');
+  if (el) el.innerHTML = vaccStatusBadge(val);
+}
+
+function saveVaccRow() {
+  if (editingVaccIdx < 0) return;
+  vaccData[editingVaccIdx] = {
+    horse: vaccData[editingVaccIdx].horse,
+    rabies: document.getElementById('ev-rabies').value.trim(),
+    eee: document.getElementById('ev-eee').value.trim(),
+    flu: document.getElementById('ev-flu').value.trim(),
+    wn: document.getElementById('ev-wn').value.trim(),
+    tetanus: document.getElementById('ev-tetanus').value.trim(),
+    next: document.getElementById('ev-next').value.trim(),
+    status: document.getElementById('ev-status').value
+  };
+  editingVaccIdx = -1;
+  var vRow = vaccData[editingVaccIdx];
+  renderVacc();
+  closeModal();
+  dbSaveVacc(vRow);
+  toast('💉 Vaccination record updated!');
+}
+
+function openVaccModal() {
+  // Populate horse select with active horses
+  var sel = document.getElementById('v-horse');
+  if (sel) {
+    while (sel.options.length > 1) sel.remove(1);
+    horses.forEach(function(h) {
+      var o = document.createElement('option'); o.value = h.name; o.textContent = h.name; sel.appendChild(o);
+    });
+  }
+  // Reset date to today
+  var dateEl = document.getElementById('v-date');
+  if (dateEl) dateEl.value = new Date().toISOString().slice(0,10);
+  openModal('modal-add-vacc');
+}
+
 function saveVacc() {
   var horse = document.getElementById('v-horse').value;
   var date = document.getElementById('v-date').value;
@@ -2139,15 +2522,20 @@ function saveVacc() {
   var dateStr = d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
   var nextDate = new Date(d); nextDate.setMonth(nextDate.getMonth() + 6);
   var nextStr = nextDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
-  var tbody = document.querySelector('#page-vaccinations table tbody');
-  if (tbody) {
-    var updated = false;
-    tbody.querySelectorAll('tr').forEach(function(row) {
-      if (row.cells[0] && row.cells[0].textContent.trim() === horse) { row.cells[6].textContent = nextStr; row.cells[7].innerHTML = '<span class="badge badge-green">Current</span>'; updated = true; }
-    });
-    if (!updated) { var row = document.createElement('tr'); row.innerHTML = '<td><strong>' + horse + '</strong></td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + dateStr + '</td><td>' + nextStr + '</td><td><span class="badge badge-green">Current</span></td>'; tbody.appendChild(row); }
+  var existing = vaccData.findIndex(function(v) { return v.horse === horse; });
+  if (existing >= 0) {
+    vaccData[existing].rabies = dateStr; vaccData[existing].eee = dateStr;
+    vaccData[existing].flu = dateStr; vaccData[existing].wn = dateStr;
+    vaccData[existing].tetanus = dateStr; vaccData[existing].next = nextStr;
+    vaccData[existing].status = 'Current';
+  } else {
+    vaccData.push({horse:horse, rabies:dateStr, eee:dateStr, flu:dateStr, wn:dateStr, tetanus:dateStr, next:nextStr, status:'Current'});
   }
-  closeModal(); saveToStorage(); toast('💉 Vaccination logged for ' + horse + '!');
+  renderVacc();
+  var newVacc = vaccData.find(function(v){return v.horse===horse;});
+  closeModal();
+  if(newVacc) dbSaveVacc(newVacc);
+  toast('💉 Vaccination logged for ' + horse + '!');
 }
 
 function openUploadModal() {
@@ -2166,24 +2554,1135 @@ function switchBoardTab(el, show) {
 function switchDocTab(el, show) {
   document.querySelectorAll('#page-waivers .tab').forEach(function(t) { t.classList.remove('active'); });
   el.classList.add('active');
-  ['docs-waivers','docs-board','docs-other'].forEach(function(id) { document.getElementById(id).style.display = id === show ? 'block' : 'none'; });
+  ['docs-waivers','docs-leases','docs-board','docs-other'].forEach(function(id) { document.getElementById(id).style.display = id === show ? 'block' : 'none'; });
+}
+
+// ==========================================
+// VETERINARY VISITS
+// ==========================================
+var vetVisits = [
+  {id:'vv1', date:'2026-04-15', horse:'Stanley',         vet:'Dr. Nicole Jochec', category:'Routine',   status:'completed', desc:'Annual wellness exam',   notes:'All clear. Weight good.'},
+  {id:'vv2', date:'2026-04-15', horse:'Gigi',            vet:'Dr. Nicole Jochec', category:'Routine',   status:'completed', desc:'Annual wellness exam',   notes:''},
+  {id:'vv3', date:'2026-04-15', horse:'Valencio',        vet:'Dr. Nicole Jochec', category:'Coggins',   status:'completed', desc:'Coggins / EIA test',     notes:'Negative. Certificate issued.'},
+  {id:'vv4', date:'2026-04-15', horse:'All horses',      vet:'Dr. Nicole Jochec', category:'Deworming', status:'completed', desc:'Spring deworming',        notes:'Ivermectin administered'},
+  {id:'vv5', date:'2026-05-20', horse:'Milton',          vet:'Dr. Nicole Jochec', category:'Routine',   status:'scheduled', desc:'Lameness evaluation',    notes:'Monitor left front'},
+  {id:'vv6', date:'2026-06-01', horse:'All horses',      vet:'Dr. Nicole Jochec', category:'Dental',    status:'scheduled', desc:'Annual dental float',    notes:''},
+];
+
+var editingVetIdx = -1;
+
+function vetCategoryBadge(cat) {
+  var map = {
+    'Routine':   'badge-green',
+    'Deworming': 'badge-blue',
+    'Emergency': 'badge-red',
+    'Dental':    'badge-amber',
+    'Coggins':   'badge-gray',
+    'Other':     'badge-gray'
+  };
+  return '<span class="badge ' + (map[cat]||'badge-gray') + '" style="font-size:10px">' + cat + '</span>';
+}
+
+function populateVetHorseSelects() {
+  // Filter dropdown on page — preserve current selection
+  var pageSel = document.getElementById('vet-horse-filter');
+  if (pageSel) {
+    var savedVal = pageSel.value;
+    while (pageSel.options.length > 1) pageSel.remove(1);
+    horses.forEach(function(h) {
+      var o = document.createElement('option'); o.value = h.name; o.textContent = h.name; pageSel.appendChild(o);
+    });
+    // Restore selection if it's still valid
+    var opts = Array.from(pageSel.options).map(function(o) { return o.value; });
+    if (opts.includes(savedVal)) pageSel.value = savedVal;
+  }
+  // Modal horse select
+  var modalSel = document.getElementById('vv-horse');
+  if (modalSel) {
+    var savedModal = modalSel.value;
+    while (modalSel.options.length > 2) modalSel.remove(2); // keep blank + "All horses"
+    horses.forEach(function(h) {
+      var o = document.createElement('option'); o.value = h.name; o.textContent = h.name; modalSel.appendChild(o);
+    });
+    var mOpts = Array.from(modalSel.options).map(function(o) { return o.value; });
+    if (mOpts.includes(savedModal)) modalSel.value = savedModal;
+  }
+}
+
+function openAddVetModal() {
+  // Only populate the modal horse select, not the page filter
+  var modalSel = document.getElementById('vv-horse');
+  if (modalSel) {
+    var savedModal = modalSel.value;
+    while (modalSel.options.length > 2) modalSel.remove(2);
+    horses.forEach(function(h) {
+      var o = document.createElement('option'); o.value = h.name; o.textContent = h.name; modalSel.appendChild(o);
+    });
+  }
+  editingVetIdx = -1;
+  document.getElementById('modal-add-vet-visit').querySelector('.modal-header span').textContent = 'Log vet visit';
+  document.getElementById('vet-visit-save-btn').textContent = 'Log visit';
+  document.getElementById('vv-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('vv-horse').value = '';
+  document.getElementById('vv-notes').value = '';
+  document.getElementById('vv-desc').value = '';
+  openModal('modal-add-vet-visit');
+}
+
+function renderVetVisits() {
+  var horseFilter = document.getElementById('vet-horse-filter') ? document.getElementById('vet-horse-filter').value : 'all';
+  var catFilter = document.getElementById('vet-cat-filter') ? document.getElementById('vet-cat-filter').value : 'all';
+  var activeHorseNames = horses.map(function(h) { return h.name; });
+  var today = new Date().toISOString().slice(0,10);
+
+  var allVisible = vetVisits.filter(function(v) {
+    // Show if horse is active or "All horses"
+    if (v.horse !== 'All horses' && !activeHorseNames.includes(v.horse)) return false;
+    // When a specific horse is selected, show that horse's visits AND barn-wide "All horses" visits
+    // But if user explicitly picks one horse, only show that horse (not All horses)
+    if (horseFilter !== 'all' && v.horse !== horseFilter) return false;
+    if (catFilter !== 'all' && v.category !== catFilter) return false;
+    return true;
+  });
+
+  var upcoming = allVisible.filter(function(v) { return v.status === 'scheduled'; }).sort(function(a,b) { return a.date.localeCompare(b.date); });
+  var history  = allVisible.filter(function(v) { return v.status === 'completed'; }).sort(function(a,b) { return b.date.localeCompare(a.date); });
+
+  var count = document.getElementById('vet-count');
+  if (count) count.textContent = allVisible.length + ' visit' + (allVisible.length !== 1 ? 's' : '');
+
+  renderVetTable(upcoming, 'vet-upcoming-table', 'vet-upcoming-empty', true);
+  renderVetTable(history,  'vet-history-table',  'vet-history-empty',  false);
+}
+
+function renderVetTable(list, tbodyId, emptyId, isUpcoming) {
+  var tbody = document.getElementById(tbodyId);
+  var empty = document.getElementById(emptyId);
+  if (!tbody) return;
+  if (!list.length) { tbody.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
+  if(empty) empty.style.display = 'none';
+
+  tbody.innerHTML = list.map(function(v) {
+    var globalIdx = vetVisits.indexOf(v);
+    var d = new Date(v.date + 'T12:00:00');
+    var dateStr = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    var diff = Math.round((d - new Date().setHours(0,0,0,0)) / 86400000);
+    var dateStyle = '';
+    if (isUpcoming && diff < 0) dateStyle = 'color:var(--red);font-weight:500';
+    else if (isUpcoming && diff <= 3) dateStyle = 'color:var(--amber);font-weight:500';
+
+    var emgStyle = v.category === 'Emergency' ? 'background:var(--red-pale)' : '';
+
+    var markBtn = isUpcoming
+      ? '<button class="btn btn-sm" onclick="markVetComplete(' + globalIdx + ')" style="color:var(--green-badge);border-color:var(--green-badge);margin-right:2px" title="Mark complete">&#10003;</button>'
+      : '';
+
+    return '<tr style="' + emgStyle + '">' +
+      '<td style="' + dateStyle + '">' + dateStr + '</td>' +
+      '<td><strong>' + v.horse + '</strong></td>' +
+      '<td style="color:var(--text-muted);font-size:12px">' + (v.vet||'–') + '</td>' +
+      '<td>' + vetCategoryBadge(v.category) + '</td>' +
+      '<td>' + (v.desc||'–') + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + (v.notes||'') + '">' + (v.notes||'–') + '</td>' +
+      '<td style="text-align:right;white-space:nowrap">' + markBtn +
+        '<button class="btn btn-sm" onclick="editVetVisit(' + globalIdx + ')" style="margin-right:2px">&#9999;</button>' +
+        '<button class="btn btn-sm" onclick="deleteVetVisit(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button>' +
+      '</td></tr>';
+  }).join('');
+}
+
+function markVetComplete(idx) {
+  vetVisits[idx].status = 'completed';
+  renderVetVisits();
+  dbSaveVet(vetVisits[idx]);
+  toast('✅ Visit marked as completed!');
+}
+
+function saveVetVisit() {
+  var date = document.getElementById('vv-date').value;
+  var horse = document.getElementById('vv-horse').value;
+  if (!date || !horse) { toast('Please select a date and horse', '#c0392b'); return; }
+  var v = {
+    id: editingVetIdx >= 0 ? vetVisits[editingVetIdx].id : 'vv' + Date.now(),
+    date: date,
+    horse: horse,
+    vet: document.getElementById('vv-vet').value,
+    category: document.getElementById('vv-category').value,
+    status: document.getElementById('vv-status').value,
+    desc: document.getElementById('vv-desc').value.trim(),
+    notes: document.getElementById('vv-notes').value.trim()
+  };
+  if (editingVetIdx >= 0) {
+    vetVisits[editingVetIdx] = v;
+    toast('✅ Visit updated!');
+    editingVetIdx = -1;
+  } else {
+    vetVisits.push(v);
+    toast('🩺 Visit logged!');
+  }
+  renderVetVisits();
+  saveToStorage();
+  closeModal();
+  document.getElementById('modal-add-vet-visit').querySelector('.modal-header span').textContent = 'Log vet visit';
+  document.getElementById('vet-visit-save-btn').textContent = 'Log visit';
+}
+
+function editVetVisit(idx) {
+  var v = vetVisits[idx]; if (!v) return;
+  editingVetIdx = idx;
+  populateVetHorseSelects();
+  document.getElementById('vv-date').value = v.date;
+  document.getElementById('vv-horse').value = v.horse;
+  document.getElementById('vv-vet').value = v.vet || 'Dr. Nicole Jochec';
+  document.getElementById('vv-category').value = v.category || 'Routine';
+  document.getElementById('vv-status').value = v.status || 'completed';
+  document.getElementById('vv-desc').value = v.desc || '';
+  document.getElementById('vv-notes').value = v.notes || '';
+  document.getElementById('modal-add-vet-visit').querySelector('.modal-header span').textContent = 'Edit visit — ' + v.horse;
+  document.getElementById('vet-visit-save-btn').textContent = 'Save changes';
+  openModal('modal-add-vet-visit');
+}
+
+function deleteVetVisit(idx) {
+  var v = vetVisits[idx]; if (!v) return;
+  if (!confirm('Delete this vet visit for ' + v.horse + '?')) return;
+  vetVisits.splice(idx, 1);
+  renderVetVisits();
+  saveToStorage();
+  toast('Deleted', '#c0392b');
+}
+
+function switchVetTab(el, show) {
+  document.querySelectorAll('#vet-tabs .tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  ['vet-upcoming-tab','vet-history-tab','vet-vaccinations-tab','vet-coggins-tab'].forEach(function(id) {
+    var el2 = document.getElementById(id);
+    if (el2) el2.style.display = id === show ? 'block' : 'none';
+  });
+  if (show === 'vet-vaccinations-tab') renderVacc();
+}
+
+// ==========================================
+// FARRIER
+// ==========================================
+var farrierVisits = [
+  {id:'fv1', date:'2026-03-01', horse:'Stanley',   farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
+  {id:'fv2', date:'2026-03-01', horse:'Gigi',       farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
+  {id:'fv3', date:'2026-03-01', horse:'Valencio',   farrier:'Joshua Smith', service:'Trim only',            status:'completed', notes:''},
+  {id:'fv4', date:'2026-03-01', horse:'Diplo',      farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
+  {id:'fv5', date:'2026-03-01', horse:'Coco',       farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
+  {id:'fv6', date:'2026-03-01', horse:'Kingston',   farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
+  {id:'fv7', date:'2026-03-01', horse:'Rosie',      farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
+  {id:'fv8', date:'2026-03-01', horse:'Milton',     farrier:'Joshua Smith', service:'Trim only',            status:'completed', notes:''},
+  {id:'fv9', date:'2026-03-01', horse:'Mando',      farrier:'Joshua Smith', service:'Full reset (4 shoes)', status:'completed', notes:''},
+];
+
+var editingFarrierIdx = -1;
+var FARRIER_WEEKS = 5;
+
+function farrierDateStr(dateStr) {
+  if (!dateStr) return '–';
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function addWeeks(dateStr, weeks) {
+  var d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + weeks * 7);
+  return d.toISOString().slice(0,10);
+}
+
+function daysDiff(dateStr) {
+  var d = new Date(dateStr + 'T12:00:00');
+  var now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((d - now) / (1000 * 60 * 60 * 24));
+}
+
+function renderFarrier() {
+  renderFarrierReminders();
+  renderFarrierTable('scheduled');
+  renderFarrierTable('completed');
+}
+
+function renderFarrierReminders() {
+  var list = document.getElementById('farrier-reminders-list');
+  var card = document.getElementById('farrier-reminders-card');
+  if (!list) return;
+
+  // For each active horse, find last completed visit and compute next due
+  var activeHorseNames = horses.map(function(h) { return h.name; });
+  var reminders = [];
+
+  activeHorseNames.forEach(function(name) {
+    var completed = farrierVisits.filter(function(v) {
+      return v.horse === name && v.status === 'completed';
+    }).sort(function(a,b) { return b.date.localeCompare(a.date); });
+
+    var lastDate = completed.length ? completed[0].date : null;
+    var nextDue = lastDate ? addWeeks(lastDate, FARRIER_WEEKS) : null;
+    var diff = nextDue ? daysDiff(nextDue) : null;
+
+    // Show if overdue or due within 2 weeks
+    if (diff !== null && diff <= 14) {
+      reminders.push({ horse: name, lastDate: lastDate, nextDue: nextDue, diff: diff });
+    } else if (!lastDate) {
+      reminders.push({ horse: name, lastDate: null, nextDue: null, diff: null });
+    }
+  });
+
+  if (!reminders.length) {
+    if(card) card.style.display = 'none';
+    return;
+  }
+  if(card) card.style.display = 'block';
+
+  list.innerHTML = reminders.map(function(r) {
+    var statusHtml, rowStyle = '';
+    if (r.diff === null) {
+      statusHtml = '<span class="badge badge-gray">No visits on record</span>';
+    } else if (r.diff < 0) {
+      statusHtml = '<span class="badge badge-red">Overdue by ' + Math.abs(r.diff) + ' days</span>';
+      rowStyle = 'color:var(--red)';
+    } else if (r.diff === 0) {
+      statusHtml = '<span class="badge badge-red">Due today</span>';
+      rowStyle = 'color:var(--red)';
+    } else {
+      statusHtml = '<span class="badge badge-amber">Due in ' + r.diff + ' days (' + farrierDateStr(r.nextDue) + ')</span>';
+    }
+    return '<div class="entity-row">' +
+      '<div class="entity-info"><div class="entity-name" style="' + rowStyle + '">' + r.horse + '</div>' +
+      '<div class="entity-sub">Last visit: ' + (r.lastDate ? farrierDateStr(r.lastDate) : 'None recorded') + '</div></div>' +
+      statusHtml +
+      '<button class="btn btn-sm btn-primary" style="margin-left:8px" data-horse="' + r.horse.replace(/"/g,'') + '" onclick="quickScheduleFarrierBtn(this)">Schedule</button>' +
+      '</div>';
+  }).join('');
+}
+
+function quickScheduleFarrier(horseName) {
+  populateFarrierHorseSelect();
+  document.getElementById('fv-horse').value = horseName;
+  document.getElementById('fv-status').value = 'scheduled';
+  document.getElementById('fv-date').value = new Date().toISOString().slice(0,10);
+  openModal('modal-add-farrier-visit');
+}
+
+function quickScheduleFarrierBtn(btn) {
+  quickScheduleFarrier(btn.getAttribute('data-horse'));
+}
+
+function renderFarrierTable(status) {
+  var isScheduled = status === 'scheduled';
+  var tbodyId = isScheduled ? 'farrier-upcoming-table' : 'farrier-history-table';
+  var emptyId = isScheduled ? 'farrier-upcoming-empty' : 'farrier-history-empty';
+  var tbody = document.getElementById(tbodyId);
+  var empty = document.getElementById(emptyId);
+  if (!tbody) return;
+
+  var activeHorseNames = horses.map(function(h) { return h.name; });
+  var list = farrierVisits
+    .filter(function(v) { return v.status === status && activeHorseNames.includes(v.horse); })
+    .sort(function(a,b) { return isScheduled ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date); });
+
+  if (!list.length) { tbody.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
+  if(empty) empty.style.display = 'none';
+
+  tbody.innerHTML = list.map(function(v) {
+    var idx = farrierVisits.indexOf(v);
+    var diff = isScheduled ? daysDiff(v.date) : null;
+    var dateStyle = '';
+    if (diff !== null && diff < 0) dateStyle = 'color:var(--red);font-weight:500';
+    else if (diff !== null && diff <= 3) dateStyle = 'color:var(--amber);font-weight:500';
+
+    var actionBtn = isScheduled
+      ? '<button class="btn btn-sm" onclick="markFarrierComplete(' + idx + ')" style="color:var(--green-badge);border-color:var(--green-badge);margin-right:2px" title="Mark complete">&#10003;</button>'
+      : '';
+
+    return '<tr>' +
+      '<td style="' + dateStyle + '">' + farrierDateStr(v.date) + '</td>' +
+      '<td><strong>' + v.horse + '</strong></td>' +
+      '<td>' + (v.farrier||'–') + '</td>' +
+      '<td><span class="badge badge-gray" style="font-size:10px">' + (v.service||'–') + '</span></td>' +
+      '<td style="font-size:12px;color:var(--text-muted)">' + (v.notes||'–') + '</td>' +
+      '<td style="text-align:right;white-space:nowrap">' + actionBtn +
+        '<button class="btn btn-sm" onclick="editFarrierVisit(' + idx + ')" style="margin-right:2px">&#9999;</button>' +
+        '<button class="btn btn-sm" onclick="deleteFarrierVisit(' + idx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button>' +
+      '</td></tr>';
+  }).join('');
+}
+
+function markFarrierComplete(idx) {
+  farrierVisits[idx].status = 'completed';
+  renderFarrier();
+  dbSaveFarrier(farrierVisits[idx]);
+  toast('✅ Visit marked as completed!');
+}
+
+function saveFarrierVisit() {
+  var date = document.getElementById('fv-date').value;
+  var horse = document.getElementById('fv-horse').value;
+  if (!date || !horse) { toast('Please select a date and horse','#c0392b'); return; }
+  var v = {
+    id: editingFarrierIdx >= 0 ? farrierVisits[editingFarrierIdx].id : 'fv'+Date.now(),
+    date: date,
+    horse: horse,
+    farrier: document.getElementById('fv-farrier').value,
+    service: document.getElementById('fv-service').value,
+    status: document.getElementById('fv-status').value,
+    notes: document.getElementById('fv-notes').value.trim()
+  };
+  if (editingFarrierIdx >= 0) {
+    farrierVisits[editingFarrierIdx] = v;
+    toast('✅ Visit updated!');
+    editingFarrierIdx = -1;
+  } else {
+    farrierVisits.push(v);
+    toast('🔨 Visit logged!');
+  }
+  renderFarrier();
+  saveToStorage();
+  closeModal();
+  document.getElementById('modal-add-farrier-visit').querySelector('.modal-header span').textContent = 'Log farrier visit';
+  document.getElementById('farrier-visit-save-btn').textContent = 'Log visit';
+  document.getElementById('fv-notes').value = '';
+  document.getElementById('fv-horse').value = '';
+}
+
+function editFarrierVisit(idx) {
+  var v = farrierVisits[idx]; if (!v) return;
+  editingFarrierIdx = idx;
+  document.getElementById('fv-date').value = v.date;
+  document.getElementById('fv-horse').value = v.horse;
+  document.getElementById('fv-farrier').value = v.farrier || 'Joshua Smith';
+  document.getElementById('fv-service').value = v.service || 'Full reset (4 shoes)';
+  document.getElementById('fv-status').value = v.status || 'scheduled';
+  document.getElementById('fv-notes').value = v.notes || '';
+  document.getElementById('modal-add-farrier-visit').querySelector('.modal-header span').textContent = 'Edit visit — ' + v.horse;
+  document.getElementById('farrier-visit-save-btn').textContent = 'Save changes';
+  openModal('modal-add-farrier-visit');
+}
+
+function deleteFarrierVisit(idx) {
+  var v = farrierVisits[idx]; if (!v) return;
+  if (!confirm('Delete this farrier visit for ' + v.horse + '?')) return;
+  farrierVisits.splice(idx, 1);
+  renderFarrier();
+  saveToStorage();
+  toast('Deleted','#c0392b');
+}
+
+function switchFarrierTab(el, show) {
+  document.querySelectorAll('#farrier-tabs .tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('farrier-schedule-tab').style.display = show === 'farrier-schedule-tab' ? 'block' : 'none';
+  document.getElementById('farrier-history-tab').style.display = show === 'farrier-history-tab' ? 'block' : 'none';
+}
+
+function populateFarrierHorseSelect() {
+  var sel = document.getElementById('fv-horse');
+  if (!sel) return;
+  while (sel.options.length > 1) sel.remove(1);
+  horses.forEach(function(h) {
+    var o = document.createElement('option'); o.value = h.name; o.textContent = h.name; sel.appendChild(o);
+  });
+}
+
+// ==========================================
+// SHOWS
+// ==========================================
+var showsData = [];
+var currentShowId = null;
+var editingShowRiderIdx = -1;
+var editingShowCatIdx = -1;
+var editingShowExpIdx = -1;
+
+// Shared rider list with IEA (reuse ieaRiderList populated later)
+function populateShowSelect() {
+  var sel = document.getElementById('show-select');
+  if (!sel) return;
+  var cur = sel.value;
+  while (sel.options.length > 1) sel.remove(1);
+  showsData.forEach(function(s) {
+    var o = document.createElement('option');
+    o.value = s.id;
+    o.textContent = s.name + (s.date ? ' (' + new Date(s.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + ')' : '');
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+function populateShowRiderSelect() {
+  var sel = document.getElementById('show-rider-select');
+  if (!sel) return;
+  while (sel.options.length > 2) sel.remove(2);
+  var addNew = sel.options[1]; sel.remove(1);
+  // Sort and populate from persistent showRiderList
+  showRiderList.slice().sort().forEach(function(name) {
+    var o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o);
+  });
+  sel.appendChild(addNew);
+}
+
+function populateShowHorseSelect(show) {
+  var sel = document.getElementById('show-rider-horse');
+  if (!sel) return;
+  while (sel.options.length > 1) sel.remove(1);
+  horses.forEach(function(h) {
+    var o = document.createElement('option'); o.value = h.name; o.textContent = h.name; sel.appendChild(o);
+  });
+}
+
+function populateShowClassSelect(show) {
+  var sel = document.getElementById('show-rider-class');
+  if (!sel) return;
+  while (sel.options.length > 1) sel.remove(1);
+  if (show && show.categories) {
+    show.categories.forEach(function(c) {
+      var o = document.createElement('option'); o.value = c.name; o.textContent = c.name + (c.division ? ' — ' + c.division : ''); sel.appendChild(o);
+    });
+  }
+  var custom = document.createElement('option'); custom.value = '__custom__'; custom.textContent = '+ Type custom class…'; sel.appendChild(custom);
+}
+
+function handleShowRiderSelect(val) {
+  document.getElementById('show-rider-new').style.display = val === '__new__' ? 'block' : 'none';
+}
+
+function handleShowClassSelect(val) {
+  var customInput = document.getElementById('show-rider-class-custom');
+  if (!customInput) return;
+  if (val === '__custom__') {
+    customInput.style.display = 'block';
+    customInput.focus();
+  } else {
+    customInput.style.display = 'none';
+    customInput.value = '';
+  }
+}
+
+function loadShow(id) {
+  currentShowId = id;
+  var content = document.getElementById('show-content');
+  var noShow = document.getElementById('show-no-show');
+  var locEl = document.getElementById('show-location');
+  var dateEl = document.getElementById('show-date');
+  var notesEl = document.getElementById('show-notes-inline');
+  if (!id) {
+    if(content) content.style.display = 'none';
+    if(noShow) noShow.style.display = 'block';
+    [locEl,dateEl,notesEl].forEach(function(el){ if(el){el.value='';el.disabled=true;} });
+    return;
+  }
+  var show = showsData.find(function(s){ return s.id===id; });
+  if (!show) return;
+  if(content) content.style.display = 'block';
+  if(noShow) noShow.style.display = 'none';
+  if(locEl){locEl.value=show.location||'';locEl.disabled=false;}
+  if(dateEl){dateEl.value=show.date||'';dateEl.disabled=false;}
+  if(notesEl){notesEl.value=show.notes||'';notesEl.disabled=false;}
+  // Reset to first tab
+  document.querySelectorAll('#show-tabs .tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelector('#show-tabs .tab').classList.add('active');
+  ['show-participants','show-categories','show-expenses'].forEach(function(id,i){ document.getElementById(id).style.display=i===0?'block':'none'; });
+  renderShowRiders(show);
+  renderShowCategories(show);
+  renderShowExpenses(show);
+}
+
+function updateCurrentShow2(field, value) {
+  var show = showsData.find(function(s){ return s.id===currentShowId; });
+  if (!show) return;
+  show[field] = value;
+  if (field==='date'||field==='name') { populateShowSelect(); document.getElementById('show-select').value=currentShowId; }
+  dbSaveShow(show);
+}
+
+function switchShowTab(el, show) {
+  document.querySelectorAll('#show-tabs .tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  ['show-participants','show-categories','show-expenses'].forEach(function(id){ document.getElementById(id).style.display=id===show?'block':'none'; });
+}
+
+// ── SHOWS CRUD ──
+function saveShow() {
+  var name = document.getElementById('show-name-input').value.trim();
+  if (!name) { toast('Please enter a show name','#c0392b'); return; }
+  var id = 'sh'+Date.now();
+  var show = { id:id, name:name, date:document.getElementById('show-date-input').value, location:document.getElementById('show-loc-input').value.trim(), notes:document.getElementById('show-notes-input').value.trim(), riders:[], categories:[], expenses:[] };
+  showsData.unshift(show);
+  populateShowSelect();
+  document.getElementById('show-select').value = id;
+  loadShow(id);
+  closeModal();
+  dbSaveShow(show);
+  toast('🎪 '+name+' added!');
+  ['show-name-input','show-date-input','show-loc-input','show-notes-input'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+}
+
+function deleteShow() {
+  if (!currentShowId) { toast('Select a show first','#c0392b'); return; }
+  var show = showsData.find(function(s){ return s.id===currentShowId; });
+  if (!show) return;
+  if (!confirm('Delete "'+show.name+'"? This cannot be undone.')) return;
+  var oldShowId = currentShowId;
+  showsData = showsData.filter(function(s){ return s.id!==currentShowId; });
+  currentShowId = null;
+  populateShowSelect();
+  loadShow(null);
+  dbDeleteShow(oldShowId);
+  toast('Show deleted','#c0392b');
+}
+
+// ── PARTICIPANTS ──
+function renderShowRiders(show) {
+  var tbody = document.getElementById('show-riders-table');
+  var empty = document.getElementById('show-riders-empty');
+  if (!tbody) return;
+  if (!show.riders||!show.riders.length) { tbody.innerHTML=''; if(empty) empty.style.display='block'; return; }
+  if(empty) empty.style.display='none';
+  tbody.innerHTML = show.riders.map(function(r,i) {
+    var res = r.result||'–';
+    var resStyle = (res.includes('1st')||res.toLowerCase().includes('champion'))?'color:#b8860b;font-weight:600':'';
+    return '<tr><td><strong>'+r.rider+'</strong></td><td>'+(r.horse||'–')+'</td><td>'+(r.class||'–')+'</td><td>'+(r.division||'–')+'</td><td style="'+resStyle+'">'+res+'</td><td style="font-size:12px;color:var(--text-muted)">'+(r.notes||'–')+'</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-sm" onclick="editShowRider('+i+')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteShowRider('+i+')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td></tr>';
+  }).join('');
+}
+
+function saveShowRider() {
+  var show = showsData.find(function(s){ return s.id===currentShowId; });
+  if (!show) { toast('Please select a show first','#c0392b'); return; }
+  var sel = document.getElementById('show-rider-select').value;
+  var riderName = sel==='__new__' ? document.getElementById('show-rider-new').value.trim() : sel;
+  if (!riderName) { toast('Please select or enter a rider name','#c0392b'); return; }
+  // Persist new name to showRiderList
+  if (sel === '__new__' && riderName && !showRiderList.includes(riderName)) {
+    showRiderList.push(riderName);
+    showRiderList.sort();
+    populateShowRiderSelect();
+  }
+  var classVal = document.getElementById('show-rider-class').value;
+  if (classVal === '__custom__') {
+    classVal = document.getElementById('show-rider-class-custom').value.trim();
+  }
+  var entry = { rider:riderName, horse:document.getElementById('show-rider-horse').value, class:classVal, division:document.getElementById('show-rider-division').value.trim(), result:document.getElementById('show-rider-result').value.trim(), notes:document.getElementById('show-rider-notes').value.trim() };
+  if (editingShowRiderIdx>=0) { show.riders[editingShowRiderIdx]=entry; toast('✅ Rider updated!'); editingShowRiderIdx=-1; }
+  else { show.riders.push(entry); toast('🐴 '+riderName+' added!'); }
+  renderShowRiders(show); closeModal(); dbSaveShow(show); dbSaveRiderList('shows', showRiderList);
+  document.getElementById('modal-add-show-rider').querySelector('.modal-header span').textContent='Add participant';
+  document.getElementById('show-rider-save-btn').textContent='Add rider';
+  ['show-rider-division','show-rider-result','show-rider-notes','show-rider-new'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('show-rider-select').value=''; document.getElementById('show-rider-new').style.display='none';
+  document.getElementById('show-rider-class-custom').style.display='none'; document.getElementById('show-rider-class-custom').value='';
+}
+
+function editShowRider(i) {
+  var show = showsData.find(function(s){ return s.id===currentShowId; });
+  if (!show||!show.riders[i]) return;
+  var r = show.riders[i]; editingShowRiderIdx=i;
+  populateShowRiderSelect(); populateShowHorseSelect(show); populateShowClassSelect(show);
+  var sel=document.getElementById('show-rider-select');
+  var found=Array.from(sel.options).some(function(o){ return o.value===r.rider; });
+  if(found){sel.value=r.rider;document.getElementById('show-rider-new').style.display='none';}
+  else{sel.value='__new__';document.getElementById('show-rider-new').style.display='block';document.getElementById('show-rider-new').value=r.rider;}
+  document.getElementById('show-rider-horse').value=r.horse||'';
+  var classOptions = Array.from(document.getElementById('show-rider-class').options).map(function(o){return o.value;});
+  if (r.class && !classOptions.includes(r.class) && r.class !== '__custom__') {
+    document.getElementById('show-rider-class').value = '__custom__';
+    document.getElementById('show-rider-class-custom').style.display = 'block';
+    document.getElementById('show-rider-class-custom').value = r.class;
+  } else {
+    document.getElementById('show-rider-class').value = r.class || '';
+    document.getElementById('show-rider-class-custom').style.display = 'none';
+    document.getElementById('show-rider-class-custom').value = '';
+  }
+  document.getElementById('show-rider-division').value=r.division||'';
+  document.getElementById('show-rider-result').value=r.result||'';
+  document.getElementById('show-rider-notes').value=r.notes||'';
+  document.getElementById('modal-add-show-rider').querySelector('.modal-header span').textContent='Edit — '+r.rider;
+  document.getElementById('show-rider-save-btn').textContent='Save changes';
+  openModal('modal-add-show-rider');
+}
+
+function deleteShowRider(i) {
+  var show=showsData.find(function(s){return s.id===currentShowId;});
+  if(!show) return;
+  if(!confirm('Remove this rider?')) return;
+  show.riders.splice(i,1); renderShowRiders(show); dbSaveShow(show); toast('Removed','#c0392b');
+}
+
+// ── CATEGORIES ──
+function renderShowCategories(show) {
+  var tbody=document.getElementById('show-categories-table');
+  var empty=document.getElementById('show-categories-empty');
+  if(!tbody) return;
+  if(!show.categories||!show.categories.length){tbody.innerHTML='';if(empty)empty.style.display='block';return;}
+  if(empty) empty.style.display='none';
+  tbody.innerHTML=show.categories.map(function(c,i){
+    return '<tr><td><strong>'+c.name+'</strong></td><td>'+(c.division||'–')+'</td><td style="font-size:12px;color:var(--text-muted)">'+(c.notes||'–')+'</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-sm" onclick="editShowCat('+i+')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteShowCat('+i+')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td></tr>';
+  }).join('');
+}
+
+function saveShowCategory() {
+  var show=showsData.find(function(s){return s.id===currentShowId;});
+  if(!show){toast('Please select a show first','#c0392b');return;}
+  var name=document.getElementById('show-cat-name').value.trim();
+  if(!name){toast('Please enter a class name','#c0392b');return;}
+  var entry={name:name,division:document.getElementById('show-cat-division').value.trim(),notes:document.getElementById('show-cat-notes').value.trim()};
+  if(editingShowCatIdx>=0){show.categories[editingShowCatIdx]=entry;toast('✅ Class updated!');editingShowCatIdx=-1;}
+  else{show.categories.push(entry);toast('📋 Class added!');}
+  renderShowCategories(show); closeModal(); dbSaveShow(show);
+  document.getElementById('modal-add-show-category').querySelector('.modal-header span').textContent='Add class / category';
+  document.getElementById('show-cat-save-btn').textContent='Add class';
+  ['show-cat-name','show-cat-division','show-cat-notes'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+}
+
+function editShowCat(i) {
+  var show=showsData.find(function(s){return s.id===currentShowId;});
+  if(!show||!show.categories[i]) return;
+  var c=show.categories[i]; editingShowCatIdx=i;
+  document.getElementById('show-cat-name').value=c.name||'';
+  document.getElementById('show-cat-division').value=c.division||'';
+  document.getElementById('show-cat-notes').value=c.notes||'';
+  document.getElementById('modal-add-show-category').querySelector('.modal-header span').textContent='Edit class — '+c.name;
+  document.getElementById('show-cat-save-btn').textContent='Save changes';
+  openModal('modal-add-show-category');
+}
+
+function deleteShowCat(i) {
+  var show=showsData.find(function(s){return s.id===currentShowId;});
+  if(!show) return;
+  if(!confirm('Remove this class?')) return;
+  show.categories.splice(i,1); renderShowCategories(show); dbSaveShow(show); toast('Removed','#c0392b');
+}
+
+// ── EXPENSES ──
+function renderShowExpenses(show) {
+  var tbody=document.getElementById('show-expenses-table');
+  var empty=document.getElementById('show-expenses-empty');
+  var totalEl=document.getElementById('show-expenses-total');
+  if(!tbody) return;
+  if(!show.expenses||!show.expenses.length){tbody.innerHTML='';if(empty)empty.style.display='block';if(totalEl)totalEl.style.display='none';return;}
+  if(empty) empty.style.display='none';
+  tbody.innerHTML=show.expenses.map(function(e,i){
+    var amt=parseFloat(e.amount)||0;
+    return '<tr><td><span class="badge badge-gray" style="font-size:10px">'+e.category+'</span></td><td>'+(e.description||'–')+'</td><td style="font-variant-numeric:tabular-nums;font-weight:500">$'+amt.toFixed(2)+'</td><td style="color:var(--text-muted)">'+(e.paidby||'–')+'</td><td style="font-size:12px;color:var(--text-muted)">'+(e.notes||'–')+'</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-sm" onclick="editShowExp('+i+')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteShowExp('+i+')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td></tr>';
+  }).join('');
+  var total=show.expenses.reduce(function(s,e){return s+(parseFloat(e.amount)||0);},0);
+  if(totalEl){totalEl.style.display='block';totalEl.innerHTML='<span style="color:var(--text-muted)">Total expenses:</span> <strong style="font-size:18px">$'+total.toFixed(2)+'</strong>';}
+}
+
+function saveShowExpense() {
+  var show=showsData.find(function(s){return s.id===currentShowId;});
+  if(!show){toast('Please select a show first','#c0392b');return;}
+  var amt=document.getElementById('show-exp-amount').value;
+  if(!amt){toast('Please enter an amount','#c0392b');return;}
+  var entry={category:document.getElementById('show-exp-category').value,description:document.getElementById('show-exp-desc').value.trim(),amount:parseFloat(amt).toFixed(2),paidby:document.getElementById('show-exp-paidby').value.trim(),notes:document.getElementById('show-exp-notes').value.trim()};
+  if(editingShowExpIdx>=0){show.expenses[editingShowExpIdx]=entry;toast('✅ Expense updated!');editingShowExpIdx=-1;}
+  else{show.expenses.push(entry);toast('💰 Expense logged!');}
+  renderShowExpenses(show); closeModal(); dbSaveShow(show);
+  document.getElementById('modal-add-show-expense').querySelector('.modal-header span').textContent='Add expense';
+  document.getElementById('show-exp-save-btn').textContent='Add expense';
+  ['show-exp-desc','show-exp-amount','show-exp-paidby','show-exp-notes'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+}
+
+function editShowExp(i) {
+  var show=showsData.find(function(s){return s.id===currentShowId;});
+  if(!show||!show.expenses[i]) return;
+  var e=show.expenses[i]; editingShowExpIdx=i;
+  document.getElementById('show-exp-category').value=e.category||'Travel';
+  document.getElementById('show-exp-desc').value=e.description||'';
+  document.getElementById('show-exp-amount').value=e.amount||'';
+  document.getElementById('show-exp-paidby').value=e.paidby||'';
+  document.getElementById('show-exp-notes').value=e.notes||'';
+  document.getElementById('modal-add-show-expense').querySelector('.modal-header span').textContent='Edit expense';
+  document.getElementById('show-exp-save-btn').textContent='Save changes';
+  openModal('modal-add-show-expense');
+}
+
+function deleteShowExp(i) {
+  var show=showsData.find(function(s){return s.id===currentShowId;});
+  if(!show) return;
+  if(!confirm('Remove this expense?')) return;
+  show.expenses.splice(i,1); renderShowExpenses(show); dbSaveShow(show); toast('Removed','#c0392b');
+}
+
+// ==========================================
+// IEA SHOWS
+// ==========================================
+var ieaShows = [
+  {id: 's1', name: 'Region 5 IEA Show — Spring 2026', date: '2026-03-15', location: 'Ox Ridge Hunt Club, Darien CT', notes: '', riders: [
+    {rider:'Emma Brown', division:'Novice', horse:'Bay Gelding', class:'Over Fences', result:'2nd', notes:''},
+    {rider:'Hannah Houck', division:'Beginner', horse:'Grey Mare', class:'Flat', result:'1st', notes:'Great first show!'},
+  ]},
+  {id: 's2', name: 'Region 5 IEA Show — Fall 2025', date: '2025-10-18', location: 'Princeton Equestrian Center, NJ', notes: '', riders: [
+    {rider:'Emma Brown', division:'Novice', horse:'Chestnut', class:'Over Fences', result:'4th', notes:''},
+  ]},
+];
+
+// Master list of show participants (persists across shows)
+var showRiderList = [
+  'Emma Brown','Hannah Houck','Henny Lipschutz','Caryn Biehl',
+  'Courtney McCaffrey','Kate Tsirelman','Carolline Schaffer','Mary Trezza',
+  'Annemarie Brennan','Sheila Sadighi','Nancy McCaffrey','Erin Polos',
+  'Kristen Caporaso','Sherri Pyka','Bridget Lang','Alison Roh',
+  'Gala Schireson',
+];
+
+// Master list of IEA-eligible riders (persists across shows)
+var ieaRiderList = [
+  'Emma Brown','Hannah Houck','Henny Lipschutz','Caryn Biehl',
+  'Courtney McCaffrey','Kate Tsirelman','Carolline Schaffer','Mary Trezza',
+  'Annemarie Brennan','Sheila Sadighi','Nancy McCaffrey','Alison Roh',
+];
+
+var currentIeaShowId = null;
+var editingIeaRiderIdx = -1;
+
+function populateIeaShowSelect() {
+  var sel = document.getElementById('iea-show-select');
+  if (!sel) return;
+  var cur = sel.value;
+  while (sel.options.length > 1) sel.remove(1);
+  ieaShows.forEach(function(s) {
+    var o = document.createElement('option');
+    o.value = s.id;
+    o.textContent = s.name + (s.date ? ' (' + new Date(s.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + ')' : '');
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+function populateIeaRiderSelect() {
+  var sel = document.getElementById('iea-rider-select');
+  if (!sel) return;
+  while (sel.options.length > 2) sel.remove(2); // keep blank + "add new"
+  // move "add new" to end after populating
+  var addNewOpt = sel.options[1];
+  sel.remove(1);
+  ieaRiderList.forEach(function(name) {
+    var o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o);
+  });
+  sel.appendChild(addNewOpt);
+}
+
+function handleIeaRiderSelect(val) {
+  var newInput = document.getElementById('iea-rider-new');
+  if (val === '__new__') {
+    newInput.style.display = 'block';
+    newInput.focus();
+  } else {
+    newInput.style.display = 'none';
+  }
+}
+
+function loadIeaShow(id) {
+  currentIeaShowId = id;
+  var card = document.getElementById('iea-participants-card');
+  var noShow = document.getElementById('iea-no-show');
+  var locEl = document.getElementById('iea-show-location');
+  var dateEl = document.getElementById('iea-show-date');
+  var notesEl = document.getElementById('iea-show-notes-inline');
+  if (!id) {
+    if(card) card.style.display = 'none';
+    if(noShow) noShow.style.display = 'block';
+    if(locEl) { locEl.value = ''; locEl.disabled = true; }
+    if(dateEl) { dateEl.value = ''; dateEl.disabled = true; }
+    if(notesEl) { notesEl.value = ''; notesEl.disabled = true; }
+    return;
+  }
+  var show = ieaShows.find(function(s) { return s.id === id; });
+  if (!show) return;
+  if(card) card.style.display = 'block';
+  if(noShow) noShow.style.display = 'none';
+  if(locEl) { locEl.value = show.location || ''; locEl.disabled = false; }
+  if(dateEl) { dateEl.value = show.date || ''; dateEl.disabled = false; }
+  if(notesEl) { notesEl.value = show.notes || ''; notesEl.disabled = false; }
+  renderIeaRiders(show);
+}
+
+function updateCurrentShow(field, value) {
+  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
+  if (!show) return;
+  show[field] = value;
+  // If date or name changed, refresh the dropdown label
+  if (field === 'date' || field === 'name') {
+    populateIeaShowSelect();
+    document.getElementById('iea-show-select').value = currentIeaShowId;
+  }
+  saveToStorage();
+}
+
+function renderIeaRiders(show) {
+  var tbody = document.getElementById('iea-riders-table');
+  var empty = document.getElementById('iea-riders-empty');
+  if (!tbody) return;
+  if (!show.riders || !show.riders.length) {
+    tbody.innerHTML = '';
+    if(empty) empty.style.display = 'block';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+  tbody.innerHTML = show.riders.map(function(r, i) {
+    var resultStyle = '';
+    if (r.result && (r.result.includes('1st') || r.result.toLowerCase().includes('champion'))) resultStyle = 'color:#b8860b;font-weight:600';
+    else if (r.result && r.result.includes('2nd')) resultStyle = 'color:var(--text-muted);font-weight:500';
+    return '<tr>' +
+      '<td><strong>' + r.rider + '</strong></td>' +
+      '<td><span class="badge badge-blue" style="font-size:10px">' + (r.division||'–') + '</span></td>' +
+      '<td>' + (r.horse||'–') + '</td>' +
+      '<td>' + (r.class||'–') + '</td>' +
+      '<td style="' + resultStyle + '">' + (r.result||'–') + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted)">' + (r.notes||'–') + '</td>' +
+      '<td style="text-align:right;white-space:nowrap">' +
+        '<button class="btn btn-sm" onclick="editIeaRider(' + i + ')" style="margin-right:2px">&#9999;</button>' +
+        '<button class="btn btn-sm" onclick="deleteIeaRider(' + i + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button>' +
+      '</td></tr>';
+  }).join('');
+}
+
+function saveIeaShow() {
+  var name = document.getElementById('iea-show-name').value.trim();
+  if (!name) { toast('Please enter a show name', '#c0392b'); return; }
+  var id = 's' + Date.now();
+  var show = {
+    id: id,
+    name: name,
+    date: document.getElementById('iea-show-date-input').value,
+    location: document.getElementById('iea-show-loc').value.trim(),
+    notes: document.getElementById('iea-show-notes').value.trim(),
+    riders: []
+  };
+  ieaShows.unshift(show); // newest first
+  populateIeaShowSelect();
+  document.getElementById('iea-show-select').value = id;
+  loadIeaShow(id);
+  saveToStorage();
+  closeModal();
+  toast('🏆 ' + name + ' added!');
+  ['iea-show-name','iea-show-loc','iea-show-notes','iea-show-date-input'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value=''; });
+}
+
+function deleteIeaShow() {
+  if (!currentIeaShowId) { toast('Select a show first', '#c0392b'); return; }
+  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
+  if (!show) return;
+  if (!confirm('Delete "' + show.name + '"? This cannot be undone.')) return;
+  ieaShows = ieaShows.filter(function(s) { return s.id !== currentIeaShowId; });
+  currentIeaShowId = null;
+  populateIeaShowSelect();
+  loadIeaShow(null);
+  saveToStorage();
+  toast('Show deleted', '#c0392b');
+}
+
+function saveIeaRider() {
+  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
+  if (!show) { toast('Please select a show first', '#c0392b'); return; }
+  var sel = document.getElementById('iea-rider-select').value;
+  var riderName = sel === '__new__' ? document.getElementById('iea-rider-new').value.trim() : sel;
+  if (!riderName) { toast('Please select or enter a rider name', '#c0392b'); return; }
+  // If new name, add to master list
+  if (sel === '__new__' && riderName && !ieaRiderList.includes(riderName)) {
+    ieaRiderList.push(riderName);
+    ieaRiderList.sort();
+    populateIeaRiderSelect();
+  }
+  var entry = {
+    rider: riderName,
+    division: document.getElementById('iea-rider-division').value,
+    horse: document.getElementById('iea-rider-horse').value.trim(),
+    class: document.getElementById('iea-rider-class').value.trim(),
+    result: document.getElementById('iea-rider-result').value.trim(),
+    notes: document.getElementById('iea-rider-notes').value.trim()
+  };
+  if (editingIeaRiderIdx >= 0) {
+    show.riders[editingIeaRiderIdx] = entry;
+    toast('✅ Rider updated!');
+    editingIeaRiderIdx = -1;
+  } else {
+    show.riders.push(entry);
+    toast('🏇 ' + riderName + ' added to show!');
+  }
+  renderIeaRiders(show);
+  saveToStorage();
+  closeModal();
+  document.getElementById('modal-add-iea-rider').querySelector('.modal-header span').textContent = 'Add participant';
+  document.getElementById('iea-rider-save-btn').textContent = 'Add rider';
+  ['iea-rider-horse','iea-rider-class','iea-rider-result','iea-rider-notes','iea-rider-new'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('iea-rider-select').value = '';
+  document.getElementById('iea-rider-new').style.display = 'none';
+}
+
+function editIeaRider(i) {
+  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
+  if (!show || !show.riders[i]) return;
+  var r = show.riders[i];
+  editingIeaRiderIdx = i;
+  populateIeaRiderSelect();
+  var sel = document.getElementById('iea-rider-select');
+  // Check if rider is in list
+  var found = Array.from(sel.options).some(function(o) { return o.value === r.rider; });
+  if (found) { sel.value = r.rider; document.getElementById('iea-rider-new').style.display = 'none'; }
+  else { sel.value = '__new__'; document.getElementById('iea-rider-new').style.display = 'block'; document.getElementById('iea-rider-new').value = r.rider; }
+  document.getElementById('iea-rider-division').value = r.division || 'Novice';
+  document.getElementById('iea-rider-horse').value = r.horse || '';
+  document.getElementById('iea-rider-class').value = r.class || '';
+  document.getElementById('iea-rider-result').value = r.result || '';
+  document.getElementById('iea-rider-notes').value = r.notes || '';
+  document.getElementById('modal-add-iea-rider').querySelector('.modal-header span').textContent = 'Edit — ' + r.rider;
+  document.getElementById('iea-rider-save-btn').textContent = 'Save changes';
+  openModal('modal-add-iea-rider');
+}
+
+function deleteIeaRider(i) {
+  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
+  if (!show) return;
+  var name = show.riders[i] ? show.riders[i].rider : 'this rider';
+  if (!confirm('Remove ' + name + ' from this show?')) return;
+  show.riders.splice(i, 1);
+  renderIeaRiders(show);
+  saveToStorage();
+  toast('Removed', '#c0392b');
+}
+
+// ==========================================
+// LOCATION AUTOCOMPLETE (OpenStreetMap Nominatim — free, no API key)
+// ==========================================
+var locationSearchTimer = null;
+
+// Store suggestions data to avoid quoting issues
+var locationSuggestionsData = {};
+
+function locationSearch(input, suggestionsId) {
+  var q = input.value.trim();
+  var box = document.getElementById(suggestionsId);
+  if (!box) return;
+  if (q.length < 3) { box.style.display = 'none'; return; }
+  clearTimeout(locationSearchTimer);
+  locationSearchTimer = setTimeout(function() {
+    fetch('https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6&q=' + encodeURIComponent(q), {
+      headers: { 'Accept-Language': 'en', 'User-Agent': 'HeronStablesApp/1.0' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(results) {
+      if (!results.length) { box.style.display = 'none'; return; }
+      locationSuggestionsData[suggestionsId] = results.map(function(r) { return r.display_name; });
+      box.innerHTML = '';
+      results.forEach(function(r, i) {
+        var parts = r.display_name.split(',');
+        var main = parts.slice(0,2).join(',').trim();
+        var addr = parts.slice(2).join(',').trim();
+        var el = document.createElement('div');
+        el.className = 'location-suggestion';
+        el.innerHTML = '<strong>' + main + '</strong>' + (addr ? '<span>' + addr + '</span>' : '');
+        (function(idx, sid) {
+          el.addEventListener('mousedown', function() { pickLocationByIndex(sid, idx); });
+        })(i, suggestionsId);
+        box.appendChild(el);
+      });
+      box.style.display = 'block';
+    })
+    .catch(function() { box.style.display = 'none'; });
+  }, 400);
+}
+
+
+function pickLocationByIndex(suggestionsId, idx) {
+  var value = locationSuggestionsData[suggestionsId] && locationSuggestionsData[suggestionsId][idx];
+  if (!value) return;
+  var box = document.getElementById(suggestionsId);
+  var wrap = box ? box.parentElement : null;
+  var input = wrap ? wrap.querySelector('input') : null;
+  if (input) {
+    input.value = value;
+    var event = new Event('input', {bubbles:true});
+    input.dispatchEvent(event);
+  }
+  if (box) box.style.display = 'none';
+}
+
+function pickLocation(suggestionsId, value) {
+  pickLocationByIndex(suggestionsId, value);
+}
+
+function hideLocationSuggestions(id, delay) {
+  setTimeout(function() {
+    var box = document.getElementById(id);
+    if (box) box.style.display = 'none';
+  }, delay || 200);
+}
+
+// ==========================================
+// PASSWORD GATE (Operations + Documents)
+// ==========================================
+var appUnlocked = false;
+var pendingPwdPage = null;
+var pendingPwdEl = null;
+
+function checkOpsPassword(el, page) {
+  if (appUnlocked) { showPage(page, el); return; }
+  pendingPwdPage = page; pendingPwdEl = el;
+  openPwdModal();
+}
+
+function checkDocsPassword(el) {
+  if (appUnlocked) { showPage('waivers', el); return; }
+  pendingPwdPage = 'waivers'; pendingPwdEl = el;
+  openPwdModal();
+}
+
+function openPwdModal() {
+  document.getElementById('pwd-overlay').style.display = 'flex';
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('pwd-error').style.display = 'none';
+  setTimeout(function() { document.getElementById('pwd-input').focus(); }, 100);
+}
+
+function closePwdModal() {
+  document.getElementById('pwd-overlay').style.display = 'none';
+  pendingPwdPage = null; pendingPwdEl = null;
+}
+
+function submitPassword() {
+  var pwd = document.getElementById('pwd-input').value;
+  if (pwd === 'Kingston') {
+    appUnlocked = true;
+    document.getElementById('pwd-overlay').style.display = 'none';
+    if (pendingPwdPage) showPage(pendingPwdPage, pendingPwdEl);
+    toast('✅ Unlocked');
+    pendingPwdPage = null; pendingPwdEl = null;
+  } else {
+    document.getElementById('pwd-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
 }
 
 // ==========================================
 // INIT
 // ==========================================
 window.addEventListener('load', function() {
-  var hadSavedData = loadFromStorage();
+  // Set date defaults
   var today = new Date().toISOString().slice(0,10);
-  ['l-date','s-date','v-date'].forEach(function(id) { var el = document.getElementById(id); if (el && el.type === 'date') el.value = today; });
-  populateSelects();
-  renderHorseProfiles();
-  renderClients();
-  renderSchedule();
-  renderBoarders();
-  renderLessons();
-  renderArchive();
-  if (hadSavedData) toast('✅ Your data has been restored from last session');
+  ['l-date','s-date','v-date'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && el.type === 'date') el.value = today;
+  });
+
+  // Show loading state
+  showLoadingToast('Connecting to database…');
+
+  // Try Supabase first, fall back to localStorage
+  dbLoadAll().then(function(loaded) {
+    if (!loaded) {
+      // Fallback to localStorage
+      var hadLocal = loadFromStorage();
+      renderAll();
+      if (hadLocal) toast('⚠ Using offline data (database unavailable)', 'var(--amber)');
+      else toast('Connected — start by adding your horses and clients!');
+    }
+  }).catch(function() {
+    var hadLocal = loadFromStorage();
+    renderAll();
+    if (hadLocal) toast('⚠ Using offline data', 'var(--amber)');
+  });
 });
 
 </script>
