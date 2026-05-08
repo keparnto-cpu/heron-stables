@@ -2526,8 +2526,8 @@ function updateTopbar(pageId) {
 
 // ---- POPULATE SELECTS (only active, non-archived) ----
 function populateSelects() {
-  // Riders for lesson/schedule dropdowns — all active clients
-  var riders = clients.slice().sort(function(a,b){ return a.name.localeCompare(b.name); });
+  // Riders for lesson/schedule dropdowns — only active riders and lesson students
+  var riders = clients.filter(function(c){ return c.roles && (c.roles.includes('rider') || c.roles.includes('lesson student')); }).sort(function(a,b){ return a.name.localeCompare(b.name); });
   ['l-rider','s-client'].forEach(function(id) {
     var sel = document.getElementById(id);
     if (!sel) return;
