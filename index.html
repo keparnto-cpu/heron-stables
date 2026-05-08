@@ -311,6 +311,9 @@ tr:hover td { background: var(--cream); }
     <div class="nav-item" onclick="showPage('clients', this)">
       <span class="nav-icon">👤</span> Clients
     </div>
+    <div class="nav-item" onclick="showPage('vendors', this)">
+      <span class="nav-icon">🏪</span> Vendors
+    </div>
     <div class="nav-item" onclick="showPage('archive', this)">
       <span class="nav-icon">📦</span> Archive
     </div>
@@ -498,6 +501,48 @@ tr:hover td { background: var(--cream); }
           </table>
         </div>
         <div class="empty" id="client-empty" style="display:none"><div class="empty-icon">&#128100;</div>No clients match your search.</div>
+      </div>
+    </div>
+
+    <!-- VENDORS -->
+    <div class="page" id="page-vendors">
+      <div class="section-header">
+        <div class="section-title">Vendors</div>
+        <button class="btn btn-primary btn-sm" onclick="openAddVendorModal()">+ Add vendor</button>
+      </div>
+      <div class="filter-row">
+        <input type="text" class="filter-select" id="vendor-search" placeholder="&#128269;  Search by name, email, phone…" oninput="renderVendors()" style="min-width:240px">
+        <select class="filter-select" onchange="renderVendors()" id="vendor-filter">
+          <option value="all">All types</option>
+          <option value="veterinarian">Veterinarian</option>
+          <option value="farrier">Farrier</option>
+          <option value="feed">Feed supplier</option>
+          <option value="bedding">Bedding supplier</option>
+          <option value="equipment">Equipment</option>
+          <option value="transport">Transport</option>
+          <option value="trainer">Trainer / Instructor</option>
+          <option value="other">Other</option>
+        </select>
+        <span id="vendor-count" style="font-size:12px;color:var(--text-muted);margin-left:4px;align-self:center"></span>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Company</th>
+                <th>Type</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Notes</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="vendor-table"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="vendor-empty" style="display:none"><div class="empty-icon">🏪</div>No vendors yet. Add your suppliers, vets, farriers and other contacts.</div>
       </div>
     </div>
 
@@ -933,7 +978,7 @@ tr:hover td { background: var(--cream); }
             <option value="all">All trainers</option>
             <option value="Alex Charles">Alex Charles</option>
           </select>
-          <button class="btn btn-sm" onclick="exportLessons()" style="background:var(--amber-pale);border-color:var(--amber);color:var(--amber)">📤 Share with owner</button>
+          <button class="btn btn-sm" onclick="exportLessons()" style="background:var(--amber-pale);border-color:var(--amber);color:var(--amber)">📤 Share with Pato</button>
           <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-lesson')">+ Log lesson</button>
         </div>
       </div>
@@ -1590,6 +1635,41 @@ tr:hover td { background: var(--cream); }
     </div>
   </div>
 
+  <!-- ADD / EDIT VENDOR -->
+  <div class="modal-box" id="modal-add-vendor" style="display:none">
+    <div class="modal-header"><span>Add vendor</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Name *</label><input type="text" id="vn-name" placeholder="e.g. Joshua Smith"></div>
+        <div class="form-group"><label>Company</label><input type="text" id="vn-company" placeholder="e.g. Smith Farrier Services"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Type</label>
+          <select id="vn-type" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option value="veterinarian">Veterinarian</option>
+            <option value="farrier">Farrier</option>
+            <option value="feed">Feed supplier</option>
+            <option value="bedding">Bedding supplier</option>
+            <option value="equipment">Equipment</option>
+            <option value="transport">Transport</option>
+            <option value="trainer">Trainer / Instructor</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Phone</label><input type="text" id="vn-phone" placeholder="(555) 000-0000"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Email</label><input type="email" id="vn-email" placeholder="email@example.com"></div>
+        <div class="form-group"><label>Website</label><input type="text" id="vn-website" placeholder="www.example.com"></div>
+      </div>
+      <div class="form-group"><label>Notes</label><input type="text" id="vn-notes" placeholder="Any notes about this vendor…"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="vendor-save-btn" onclick="saveVendor()">Add vendor</button>
+    </div>
+  </div>
+
 </div><!-- end modal overlay -->
 
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:2000;box-shadow:0 4px 16px rgba(0,0,0,0.15)"></div>
@@ -1714,6 +1794,7 @@ function loadFromStorage() {
     if (data.showRiderList) showRiderList.splice(0, showRiderList.length, ...data.showRiderList);
     if (data.manualAlerts) manualAlerts.splice(0, manualAlerts.length, ...data.manualAlerts);
     if (data.vetDocs) vetDocs.splice(0, vetDocs.length, ...data.vetDocs);
+    if (data.vendors) vendors.splice(0, vendors.length, ...data.vendors);
     return true;
   } catch(e) { return false; }
 }
@@ -1950,6 +2031,7 @@ function saveAlert() {
 function renderAll() {
   renderDashboard();
   renderHorseProfiles();
+  renderVendors();
   renderClients();
   renderBoarders();
   renderLessons();
