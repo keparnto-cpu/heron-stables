@@ -14,6 +14,27 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Heron Stables">
 <meta name="theme-color" content="#6888BE">
+<script>
+  // Register service worker for automatic updates
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/heron-stables/sw.js')
+        .then(function(reg) {
+          // Check for updates every time app opens
+          reg.update();
+          // If new version found, reload automatically
+          reg.addEventListener('updatefound', function() {
+            var newWorker = reg.installing;
+            newWorker.addEventListener('statechange', function() {
+              if (newWorker.state === 'activated') {
+                window.location.reload();
+              }
+            });
+          });
+        });
+    });
+  }
+</script>
 <link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Heron Stables&quot;,&quot;short_name&quot;:&quot;Heron&quot;,&quot;start_url&quot;:&quot;/heron-stables/&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%236888BE&quot;,&quot;theme_color&quot;:&quot;%236888BE&quot;}">
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
