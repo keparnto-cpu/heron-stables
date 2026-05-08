@@ -2373,22 +2373,7 @@ const boarders = [
 ];
 const archivedBoarders = [];
 
-const lessonsData = [
-  {date:'2026-05-01',trainer:'Alex Charles',rider:'Erin Polos',horse:'Stanley',type:'Jump lesson',duration:'1 hour',fee:120,paid:'paid',notes:'Great lead changes.'},
-  {date:'2026-05-01',trainer:'Alex Charles',rider:'Sherri Pyka',horse:'Diplo',type:'Flatwork',duration:'1 hour',fee:120,paid:'paid',notes:''},
-  {date:'2026-05-02',trainer:'Alex Charles',rider:'Emma Brown',horse:'Stanley',type:'Jump lesson',duration:'1 hour',fee:120,paid:'paid',notes:'First 3-foot course!'},
-  {date:'2026-05-02',trainer:'Alex Charles',rider:'Caryn Biehl',horse:'Rosie',type:'Flatwork',duration:'1 hour',fee:120,paid:'unpaid',notes:''},
-  {date:'2026-05-02',trainer:'Alex Charles',rider:'Courtney McCaffrey',horse:'Mando',type:'Hunter lesson',duration:'1 hour',fee:120,paid:'paid',notes:''},
-  {date:'2026-05-03',trainer:'Alex Charles',rider:'Kristen Caporaso',horse:'Kingston',type:'Dressage',duration:'1 hour',fee:120,paid:'paid',notes:'Working on half-pass.'},
-  {date:'2026-05-03',trainer:'Alex Charles',rider:'Kate Tsirelman',horse:'Diplo',type:'Flatwork',duration:'1 hour',fee:120,paid:'pending',notes:''},
-  {date:'2026-05-03',trainer:'Alex Charles',rider:'Henny Lipschutz',horse:'Coco',type:'Jump lesson',duration:'1 hour',fee:120,paid:'unpaid',notes:''},
-  {date:'2026-05-04',trainer:'Alex Charles',rider:'Hannah Houck',horse:'Kingston',type:'Flatwork',duration:'1 hour',fee:120,paid:'paid',notes:''},
-  {date:'2026-05-04',trainer:'Alex Charles',rider:'Mary Trezza',horse:'Gigi',type:'Private lesson',duration:'1 hour',fee:120,paid:'paid',notes:''},
-  {date:'2026-05-05',trainer:'Alex Charles',rider:'Erin Polos',horse:'Stanley',type:'Jump lesson',duration:'1 hour',fee:120,paid:'paid',notes:''},
-  {date:'2026-05-05',trainer:'Alex Charles',rider:'Sherri Pyka',horse:'Diplo',type:'Flatwork',duration:'1 hour',fee:120,paid:'paid',notes:''},
-  {date:'2026-05-05',trainer:'Alex Charles',rider:'Kristen Caporaso',horse:'Kingston',type:'Dressage',duration:'1 hour',fee:120,paid:'paid',notes:''},
-  {date:'2026-05-05',trainer:'Alex Charles',rider:'Carolline Schaffer',horse:'Gigi',type:'Trot work',duration:'1 hour',fee:120,paid:'paid',notes:''},
-];
+const lessonsData = [];
 
 const scheduleData = [
   {day:'Mon 5',time:'8:00 AM',client:'Erin Polos',type:'Jump lesson',horse:'Stanley',status:'Confirmed'},
@@ -2642,14 +2627,31 @@ function renderHorseProfiles() {
 function uploadHorsePhoto(idx, input) {
   var file = input.files[0];
   if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    horses[idx].photo = e.target.result;
-    saveToStorage();
-    renderHorseProfiles();
-    toast('Photo updated for ' + horses[idx].name + '!');
-  };
-  reader.readAsDataURL(file);
+  toast('⏳ Uploading photo…');
+  uploadDoc(file, 'horse-photos').then(function(url) {
+    if (url) {
+      horses[idx].photo = url;
+      if (horses[idx]._id) {
+        fetch(SUPA_URL + '/rest/v1/horses?id=eq.' + horses[idx]._id, {
+          method: 'PATCH',
+          headers: Object.assign({}, SUPA_HEADERS, {'Prefer':'return=minimal'}),
+          body: JSON.stringify({photo: url})
+        });
+      }
+      saveToStorage();
+      renderHorseProfiles();
+      toast('📸 Photo saved for ' + horses[idx].name + '!');
+    } else {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        horses[idx].photo = e.target.result;
+        saveToStorage();
+        renderHorseProfiles();
+        toast('Photo updated (local only)');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
 }
 
 function editHorse(idx) {
