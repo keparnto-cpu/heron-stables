@@ -362,11 +362,11 @@ tr:hover td { background: var(--cream); }
       <span></span><span></span><span></span>
     </button>
     <div class="topbar-title" id="topbar-title">Dashboard</div>
-    <div class="topbar-search">
+    <div class="topbar-search" id="topbar-search-wrap" style="display:none">
       <span class="search-icon">🔍</span>
       <input type="text" placeholder="Search horses, clients…" id="global-search" oninput="globalSearch(this.value)">
     </div>
-    <button class="btn btn-primary btn-sm" onclick="handleAdd()">+ Add New</button>
+    <button class="btn btn-primary btn-sm" id="topbar-add-btn" onclick="handleAdd()" style="display:none">+ Add New</button>
   </div>
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
@@ -2445,7 +2445,7 @@ function handleAdd() {
 function updateTopbar(pageId) {
   var addBtn = document.querySelector('.topbar .btn-primary');
   var search = document.querySelector('.topbar-search');
-  var noAddPages = ['page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations'];
+  var noAddPages = ['page-dashboard','page-vendors','page-farrier','page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations'];
   var noSearchPages = ['page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations','page-boarding','page-lessons','page-horse-profiles'];
   if (addBtn) addBtn.style.display = noAddPages.includes(pageId) ? 'none' : 'inline-flex';
   if (search) search.style.display = noSearchPages.includes(pageId) ? 'none' : 'flex';
@@ -3285,14 +3285,7 @@ function deleteVetDoc(i) {
 // ==========================================
 // VETERINARY VISITS
 // ==========================================
-var vetVisits = [
-  {id:'vv1', date:'2026-04-15', horse:'Stanley',         vet:'Dr. Nicole Jochec', category:'Routine',   status:'completed', desc:'Annual wellness exam',   notes:'All clear. Weight good.'},
-  {id:'vv2', date:'2026-04-15', horse:'Gigi',            vet:'Dr. Nicole Jochec', category:'Routine',   status:'completed', desc:'Annual wellness exam',   notes:''},
-  {id:'vv3', date:'2026-04-15', horse:'Valencio',        vet:'Dr. Nicole Jochec', category:'Coggins',   status:'completed', desc:'Coggins / EIA test',     notes:'Negative. Certificate issued.'},
-  {id:'vv4', date:'2026-04-15', horse:'All horses',      vet:'Dr. Nicole Jochec', category:'Deworming', status:'completed', desc:'Spring deworming',        notes:'Ivermectin administered'},
-  {id:'vv5', date:'2026-05-20', horse:'Milton',          vet:'Dr. Nicole Jochec', category:'Routine',   status:'scheduled', desc:'Lameness evaluation',    notes:'Monitor left front'},
-  {id:'vv6', date:'2026-06-01', horse:'All horses',      vet:'Dr. Nicole Jochec', category:'Dental',    status:'scheduled', desc:'Annual dental float',    notes:''},
-];
+var vetVisits = [];
 
 var editingVetIdx = -1;
 
@@ -4371,6 +4364,7 @@ window.addEventListener('load', function() {
   showLoadingToast('Connecting to database…');
 
   // Try Supabase first, fall back to localStorage
+  updateTopbar('page-dashboard');
   dbLoadAll().then(function(loaded) {
     if (!loaded) {
       // Fallback to localStorage
