@@ -2621,6 +2621,16 @@ function renderHorseProfiles() {
           horseStatusBadge(h.coggins) + horseStatusBadge(h.vacc) +
         '</div>' +
         (h.notes ? '<div style="font-size:12px;color:var(--text-muted);font-style:italic;margin-bottom:10px">' + h.notes + '</div>' : '') +
+        (h.farrierNotes ? '<div style="font-size:11px;color:var(--amber);margin-bottom:6px">🔨 ' + h.farrierNotes + '</div>' : '') +
+        ((h.feedHay || h.feedGrain || h.feedSupplements || h.feedNotes) ?
+          '<div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:10px">' +
+            '<div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">🌾 Feed & nutrition</div>' +
+            (h.feedHay ? '<div style="font-size:12px;margin-bottom:3px"><span style="color:var(--text-muted)">Hay: </span>' + h.feedHay + '</div>' : '') +
+            (h.feedGrain ? '<div style="font-size:12px;margin-bottom:3px"><span style="color:var(--text-muted)">Grain: </span>' + h.feedGrain + '</div>' : '') +
+            (h.feedSupplements ? '<div style="font-size:12px;margin-bottom:3px"><span style="color:var(--text-muted)">Supplements: </span>' + h.feedSupplements + '</div>' : '') +
+            (h.feedNotes ? '<div style="font-size:12px;font-style:italic;color:var(--text-muted)">' + h.feedNotes + '</div>' : '') +
+          '</div>'
+        : '') +
         '<div style="border-top:1px solid var(--border);padding-top:10px">' +
           '<label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:500">Upload photo</label>' +
           '<input type="file" accept="image/*" onchange="uploadHorsePhoto(' + idx + ', this)" style="font-size:11px;width:100%">' +
