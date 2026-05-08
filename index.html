@@ -1095,6 +1095,16 @@ tr:hover td { background: var(--cream); }
         <div class="form-group"></div>
       </div>
       <div class="form-group"><label>Notes / care instructions</label><textarea id="h-notes" rows="2" placeholder="Special care, feeding, health notes…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;background:var(--cream);color:var(--text)"></textarea></div>
+      <div class="form-group"><label>Farrier notes <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(shoeing issues, special instructions)</span></label><input type="text" id="h-farrier-notes" placeholder="e.g. needs corrective shoeing on LF, sensitive feet…"></div>
+      <div style="font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin:12px 0 6px;border-top:1px solid var(--border);padding-top:12px">🌾 Feed &amp; nutrition</div>
+      <div class="form-row">
+        <div class="form-group"><label>Hay</label><input type="text" id="h-feed-hay" placeholder="e.g. Timothy, 3x daily, 2 flakes"></div>
+        <div class="form-group"><label>Grain / feed</label><input type="text" id="h-feed-grain" placeholder="e.g. Purina Senior, 2 lbs twice daily"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Supplements</label><input type="text" id="h-feed-supplements" placeholder="e.g. SmartPak, joint supplement"></div>
+        <div class="form-group"><label>Feeding notes</label><input type="text" id="h-feed-notes" placeholder="e.g. slow feeder, soaked hay, no treats"></div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal()">Cancel</button>
