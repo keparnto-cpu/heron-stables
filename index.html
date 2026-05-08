@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Heron Stables</title>
 <!-- Supabase SDK replaced with direct fetch -->
+<!-- PWA / Home screen icon -->
+<link rel="apple-touch-icon" href="https://images.squarespace-cdn.com/content/v1/62defe63b09fa273b061ceb3/475d22dc-b9f2-40e5-89d7-40c881b211a6/heron+white.png?format=1500w">
+<link rel="icon" type="image/png" href="https://images.squarespace-cdn.com/content/v1/62defe63b09fa273b061ceb3/475d22dc-b9f2-40e5-89d7-40c881b211a6/heron+white.png?format=1500w">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Heron Stables">
+<meta name="theme-color" content="#6888BE">
+
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -285,8 +293,7 @@ tr:hover td { background: var(--cream); }
 <!-- Sidebar -->
 <div class="sidebar">
   <div class="sidebar-logo">
-    <div class="sidebar-logo-title">Heron Stables</div>
-    <div class="sidebar-logo-sub">Management Portal</div>
+    <img src="https://images.squarespace-cdn.com/content/v1/62defe63b09fa273b061ceb3/475d22dc-b9f2-40e5-89d7-40c881b211a6/heron+white.png?format=1500w" alt="Heron Stables" style="height:42px;width:auto;object-fit:contain;display:block;max-width:180px">
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section-label">Overview</div>
@@ -364,23 +371,23 @@ tr:hover td { background: var(--cream); }
       <div class="metrics-grid">
         <div class="metric-card">
           <div class="metric-label">Horses in board</div>
-          <div class="metric-value">10</div>
-          <div class="metric-sub">Active boarders</div>
+          <div class="metric-value" id="dash-horses">–</div>
+          <div class="metric-sub" id="dash-horses-sub">Active horses</div>
         </div>
         <div class="metric-card">
           <div class="metric-label">Active clients</div>
-          <div class="metric-value">42</div>
-          <div class="metric-sub">Riders, owners, parents</div>
+          <div class="metric-value" id="dash-clients">–</div>
+          <div class="metric-sub" id="dash-clients-sub">Riders, owners, parents</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Lessons today</div>
-          <div class="metric-value">6</div>
-          <div class="metric-sub warn">Next at 2:00 PM</div>
+          <div class="metric-label">Lessons this month</div>
+          <div class="metric-value" id="dash-lessons">–</div>
+          <div class="metric-sub" id="dash-lessons-sub"></div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Docs pending</div>
-          <div class="metric-value">3</div>
-          <div class="metric-sub danger">Waivers unsigned</div>
+          <div class="metric-label">Upcoming vet visits</div>
+          <div class="metric-value" id="dash-vet">–</div>
+          <div class="metric-sub" id="dash-vet-sub"></div>
         </div>
       </div>
 
@@ -390,131 +397,14 @@ tr:hover td { background: var(--cream); }
             <div class="card-title">Horses at a glance</div>
             <span class="view-all" onclick="showPage('horses', document.querySelector('[onclick*=horses]'))">View all</span>
           </div>
-          <div class="entity-row">
-            <div class="avatar av-green">ST</div>
-            <div class="entity-info">
-              <div class="entity-name">Stanley</div>
-              <div class="entity-sub">Board + Training</div>
-            </div>
-            <span class="badge badge-green">Active</span>
-          </div>
-          <div class="entity-row">
-            <div class="avatar av-brown">GG</div>
-            <div class="entity-info">
-              <div class="entity-name">Gigi</div>
-              <div class="entity-sub">Board + Training</div>
-            </div>
-            <span class="badge badge-green">Active</span>
-          </div>
-          <div class="entity-row">
-            <div class="avatar av-amber">VL</div>
-            <div class="entity-info">
-              <div class="entity-name">Valencio</div>
-              <div class="entity-sub">Vacc due soon</div>
-            </div>
-            <span class="badge badge-amber">Attention</span>
-          </div>
-          <div class="entity-row">
-            <div class="avatar av-blue">MN</div>
-            <div class="entity-info">
-              <div class="entity-name">Milton</div>
-              <div class="entity-sub">Coggins check needed</div>
-            </div>
-            <span class="badge badge-red">Review</span>
-          </div>
-          <div class="entity-row">
-            <div class="avatar av-purple">DP</div>
-            <div class="entity-info">
-              <div class="entity-name">Diplo</div>
-              <div class="entity-sub">Board</div>
-            </div>
-            <span class="badge badge-green">Active</span>
-          </div>
+          <div id="dash-horses-list"></div>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Today's schedule</div>
-            <span class="view-all" onclick="showPage('schedule', document.querySelector('[onclick*=schedule]'))">Full calendar</span>
+            <div class="card-title">&#128276; Alerts &amp; reminders</div>
           </div>
-          <div class="sched-row">
-            <span class="sched-time">8:00 AM</span>
-            <div>
-              <div class="sched-name">Erin Polos</div>
-              <div class="sched-detail">Jump lesson · Stanley</div>
-            </div>
-            <span class="badge badge-green">Confirmed</span>
-          </div>
-          <div class="sched-row">
-            <span class="sched-time">10:00 AM</span>
-            <div>
-              <div class="sched-name">Sherri Pyka</div>
-              <div class="sched-detail">Flatwork · Diplo</div>
-            </div>
-            <span class="badge badge-green">Confirmed</span>
-          </div>
-          <div class="sched-row">
-            <span class="sched-time">12:00 PM</span>
-            <div>
-              <div class="sched-name">Bridget Lang</div>
-              <div class="sched-detail">Trail ride · Coco</div>
-            </div>
-            <span class="badge badge-amber">Pending</span>
-          </div>
-          <div class="sched-row">
-            <span class="sched-time">2:00 PM</span>
-            <div>
-              <div class="sched-name">Kristen Caporaso</div>
-              <div class="sched-detail">Dressage · Kingston</div>
-            </div>
-            <span class="badge badge-green">Confirmed</span>
-          </div>
-          <div class="sched-row">
-            <span class="sched-time">4:00 PM</span>
-            <div>
-              <div class="sched-name">Carolline Schaffer</div>
-              <div class="sched-detail">Trot work · Gigi</div>
-            </div>
-            <span class="badge badge-green">Confirmed</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">🔔 Alerts & reminders</div>
-        </div>
-        <div class="entity-row">
-          <span style="font-size:18px">🔴</span>
-          <div class="entity-info">
-            <div class="entity-name">Valencio — Coggins/EIA certificate expires</div>
-            <div class="entity-sub">Schedule renewal with Dr. Travis Bowers or Dr. Nicole Jochec</div>
-          </div>
-          <span class="badge badge-red">Overdue</span>
-        </div>
-        <div class="entity-row">
-          <span style="font-size:18px">🟡</span>
-          <div class="entity-info">
-            <div class="entity-name">3 clients have unsigned waivers</div>
-            <div class="entity-sub">Abigail O'Brien, Juno Cox, Isabella Paradise</div>
-          </div>
-          <span class="badge badge-amber">Follow up</span>
-        </div>
-        <div class="entity-row">
-          <span style="font-size:18px">🟡</span>
-          <div class="entity-info">
-            <div class="entity-name">Milton — Vaccination due in 14 days</div>
-            <div class="entity-sub">Schedule with vet before May 19</div>
-          </div>
-          <span class="badge badge-amber">Upcoming</span>
-        </div>
-        <div class="entity-row">
-          <span style="font-size:18px">🟢</span>
-          <div class="entity-info">
-            <div class="entity-name">Gigi boarding agreement — renewed Oct 2025</div>
-            <div class="entity-sub">Melissa Girnius — all documents current</div>
-          </div>
-          <span class="badge badge-green">Current</span>
+          <div id="dash-alerts"></div>
         </div>
       </div>
     </div>
@@ -1880,7 +1770,68 @@ function hideLoadingToast() {
   setTimeout(function() { document.getElementById('toast').style.display = 'none'; }, 500);
 }
 
+function renderDashboard() {
+  var now = new Date();
+  var today = now.toISOString().slice(0,10);
+
+  // Metrics
+  var el = document.getElementById('dash-horses'); if(el) el.textContent = horses.length;
+  var el2 = document.getElementById('dash-clients'); if(el2) el2.textContent = clients.length;
+
+  var thisMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  var monthLessons = lessonsData.filter(function(l){return l.date && l.date.startsWith(thisMonth);});
+  var el3 = document.getElementById('dash-lessons'); if(el3) el3.textContent = monthLessons.length;
+  var el3s = document.getElementById('dash-lessons-sub'); if(el3s) el3s.textContent = monthLessons.length + ' logged this month';
+
+  var upcomingVet = vetVisits.filter(function(v){return v.status==='scheduled' && v.date>=today;});
+  var el4 = document.getElementById('dash-vet'); if(el4) el4.textContent = upcomingVet.length;
+  var el4s = document.getElementById('dash-vet-sub');
+  if(el4s){ el4s.textContent = upcomingVet.length ? 'Scheduled' : 'None scheduled'; el4s.className = upcomingVet.length ? 'metric-sub warn' : 'metric-sub'; }
+
+  // Horses at a glance
+  var horseList = document.getElementById('dash-horses-list');
+  if(horseList) {
+    var colors = ['av-green','av-brown','av-amber','av-blue','av-purple','av-red'];
+    if(!horses.length) { horseList.innerHTML = '<div class="empty"><div class="empty-icon">🐴</div>No horses yet.</div>'; }
+    else {
+      horseList.innerHTML = horses.slice(0,6).map(function(h,i){
+        var initials = h.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+        var isReview = h.coggins==='Overdue'||h.vacc==='Overdue';
+        var isWarn = h.coggins==='Due soon'||h.vacc==='Due soon';
+        var status = isReview?'Review':isWarn?'Attention':'Active';
+        var badgeCls = isReview?'badge-red':isWarn?'badge-amber':'badge-green';
+        var sub = isReview?(h.coggins==='Overdue'?'Coggins overdue':'Vacc overdue'):isWarn?(h.coggins==='Due soon'?'Coggins due soon':'Vacc due soon'):(h.board||'Active');
+        return '<div class="entity-row"><div class="avatar '+colors[i%colors.length]+'">'+initials+'</div><div class="entity-info"><div class="entity-name">'+h.name+'</div><div class="entity-sub">'+sub+'</div></div><span class="badge '+badgeCls+'">'+status+'</span></div>';
+      }).join('') + (horses.length>6?'<div style="text-align:center;padding:8px;font-size:12px;color:var(--text-muted)">+ '+(horses.length-6)+' more</div>':'');
+    }
+  }
+
+  // Alerts
+  var alertsEl = document.getElementById('dash-alerts');
+  if(!alertsEl) return;
+  var alerts = [];
+
+  // Vacc alerts
+  vaccData.forEach(function(v){
+    if(!horses.find(function(h){return h.name===v.horse;})) return;
+    if(v.status==='Overdue') alerts.push({icon:'🔴',title:v.horse+' — Vaccinations overdue',sub:'Next due: '+(v.next||'unknown'),badge:'Overdue',cls:'badge-red'});
+    else if(v.status==='Due soon') alerts.push({icon:'🟡',title:v.horse+' — Vaccinations due soon',sub:'Next due: '+(v.next||'unknown'),badge:'Due soon',cls:'badge-amber'});
+  });
+
+  // Upcoming vet in 14 days
+  upcomingVet.forEach(function(v){
+    var diff = Math.round((new Date(v.date+'T12:00:00')-now)/86400000);
+    if(diff<=14) alerts.push({icon:'🔵',title:v.horse+' — '+v.category+' visit',sub:v.date+(v.desc?' · '+v.desc:''),badge:diff===0?'Today':'In '+diff+' days',cls:diff<=3?'badge-red':'badge-blue'});
+  });
+
+  if(!alerts.length) alertsEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px">✅ No alerts — everything looks good!</div>';
+  else alertsEl.innerHTML = alerts.map(function(a){
+    return '<div class="entity-row"><span style="font-size:18px">'+a.icon+'</span><div class="entity-info"><div class="entity-name">'+a.title+'</div><div class="entity-sub">'+a.sub+'</div></div><span class="badge '+a.cls+'">'+a.badge+'</span></div>';
+  }).join('');
+}
+
 function renderAll() {
+  renderDashboard();
   renderHorseProfiles();
   renderClients();
   renderBoarders();
