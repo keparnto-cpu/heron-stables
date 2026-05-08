@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Heron Stables</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase SDK replaced with direct fetch -->
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1631,7 +1631,80 @@ tr:hover td { background: var(--cream); }
 // ==========================================
 const SUPA_URL = 'https://xgfaasctckbtlsmahpec.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhnZmFhc2N0Y2tidGxzbWFocGVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTgxMjUsImV4cCI6MjA5MzY3NDEyNX0.KJejhuqrM1hXczG4NPgP_8Kvf1OXTa83jKRltyW_Uhg';
-const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+const SUPA_HEADERS = {
+  'apikey': SUPA_KEY,
+  'Authorization': 'Bearer ' + SUPA_KEY,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation',
+  'x-client-info': 'supabase-js/2.0.0'
+};
+
+// Lightweight Supabase REST client — bypasses SDK to avoid allowlist issues
+const sb = {
+  from: function(table) {
+    return {
+      _table: table,
+      _filters: [],
+      _selectCols: '*',
+      _orderCol: null,
+      _orderAsc: true,
+      _limitN: null,
+      select: function(cols) { this._selectCols = cols || '*'; return this; },
+      order: function(col, opts) { this._orderCol = col; this._orderAsc = !(opts && opts.ascending === false); return this; },
+      limit: function(n) { this._limitN = n; return this; },
+      eq: function(col, val) { this._filters.push(col + '=eq.' + encodeURIComponent(val)); return this; },
+      _buildUrl: function() {
+        var url = SUPA_URL + '/rest/v1/' + this._table + '?select=' + this._selectCols;
+        this._filters.forEach(function(f) { url += '&' + f; });
+        if (this._orderCol) url += '&order=' + this._orderCol + (this._orderAsc ? '.asc' : '.desc');
+        if (this._limitN) url += '&limit=' + this._limitN;
+        return url;
+      },
+      // SELECT
+      then: function(resolve) {
+        var self = this;
+        fetch(self._buildUrl(), { headers: SUPA_HEADERS })
+          .then(function(r) { return r.json().then(function(d) { return {data: Array.isArray(d)?d:[], error: r.ok?null:d}; }); })
+          .then(resolve).catch(function(e) { resolve({data:[], error:e}); });
+        return this;
+      },
+      // UPSERT
+      upsert: function(data, opts) {
+        var headers = Object.assign({}, SUPA_HEADERS, {'Prefer': 'resolution=merge-duplicates,return=minimal'});
+        return fetch(SUPA_URL + '/rest/v1/' + this._table, {
+          method: 'POST', headers: headers,
+          body: JSON.stringify(Array.isArray(data) ? data : [data])
+        }).then(function(r) { return r.ok ? {data:data,error:null} : r.json().then(function(e){return {data:null,error:e};}); })
+        .catch(function(e) { return {data:null,error:e}; });
+      },
+      // UPDATE
+      update: function(data) {
+        var self = this;
+        return {
+          eq: function(col, val) {
+            var url = SUPA_URL + '/rest/v1/' + self._table + '?' + col + '=eq.' + encodeURIComponent(val);
+            var headers = Object.assign({}, SUPA_HEADERS, {'Prefer': 'return=minimal'});
+            return fetch(url, { method: 'PATCH', headers: headers, body: JSON.stringify(data) })
+              .then(function(r) { return r.ok ? {data:data,error:null} : r.json().then(function(e){return {data:null,error:e};}); })
+              .catch(function(e) { return {data:null,error:e}; });
+          }
+        };
+      },
+      // DELETE
+      delete: function() {
+        var self = this;
+        return {
+          eq: function(col, val) {
+            var url = SUPA_URL + '/rest/v1/' + self._table + '?' + col + '=eq.' + encodeURIComponent(val);
+            return fetch(url, { method: 'DELETE', headers: SUPA_HEADERS })
+              .then(function(r) { return r.ok ? {data:null,error:null} : r.json().then(function(e){return {data:null,error:e};}); })
+              .catch(function(e) { return {data:null,error:e}; });
+          }
+        };
+      }
+    };
+  }
+};
 
 // Keep localStorage as fallback during transition
 const LS_KEY = 'heronStables_v1';
@@ -1688,18 +1761,25 @@ async function dbDelete(table, id) {
 async function dbLoadAll() {
   try {
     showLoadingToast('Loading your data…');
-    const [hRes, cRes, bRes, lRes, vRes, fRes, vetRes, ieaRes, showRes, riderRes, schedRes] = await Promise.all([
-      sb.from('horses').select('*').order('created_at'),
-      sb.from('clients').select('*').order('created_at'),
-      sb.from('boarders').select('*').order('created_at'),
-      sb.from('lessons').select('*').order('date'),
-      sb.from('vacc_data').select('*'),
-      sb.from('farrier_visits').select('*').order('date'),
-      sb.from('vet_visits').select('*').order('date'),
-      sb.from('iea_shows').select('*').order('created_at', {ascending: false}),
-      sb.from('shows').select('*').order('created_at', {ascending: false}),
-      sb.from('rider_lists').select('*'),
-      sb.from('schedule_data').select('*').order('created_at'),
+    async function qry(table, order, asc) {
+      var url = SUPA_URL + '/rest/v1/' + table + '?select=*';
+      if (order) url += '&order=' + order + (asc === false ? '.desc' : '.asc');
+      var r = await fetch(url, {headers: SUPA_HEADERS});
+      if (!r.ok) { var e = await r.json(); return {data:[], error:e}; }
+      return {data: await r.json(), error: null};
+    }
+    var [hRes,cRes,bRes,lRes,vRes,fRes,vetRes,ieaRes,showRes,riderRes,schedRes] = await Promise.all([
+      qry('horses','created_at'),
+      qry('clients','created_at'),
+      qry('boarders','created_at'),
+      qry('lessons','date'),
+      qry('vacc_data'),
+      qry('farrier_visits','date'),
+      qry('vet_visits','date'),
+      qry('iea_shows','created_at',false),
+      qry('shows','created_at',false),
+      qry('rider_lists'),
+      qry('schedule_data','created_at'),
     ]);
 
     // Horses
