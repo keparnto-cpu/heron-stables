@@ -1624,8 +1624,11 @@ tr:hover td { background: var(--cream); }
         </div>
         <div class="form-group"><label>Description *</label><input type="text" id="vd-desc" placeholder="e.g. Annual wellness invoice"></div>
       </div>
-      <div class="form-group"><label>Link / URL <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(paste a Google Drive, Dropbox, or GitHub link)</span></label>
-        <input type="text" id="vd-url" placeholder="https://drive.google.com/..."></div>
+      <div class="form-group"><label>Document <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(upload file or paste a link)</span></label>
+        <div style="display:flex;gap:6px">
+          <input type="text" id="vd-url" placeholder="https://... or click Upload →" style="flex:1">
+          <button class="btn btn-sm" type="button" onclick="openFileUpload('vd-url','vet')">📎 Upload</button>
+        </div></div>
       <div class="form-group"><label>Display name <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional)</span></label>
         <input type="text" id="vd-filename" placeholder="e.g. Stanley_invoice_Apr2025.pdf"></div>
     </div>
@@ -1678,6 +1681,66 @@ tr:hover td { background: var(--cream); }
 // ==========================================
 // HERON STABLES — COMPLETE APP LOGIC v3
 // ==========================================
+
+// ==========================================
+// FILE UPLOAD (Supabase Storage)
+// ==========================================
+async function uploadDoc(file, folder) {
+  try {
+    var ext = file.name.split('.').pop();
+    var filename = folder + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    var arrayBuf = await file.arrayBuffer();
+    
+    var uploadUrl = SUPA_URL + '/storage/v1/object/heron-docs/' + filename;
+    var resp = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': file.type || 'application/octet-stream',
+        'x-upsert': 'true'
+      },
+      body: arrayBuf
+    });
+    
+    if (!resp.ok) {
+      var err = await resp.json();
+      console.warn('Upload error:', err);
+      return null;
+    }
+    
+    // Return public URL
+    var publicUrl = SUPA_URL + '/storage/v1/object/public/heron-docs/' + filename;
+    return publicUrl;
+  } catch(e) {
+    console.warn('Upload exception:', e);
+    return null;
+  }
+}
+
+function openFileUpload(targetInputId, folder, onSuccess) {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
+  input.onchange = async function() {
+    var file = input.files[0];
+    if (!file) return;
+    toast('⏳ Uploading ' + file.name + '…');
+    var url = await uploadDoc(file, folder || 'general');
+    if (url) {
+      if (targetInputId) {
+        var el = document.getElementById(targetInputId);
+        if (el) el.value = url;
+        var nameEl = document.getElementById(targetInputId.replace('-url','-filename'));
+        if (nameEl && !nameEl.value) nameEl.value = file.name;
+      }
+      if (onSuccess) onSuccess(url, file.name);
+      toast('✅ ' + file.name + ' uploaded!');
+    } else {
+      toast('❌ Upload failed. Check Supabase storage is set up.', '#c0392b');
+    }
+  };
+  input.click();
+}
 
 // ==========================================
 // SUPABASE DATABASE
@@ -2590,6 +2653,10 @@ function editHorse(idx) {
   document.getElementById('h-vacc').value = h.vacc || 'Current';
   document.getElementById('h-notes').value = h.notes || '';
   var fn = document.getElementById('h-farrier-notes'); if(fn) fn.value = h.farrierNotes || '';
+  var fh = document.getElementById('h-feed-hay'); if(fh) fh.value = h.feedHay || '';
+  var fg = document.getElementById('h-feed-grain'); if(fg) fg.value = h.feedGrain || '';
+  var fs = document.getElementById('h-feed-supplements'); if(fs) fs.value = h.feedSupplements || '';
+  var fno = document.getElementById('h-feed-notes'); if(fno) fno.value = h.feedNotes || '';
   document.getElementById('modal-add-horse').querySelector('.modal-header span').textContent = 'Edit — ' + h.name;
   document.getElementById('horse-save-btn').textContent = 'Save changes';
   openModal('modal-add-horse');
@@ -2627,6 +2694,10 @@ function saveHorse() {
     coggins: document.getElementById('h-coggins').value, vacc: document.getElementById('h-vacc').value,
     notes: document.getElementById('h-notes').value.trim(),
     farrierNotes: document.getElementById('h-farrier-notes') ? document.getElementById('h-farrier-notes').value.trim() : '',
+    feedHay: document.getElementById('h-feed-hay') ? document.getElementById('h-feed-hay').value.trim() : '',
+    feedGrain: document.getElementById('h-feed-grain') ? document.getElementById('h-feed-grain').value.trim() : '',
+    feedSupplements: document.getElementById('h-feed-supplements') ? document.getElementById('h-feed-supplements').value.trim() : '',
+    feedNotes: document.getElementById('h-feed-notes') ? document.getElementById('h-feed-notes').value.trim() : '',
     photo: (editingHorseIdx >= 0 && horses[editingHorseIdx]) ? (horses[editingHorseIdx].photo || '') : ''
   };
   if (editingHorseIdx >= 0) { horses[editingHorseIdx] = h; toast('✅ ' + name + ' updated!'); editingHorseIdx = -1; }
@@ -2634,7 +2705,7 @@ function saveHorse() {
   syncHorseSelects(); renderHorseProfiles(); saveToStorage(); closeModal();
   document.getElementById('modal-add-horse').querySelector('.modal-header span').textContent = 'Add new horse';
   document.getElementById('horse-save-btn').textContent = 'Add horse';
-  ['h-name','h-showname','h-regname','h-breed','h-color','h-height','h-dob','h-usef','h-eia','h-notes','h-farrier-notes'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
+  ['h-name','h-showname','h-regname','h-breed','h-color','h-height','h-dob','h-usef','h-eia','h-notes','h-farrier-notes','h-feed-hay','h-feed-grain','h-feed-supplements','h-feed-notes'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
   document.getElementById('h-fee').value = '';
 }
 
@@ -3090,6 +3161,24 @@ function vaccStatusBadge(status) {
   if (status === 'Due soon') return '<span class="badge badge-amber">Due soon</span>';
   if (status === 'Scheduled') return '<span class="badge" style="background:#e8f0fe;color:#1a56db">Scheduled</span>';
   return '<span class="badge badge-gray">' + status + '</span>';
+}
+
+function addCogginsDoc(url, name) {
+  // Add to a simple coggins docs list shown in the coggins tab
+  if (!window.cogginsDocs) window.cogginsDocs = [];
+  window.cogginsDocs.push({url: url, name: name, date: new Date().toISOString().slice(0,10)});
+  renderCogginsDocs();
+  saveToStorage();
+}
+
+function renderCogginsDocs() {
+  var tbody = document.querySelector('#vet-coggins-tab table tbody');
+  if (!tbody || !window.cogginsDocs || !window.cogginsDocs.length) return;
+  // Prepend uploaded docs to the table
+  var uploaded = window.cogginsDocs.map(function(d, i) {
+    return '<tr style="background:var(--gold-pale)"><td colspan="2"><strong>Uploaded</strong></td><td>' + d.date + '</td><td>Negative</td><td>Annual renewal</td><td><a href="' + d.url + '" target="_blank" class="doc-link">' + d.name + ' ↗</a></td></tr>';
+  }).join('');
+  tbody.insertAdjacentHTML('afterbegin', uploaded);
 }
 
 function renderVacc() {
