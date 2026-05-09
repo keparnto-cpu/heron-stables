@@ -2868,6 +2868,29 @@ function renderClients() {
 
 function filterClients() { renderClients(); }
 
+function moveToVendors(idx) {
+  var c = clients[idx]; if (!c) return;
+  if (!confirm('Move ' + c.name + ' to Vendors?')) return;
+  var v = {
+    name: c.name,
+    company: '',
+    type: c.roles && c.roles.includes('veterinarian') ? 'veterinarian' :
+          c.roles && c.roles.includes('farrier') ? 'farrier' :
+          c.roles && c.roles.includes('trainer') ? 'trainer' : 'other',
+    phone: c.phone || '',
+    email: c.email || '',
+    website: '',
+    notes: 'Moved from clients'
+  };
+  vendors.push(v);
+  clients.splice(idx, 1);
+  populateSelects();
+  renderClients();
+  renderVendors();
+  saveToStorage();
+  toast('🏪 ' + c.name + ' moved to Vendors!');
+}
+
 function editClient(idx) {
   var c = clients[idx];
   if (!c) return;
