@@ -625,7 +625,7 @@ tr:hover td { background: var(--cream); }
     <div class="page" id="page-coggins">
       <div class="section-header">
         <div class="section-title">Coggins / EIA records</div>
-        <button class="btn btn-primary btn-sm" onclick="toast('📎 To upload a Coggins PDF, drag & drop support coming in next update!','var(--amber)')">+ Upload record</button>
+        <button class="btn btn-primary btn-sm" onclick="openFileUpload(null,'coggins',function(url,name){ addCogginsDoc(url,name); })">+ Upload record</button>
       </div>
       <div class="card">
         <table>
@@ -960,7 +960,7 @@ tr:hover td { background: var(--cream); }
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div style="font-size:13px;color:var(--text-muted)">EIA / Coggins records. Annual renewal required.</div>
-            <button class="btn btn-primary btn-sm" onclick="toast('Upload Coggins PDFs to your GitHub repo to make them clickable.','var(--amber)')">+ Upload record</button>
+            <button class="btn btn-primary btn-sm" onclick="openFileUpload(null,'coggins',function(url,name){ addCogginsDoc(url,name); })">+ Upload record</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -3401,7 +3401,7 @@ function saveVacc() {
 }
 
 function openUploadModal() {
-  toast('To add new documents, upload the PDF file to your GitHub repo and the link will appear here automatically.', 'var(--amber)');
+  openFileUpload(null,'documents',function(url,name){ toast('✅ ' + name + ' uploaded!'); });
 }
 
 // ==========================================
