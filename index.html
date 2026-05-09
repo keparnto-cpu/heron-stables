@@ -1904,8 +1904,8 @@ tr:hover td { background: var(--cream); }
     <div class="modal-header"><span>Add product</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
     <div class="modal-body">
       <div class="form-row">
-        <div class="form-group"><label>Product name *</label><input type="text" id="fp-name" placeholder="e.g. Timothy Hay Bale"></div>
-        <div class="form-group"><label>Brand</label><input type="text" id="fp-brand" placeholder="e.g. Standlee, Triple Crown"></div>
+        <div class="form-group"><label>Product name</label><input type="text" id="fp-name" placeholder="e.g. Timothy Hay Bale"></div>
+        <div class="form-group"><label>Brand <span style="font-weight:300;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional)</span></label><input type="text" id="fp-brand" placeholder="e.g. Standlee, Triple Crown"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Category</label>
@@ -1918,9 +1918,9 @@ tr:hover td { background: var(--cream); }
             <option value="other">Other</option>
           </select>
         </div>
-        <div class="form-group"><label>Unit</label><input type="text" id="fp-unit" placeholder="e.g. bale, bag, bottle"></div>
+        <div class="form-group"><label>Unit <span style="font-weight:300;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional)</span></label><input type="text" id="fp-unit" placeholder="e.g. bale, bag, bottle"></div>
       </div>
-      <div class="form-group"><label>Notes</label><input type="text" id="fp-notes" placeholder="e.g. 50lb bag, order from Valley Feed"></div>
+      <div class="form-group"><label>Notes <span style="font-weight:300;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional)</span></label><input type="text" id="fp-notes" placeholder="e.g. 50lb bag, order from Valley Feed"></div>
       <div class="form-group"><label>Photo / thumbnail <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional — upload product image)</span></label>
         <div style="display:flex;gap:8px;align-items:center">
           <input type="text" id="fp-photo" placeholder="Photo URL or click Upload →" style="flex:1">
@@ -2251,7 +2251,7 @@ async function dbLoadAll() {
       if (!r.ok) { var e = await r.json(); return {data:[], error:e}; }
       return {data: await r.json(), error: null};
     }
-    var [hRes,cRes,bRes,lRes,vRes,fRes,vetRes,ieaRes,showRes,riderRes,schedRes] = await Promise.all([
+    var [hRes,cRes,bRes,lRes,vRes,fRes,vetRes,ieaRes,showRes,riderRes,schedRes,vendRes] = await Promise.all([
       qry('horses','created_at'),
       qry('clients','created_at'),
       qry('boarders','created_at'),
@@ -2263,6 +2263,7 @@ async function dbLoadAll() {
       qry('shows','created_at',false),
       qry('rider_lists'),
       qry('schedule_data','created_at'),
+      qry('vendors','created_at'),
     ]);
 
     // Horses
@@ -2271,6 +2272,13 @@ async function dbLoadAll() {
       var archived = hRes.data.filter(function(h) { return h.archived; }).map(dbToHorse);
       horses.splice(0, horses.length, ...active);
       archivedHorses.splice(0, archivedHorses.length, ...archived);
+    }
+
+    // Vendors
+    if (vendRes.data && vendRes.data.length) {
+      vendors.splice(0, vendors.length, ...vendRes.data.map(function(v) {
+        return {_id:v.id, name:v.name||'', company:v.company||'', type:v.type||'other', phone:v.phone||'', email:v.email||'', website:v.website||'', notes:v.notes||''};
+      }));
     }
 
     // Clients
@@ -3141,8 +3149,15 @@ function renderFeedProducts() {
     var editBtn = document.createElement('button');
     editBtn.innerHTML = '&#9999;';
     editBtn.style.cssText = 'position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center';
-    (function(idx) { editBtn.addEventListener('click', function(e) { e.stopPropagation(); editFeedProduct(idx); }); })(realIdx);
+    var delBtn = document.createElement('button');
+    delBtn.innerHTML = '&#10005;';
+    delBtn.style.cssText = 'position:absolute;top:6px;left:6px;background:rgba(180,0,0,0.7);color:white;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center';
+    (function(idx) {
+      editBtn.addEventListener('click', function(e) { e.stopPropagation(); editFeedProduct(idx); });
+      delBtn.addEventListener('click', function(e) { e.stopPropagation(); deleteFeedProduct(idx); });
+    })(realIdx);
     photoDiv.appendChild(editBtn);
+    photoDiv.appendChild(delBtn);
     card.appendChild(photoDiv);
     // Info area
     var info = document.createElement('div');
@@ -3259,6 +3274,15 @@ function archiveFeedOrder() {
   window._lastFeedOrder = null;
   toast('📦 Order archived as "' + name + '"!');
   renderFeedOrderHistory();
+}
+
+function deleteFeedProduct(idx) {
+  var p = feedProducts[idx]; if (!p) return;
+  if (!confirm('Delete ' + p.name + '?')) return;
+  feedProducts.splice(idx, 1);
+  renderFeedProducts();
+  saveToStorage();
+  toast('Deleted', '#c0392b');
 }
 
 function openAddFeedProductModal() {
