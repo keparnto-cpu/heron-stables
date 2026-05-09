@@ -593,12 +593,17 @@ tr:hover td { background: var(--cream); }
       </div>
 
       <!-- Feed section -->
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">Feed</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em">Feed</div>
+      </div>
       <div id="feed-products-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
       <div class="empty" id="feed-products-empty" style="display:none"><div class="empty-icon">🌾</div>No products yet. Add your usual feed and supplies.</div>
 
       <!-- Supplements section -->
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">Supplements</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em">Supplements</div>
+        <button class="btn btn-primary btn-sm" onclick="sendSupplementsOrder()">📱 Share with Pato</button>
+      </div>
       <div id="feed-supplements-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
       <div class="empty" id="feed-supplements-empty" style="margin-bottom:24px"><div class="empty-icon">💊</div>No supplements added yet. Use + Add product and select "Supplements" category.</div>
 
@@ -633,7 +638,10 @@ tr:hover td { background: var(--cream); }
       </div>
 
       <!-- Vet Orders section -->
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">Vet Orders</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em">Vet Orders</div>
+        <button class="btn btn-primary btn-sm" onclick="sendVetOrders()">📱 Share with Pato</button>
+      </div>
       <div class="card" style="margin-bottom:16px">
         <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Add any vet-prescribed medications, treatments or special orders below. These will be included in the SMS to Pato.</div>
         <div id="vet-orders-list"></div>
@@ -2233,8 +2241,8 @@ function loadFromStorage() {
     if (data.vetDocs) vetDocs.splice(0, vetDocs.length, ...data.vetDocs);
     if (data.vendors) vendors.splice(0, vendors.length, ...data.vendors);
     if (data.manualDocs) Object.assign(manualDocs, data.manualDocs);
-    if (data.feedProducts && data.feedProducts.length) feedProducts.splice(0, feedProducts.length, ...data.feedProducts);
-    if (!feedProducts.length) feedProducts.splice(0, feedProducts.length, ...feedProductsDefault.map(function(p){ return Object.assign({}, p); }));
+    if (data.feedProducts && data.feedProducts.length >= 5) feedProducts.splice(0, feedProducts.length, ...data.feedProducts);
+    if (feedProducts.length < 5) feedProducts.splice(0, feedProducts.length, ...feedProductsDefault.map(function(p){ return Object.assign({}, p); }));
     if (data.feedOrderHistory) feedOrderHistory.splice(0, feedOrderHistory.length, ...data.feedOrderHistory);
     if (data.calOtherEvents) calOtherEvents.splice(0, calOtherEvents.length, ...data.calOtherEvents);
     return true;
@@ -3264,13 +3272,30 @@ function renderFeedProducts() {
     if (search && !(p.name + ' ' + (p.brand||'')).toLowerCase().includes(search)) return false;
     return true;
   });
-  if (!list.length) { grid.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
-  if(empty) empty.style.display = 'none';
-  grid.innerHTML = '';
-  list.forEach(function(p, i) {
-    var realIdx = feedProducts.indexOf(p);
-    buildFeedCard(p, realIdx, grid);
-  });
+  // Split into feed and supplements
+  var feedList = list.filter(function(p){ return p.category !== 'supplement'; });
+  var suppList = list.filter(function(p){ return p.category === 'supplement'; });
+
+  // Feed grid
+  if (!feedList.length) { grid.innerHTML = ''; if(empty) empty.style.display = 'block'; }
+  else {
+    if(empty) empty.style.display = 'none';
+    grid.innerHTML = '';
+    feedList.forEach(function(p) { buildFeedCard(p, feedProducts.indexOf(p), grid); });
+  }
+
+  // Supplements grid
+  var suppGrid = document.getElementById('feed-supplements-grid');
+  var suppEmpty = document.getElementById('feed-supplements-empty');
+  if (suppGrid) {
+    if (!suppList.length) { suppGrid.innerHTML = ''; if(suppEmpty) suppEmpty.style.display = 'block'; }
+    else {
+      if(suppEmpty) suppEmpty.style.display = 'none';
+      suppGrid.innerHTML = '';
+      suppList.forEach(function(p) { buildFeedCard(p, feedProducts.indexOf(p), suppGrid); });
+    }
+  }
+
   renderFeedOrderSummary();
 }
 
@@ -3551,6 +3576,39 @@ function renderVetOrders() {
     row.appendChild(del);
     container.appendChild(row);
   });
+}
+
+function sendSupplementsOrder() {
+  var items = Object.keys(feedOrder).filter(function(k) {
+    var p = feedProducts.find(function(p){ return p.name === k; });
+    return feedOrder[k] > 0 && p && p.category === 'supplement';
+  });
+  if (!items.length) { toast('No supplements selected', '#c0392b'); return; }
+  var dateStr = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  var lines = ['💊 HERON STABLES — SUPPLEMENTS ORDER', dateStr, '─────────────────────'];
+  items.forEach(function(name) {
+    var p = feedProducts.find(function(p){ return p.name === name; });
+    var unit = p ? (p.unit||'unit') : 'unit';
+    var brand = p && p.brand ? ' (' + p.brand + ')' : '';
+    lines.push('• ' + feedOrder[name] + ' ' + unit + ' — ' + name + brand);
+  });
+  lines.push('─────────────────────');
+  lines.push('Total: ' + items.length + ' item' + (items.length>1?'s':''));
+  var msg = lines.join('\n');
+  window.location.href = 'sms:6465098774?body=' + encodeURIComponent(msg);
+  toast('📱 Opening Messages…');
+}
+
+function sendVetOrders() {
+  var vetItems = vetOrders.filter(function(o){ return o.text.trim(); });
+  if (!vetItems.length) { toast('No vet orders entered', '#c0392b'); return; }
+  var dateStr = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  var lines = ['🩺 HERON STABLES — VET ORDERS', dateStr, '─────────────────────'];
+  vetItems.forEach(function(o){ lines.push('• ' + o.text.trim()); });
+  lines.push('─────────────────────');
+  var msg = lines.join('\n');
+  window.location.href = 'sms:6465098774?body=' + encodeURIComponent(msg);
+  toast('📱 Opening Messages…');
 }
 
 function addVetOrderLine() {
