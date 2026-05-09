@@ -592,9 +592,15 @@ tr:hover td { background: var(--cream); }
         </select>
       </div>
 
-      <!-- Product grid -->
+      <!-- Feed section -->
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">Feed</div>
       <div id="feed-products-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
       <div class="empty" id="feed-products-empty" style="display:none"><div class="empty-icon">🌾</div>No products yet. Add your usual feed and supplies.</div>
+
+      <!-- Supplements section -->
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">Supplements</div>
+      <div id="feed-supplements-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
+      <div class="empty" id="feed-supplements-empty" style="margin-bottom:24px"><div class="empty-icon">💊</div>No supplements added yet. Use + Add product and select "Supplements" category.</div>
 
       <!-- Order summary -->
       <div id="feed-order-card" style="display:none">
@@ -624,6 +630,14 @@ tr:hover td { background: var(--cream); }
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Vet Orders section -->
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">Vet Orders</div>
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Add any vet-prescribed medications, treatments or special orders below. These will be included in the SMS to Pato.</div>
+        <div id="vet-orders-list"></div>
+        <button class="btn btn-sm" onclick="addVetOrderLine()" style="margin-top:8px">+ Add item</button>
       </div>
 
       <!-- Order history -->
@@ -2219,7 +2233,8 @@ function loadFromStorage() {
     if (data.vetDocs) vetDocs.splice(0, vetDocs.length, ...data.vetDocs);
     if (data.vendors) vendors.splice(0, vendors.length, ...data.vendors);
     if (data.manualDocs) Object.assign(manualDocs, data.manualDocs);
-    if (data.feedProducts) feedProducts.splice(0, feedProducts.length, ...data.feedProducts);
+    if (data.feedProducts && data.feedProducts.length) feedProducts.splice(0, feedProducts.length, ...data.feedProducts);
+    if (!feedProducts.length) feedProducts.splice(0, feedProducts.length, ...feedProductsDefault.map(function(p){ return Object.assign({}, p); }));
     if (data.feedOrderHistory) feedOrderHistory.splice(0, feedOrderHistory.length, ...data.feedOrderHistory);
     if (data.calOtherEvents) calOtherEvents.splice(0, calOtherEvents.length, ...data.calOtherEvents);
     return true;
@@ -2468,6 +2483,7 @@ function renderAll() {
   renderHorseProfiles();
   renderVendors();
   renderFeedProducts();
+  renderVetOrders();
   renderCalendar();
   renderClients();
   renderBoarders();
@@ -3103,6 +3119,128 @@ function saveHorse() {
 // ==========================================
 // FEED & SUPPLIES
 // ==========================================
+var feedProductsDefault = [
+  {
+    "name": "Standlee Timothy Pellets",
+    "brand": "Standlee",
+    "category": "hay",
+    "unit": "bag",
+    "notes": "40 lb bag",
+    "photo": "https://www.standleeforage.com/wp-content/uploads/2019/01/Timothy-Pellets-40lb-Bag-Front.jpg"
+  },
+  {
+    "name": "Triple Crown Senior",
+    "brand": "Triple Crown",
+    "category": "grain",
+    "unit": "bag",
+    "notes": "50 lb bag",
+    "photo": "https://www.triplecrownfeed.com/wp-content/uploads/Senior_2022-300x300.png"
+  },
+  {
+    "name": "Triple Crown Low Starch",
+    "brand": "Triple Crown",
+    "category": "grain",
+    "unit": "bag",
+    "notes": "50 lb bag",
+    "photo": "https://www.triplecrownfeed.com/wp-content/uploads/Low-Starch_2022-300x300.png"
+  },
+  {
+    "name": "Triple Crown Growth",
+    "brand": "Triple Crown",
+    "category": "grain",
+    "unit": "bag",
+    "notes": "50 lb bag",
+    "photo": "https://www.triplecrownfeed.com/wp-content/uploads/Growth_2022-300x300.png"
+  },
+  {
+    "name": "Pro Elite Starch Wise",
+    "brand": "Pro Elite",
+    "category": "grain",
+    "unit": "bag",
+    "notes": "50 lb bag",
+    "photo": "https://proeliteequine.com/wp-content/uploads/2021/04/Pro-Elite-Starch-Wise-300x300.jpg"
+  },
+  {
+    "name": "Triple Crown Balancer",
+    "brand": "Triple Crown",
+    "category": "grain",
+    "unit": "bag",
+    "notes": "50 lb bag",
+    "photo": "https://www.triplecrownfeed.com/wp-content/uploads/Balancer-Gold_2022-300x300.png"
+  },
+  {
+    "name": "Purina Outlast",
+    "brand": "Purina",
+    "category": "grain",
+    "unit": "bag",
+    "notes": "25 lb bag \u2014 gastric support",
+    "photo": "https://www.purinamills.com/content/dam/Purina_Mills/horse/products/outlast/Outlast_Bag_25lb_Front.jpg"
+  },
+  {
+    "name": "Purina Ultimate Gastric",
+    "brand": "Purina",
+    "category": "grain",
+    "unit": "bag",
+    "notes": "25 lb bag",
+    "photo": "https://www.purinamills.com/content/dam/Purina_Mills/horse/products/ultimate-gastric/UltimateGastric_25lb_Front.jpg"
+  },
+  {
+    "name": "Cavalor Pianissimo",
+    "brand": "Cavalor",
+    "category": "grain",
+    "unit": "bag",
+    "notes": "44 lb bag \u2014 calming feed",
+    "photo": "https://www.cavalor.com/media/catalog/product/p/i/pianissimo_44lb_en.jpg"
+  },
+  {
+    "name": "Mrs. Pastures Cookies",
+    "brand": "Mrs. Pastures",
+    "category": "grain",
+    "unit": "bag",
+    "notes": "5 lb bag \u2014 horse treats",
+    "photo": "https://www.mrspastures.com/cdn/shop/files/5lb_bag_1200x.jpg"
+  },
+  {
+    "name": "Calmakazi",
+    "brand": "Equine Elixirs",
+    "category": "supplement",
+    "unit": "bag",
+    "notes": "5.8 lb \u2014 calming / nervous system support",
+    "photo": "https://www.equineelixirs.com/cdn/shop/files/Calmakazi_Front_1296x.jpg"
+  },
+  {
+    "name": "Arthroscope",
+    "brand": "Equine Elixirs",
+    "category": "supplement",
+    "unit": "bag",
+    "notes": "1.34 lb \u2014 joint support",
+    "photo": "https://www.equineelixirs.com/cdn/shop/files/Arthroscope_Front_1296x.jpg"
+  },
+  {
+    "name": "Electrofresh",
+    "brand": "Equine Elixirs",
+    "category": "supplement",
+    "unit": "bag",
+    "notes": "1.7 lb \u2014 electrolytes / hydration",
+    "photo": "https://www.equineelixirs.com/cdn/shop/files/Electrofresh_Front_1296x.jpg"
+  },
+  {
+    "name": "Essential K",
+    "brand": "Tribute",
+    "category": "supplement",
+    "unit": "bag",
+    "notes": "50 lb bag \u2014 ration balancer",
+    "photo": "https://tributeequinenutrition.com/cdn/shop/files/EssentialK_Bag_2024.png"
+  },
+  {
+    "name": "Alimend",
+    "brand": "Vitalize",
+    "category": "supplement",
+    "unit": "bottle",
+    "notes": "64 oz \u2014 gastric health / stomach comfort",
+    "photo": "https://vitalizeeq.com/wp-content/uploads/2022/04/Alimend-64oz-500x500.jpg"
+  }
+];
 var feedProducts = [];
 var feedOrder = {};
 var feedOrderHistory = [];
@@ -3117,6 +3255,8 @@ function renderFeedProducts() {
   var grid = document.getElementById('feed-products-grid');
   var empty = document.getElementById('feed-products-empty');
   if (!grid) return;
+  // Load defaults on first render if empty
+  if (!feedProducts.length) feedProducts.splice(0, feedProducts.length, ...feedProductsDefault.map(function(p){ return Object.assign({}, p); }));
   var search = (document.getElementById('feed-search') ? document.getElementById('feed-search').value : '').toLowerCase();
   var cat = document.getElementById('feed-category-filter') ? document.getElementById('feed-category-filter').value : 'all';
   var list = feedProducts.filter(function(p) {
@@ -3129,6 +3269,13 @@ function renderFeedProducts() {
   grid.innerHTML = '';
   list.forEach(function(p, i) {
     var realIdx = feedProducts.indexOf(p);
+    buildFeedCard(p, realIdx, grid);
+  });
+  renderFeedOrderSummary();
+}
+
+function buildFeedCard(p, realIdx, grid) {
+    var i = realIdx;
     var color = feedCategoryColors[p.category] || '#999';
     var qty = feedOrder[p.name] || 0;
     var card = document.createElement('div');
@@ -3203,8 +3350,6 @@ function renderFeedProducts() {
     orderDiv.appendChild(controls);
     card.appendChild(orderDiv);
     grid.appendChild(card);
-  });
-  renderFeedOrderSummary();
 }
 
 function renderFeedOrderSummary() {
@@ -3226,6 +3371,7 @@ function renderFeedOrderSummary() {
 function clearFeedOrder() {
   feedOrder = {};
   renderFeedProducts();
+  renderVetOrders();
   if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar();
 }
 
@@ -3242,6 +3388,13 @@ function sendFeedOrder() {
   });
   lines.push('─────────────────────');
   lines.push('Total: ' + items.length + ' item' + (items.length>1?'s':''));
+  // Add vet orders if any
+  var vetItems = vetOrders.filter(function(o){ return o.text.trim(); });
+  if (vetItems.length) {
+    lines.push('');
+    lines.push('💊 VET ORDERS:');
+    vetItems.forEach(function(o){ lines.push('• ' + o.text.trim()); });
+  }
   var msg = lines.join('\n');
   var smsUrl = 'sms:6465098774?body=' + encodeURIComponent(msg);
   window.location.href = smsUrl;
@@ -3281,6 +3434,7 @@ function deleteFeedProduct(idx) {
   if (!confirm('Delete ' + p.name + '?')) return;
   feedProducts.splice(idx, 1);
   renderFeedProducts();
+  renderVetOrders();
   saveToStorage();
   toast('Deleted', '#c0392b');
 }
@@ -3309,6 +3463,7 @@ function saveFeedProduct() {
   if (editingFeedIdx >= 0) { feedProducts[editingFeedIdx] = p; toast('✅ '+name+' updated!'); editingFeedIdx=-1; }
   else { feedProducts.push(p); toast('🌾 '+name+' added!'); }
   renderFeedProducts();
+  renderVetOrders();
   if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar(); saveToStorage(); closeModal();
 }
 
@@ -3360,10 +3515,59 @@ function renderFeedOrderHistory() {
 }
 
 
+// ── VET ORDERS ──
+var vetOrders = []; // Array of {text: ''}
+
+function renderVetOrders() {
+  var container = document.getElementById('vet-orders-list');
+  if (!container) return;
+  container.innerHTML = '';
+  if (!vetOrders.length) vetOrders.push({text: ''});
+  vetOrders.forEach(function(o, i) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px';
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = o.text;
+    input.placeholder = 'e.g. Gastrogard 1 tube daily for Stanley — 7 days';
+        input.style.flex = '1'; input.style.padding = '8px 10px'; input.style.border = '1px solid var(--border)'; input.style.borderRadius = '2px'; input.style.fontSize = '13px'; input.style.background = 'var(--cream)'; input.style.color = 'var(--text)'; input.style.outline = 'none';
+    (function(idx) {
+      input.addEventListener('input', function() {
+        vetOrders[idx].text = this.value;
+      });
+    })(i);
+    var del = document.createElement('button');
+    del.className = 'btn btn-sm';
+    del.textContent = '✕';
+    del.style.cssText = 'color:var(--red);border-color:var(--red);flex-shrink:0';
+    (function(idx) {
+      del.addEventListener('click', function() {
+        vetOrders.splice(idx, 1);
+        if (!vetOrders.length) vetOrders.push({text: ''});
+        renderVetOrders();
+      });
+    })(i);
+    row.appendChild(input);
+    row.appendChild(del);
+    container.appendChild(row);
+  });
+}
+
+function addVetOrderLine() {
+  vetOrders.push({text: ''});
+  renderVetOrders();
+  // Focus the new input
+  setTimeout(function() {
+    var inputs = document.querySelectorAll('#vet-orders-list input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  }, 50);
+}
+
 function reorderFeed(i) {
   var o = feedOrderHistory[i]; if (!o) return;
   feedOrder = JSON.parse(JSON.stringify(o.items));
   renderFeedProducts();
+  renderVetOrders();
   toast('🛒 Order loaded — review and share when ready!');
 }
 
