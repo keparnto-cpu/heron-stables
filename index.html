@@ -324,6 +324,9 @@ tr:hover td { background: var(--cream); }
     <div class="nav-item active" onclick="showPage('dashboard', this)">
       <span class="nav-icon">⊞</span> Dashboard
     </div>
+    <div class="nav-item" onclick="showPage('calendar', this)">
+      <span class="nav-icon">📅</span> Calendar
+    </div>
 
     <div class="nav-section-label">Horses & Clients</div>
     <div class="nav-item" onclick="showPage('horse-profiles', this)">
@@ -443,16 +446,17 @@ tr:hover td { background: var(--cream); }
     <div class="page" id="page-calendar">
       <div class="section-header">
         <div class="section-title">Calendar</div>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <button class="btn btn-sm" onclick="calNav(-1)">&#8592;</button>
           <span id="cal-title" style="font-family:'Cormorant Garamond',serif;font-size:18px;min-width:160px;text-align:center"></span>
           <button class="btn btn-sm" onclick="calNav(1)">&#8594;</button>
           <button class="btn btn-sm" onclick="calGoToday()">Today</button>
-        </div>
-        <div style="display:flex;gap:4px">
-          <button class="btn btn-sm" id="cal-btn-day" onclick="setCalView('day')">Day</button>
-          <button class="btn btn-sm" id="cal-btn-week" onclick="setCalView('week')">Week</button>
-          <button class="btn btn-sm btn-primary" id="cal-btn-month" onclick="setCalView('month')">Month</button>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-sm" id="cal-btn-day" onclick="setCalView('day')">Day</button>
+            <button class="btn btn-sm" id="cal-btn-week" onclick="setCalView('week')">Week</button>
+            <button class="btn btn-sm btn-primary" id="cal-btn-month" onclick="setCalView('month')">Month</button>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openCalEventModal()">+ Add event</button>
         </div>
       </div>
 
@@ -484,37 +488,6 @@ tr:hover td { background: var(--cream); }
       </div>
       <div id="horse-profiles-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px"></div>
       <div class="empty" id="horse-profiles-empty" style="display:none"><div class="empty-icon">🐴</div>No horses yet. Add your first horse!</div>
-    </div>
-
-    <!-- ARCHIVE -->
-    <div class="page" id="page-archive">
-      <div class="section-header">
-        <div class="section-title">Archive</div>
-      </div>
-      <div class="tabs">
-        <div class="tab active" onclick="switchArchiveTab(this,'archive-horses')">Horses</div>
-        <div class="tab" onclick="switchArchiveTab(this,'archive-clients')">Clients</div>
-      </div>
-      <div id="archive-horses">
-        <div class="card">
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Horse</th><th>Registered name</th><th>Owner</th><th>Board type</th><th>Archived</th><th></th></tr></thead>
-              <tbody id="archive-horse-table"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No archived horses yet.</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div id="archive-clients" style="display:none">
-        <div class="card">
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Name</th><th>Role</th><th>Phone</th><th>Email</th><th>Archived</th><th></th></tr></thead>
-              <tbody id="archive-client-table"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No archived clients yet.</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- CLIENTS -->
@@ -636,6 +609,58 @@ tr:hover td { background: var(--cream); }
           <div id="feed-order-list"></div>
         </div>
       </div>
+
+      <!-- Archive prompt (shows after sharing) -->
+      <div id="feed-archive-prompt" style="display:none">
+        <div class="card" style="border-left:3px solid var(--green);background:var(--cream)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:600;font-size:14px">Order sent! Would you like to archive it?</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Save a record of this order for future reference.</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-sm" onclick="document.getElementById('feed-archive-prompt').style.display='none';clearFeedOrder()">No thanks</button>
+              <button class="btn btn-primary btn-sm" onclick="archiveFeedOrder()">📦 Archive order</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order history -->
+      <div id="feed-history-section" style="margin-top:8px">
+        <div id="feed-history-list"></div>
+      </div>
+    </div>
+
+    <!-- ARCHIVE -->
+    <div class="page" id="page-archive">
+      <div class="section-header">
+        <div class="section-title">Archive</div>
+      </div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchArchiveTab(this,'archive-horses')">Horses</div>
+        <div class="tab" onclick="switchArchiveTab(this,'archive-clients')">Clients</div>
+      </div>
+      <div id="archive-horses">
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Horse</th><th>Registered name</th><th>Owner</th><th>Board type</th><th>Archived</th><th></th></tr></thead>
+              <tbody id="archive-horse-table"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No archived horses yet.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="archive-clients" style="display:none">
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Role</th><th>Phone</th><th>Email</th><th>Archived</th><th></th></tr></thead>
+              <tbody id="archive-client-table"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No archived clients yet.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- BOARDING -->
@@ -692,33 +717,78 @@ tr:hover td { background: var(--cream); }
       </div>
     </div>
 
-    <!-- COGGINS -->
-    <div class="page" id="page-coggins">
+    <!-- LESSONS LOG -->
+    <div class="page" id="page-lessons">
       <div class="section-header">
-        <div class="section-title">Coggins / EIA records</div>
-        <button class="btn btn-primary btn-sm" onclick="openFileUpload(null,'coggins',function(url,name){ addCogginsDoc(url,name); })">+ Upload record</button>
+        <div class="section-title">Lessons log</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="filter-select" id="lesson-month-filter" onchange="filterLessons()">
+            <option value="2026-05">May 2026</option>
+            <option value="2026-04">April 2026</option>
+            <option value="2026-03">March 2026</option>
+            <option value="2026-02">February 2026</option>
+            <option value="2026-01">January 2026</option>
+          </select>
+          <select class="filter-select" id="lesson-trainer-filter" onchange="filterLessons()">
+            <option value="all">All trainers</option>
+            <option value="Alex Charles">Alex Charles</option>
+            <option value="Caroline Johnston">Caroline Johnston</option>
+          </select>
+          <button class="btn btn-sm" onclick="emailLessonsReport()" style="background:var(--amber-pale);border-color:var(--amber);color:var(--amber)">📤 Share with Pato</button>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-lesson')">+ Log lesson</button>
+        </div>
       </div>
-      <div class="card">
-        <table>
-          <thead><tr><th>Horse</th><th>EIA / Accession #</th><th>Test date</th><th>Result</th><th>Valid until</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Stanley (A Happy Medium)</strong></td><td>EIA21459861</td><td>2021</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current (May 2025)</span></td></tr>
-            <tr><td><strong>Diplo</strong></td><td>EIA22491692</td><td>2022</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-            <tr><td><strong>Destiny</strong></td><td>EIA23095032</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-            <tr><td><strong>Kingston</strong></td><td>EIA23095198</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-            <tr><td><strong>Valencio</strong></td><td>EIA23095292</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-red">Renew now</span></td></tr>
-            <tr><td><strong>Coco</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-            <tr><td><strong>Milton</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-amber">Check</span></td></tr>
-            <tr><td><strong>Q</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div style="margin-top:12px;font-size:12px;color:var(--text-muted);padding:0 4px">
-        All EIA (Coggins) tests must be renewed annually. Contact Dr. Nicole Jochec at Running Equine (908) 832-5484 to schedule testing.
-      </div>
-    </div>
 
-    <!-- IEA SHOWS -->
+      <div class="metrics-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+        <div class="metric-card">
+          <div class="metric-label">Lessons this month</div>
+          <div class="metric-value" id="stat-total">0</div>
+          <div class="metric-sub">Logged so far</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Total hours</div>
+          <div class="metric-value" id="stat-hours">0</div>
+          <div class="metric-sub">Riding time</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Unique riders</div>
+          <div class="metric-value" id="stat-riders">0</div>
+          <div class="metric-sub">This month</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Month revenue</div>
+          <div class="metric-value" id="stat-revenue">$0</div>
+          <div class="metric-sub">Lesson fees</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Rider</th>
+                <th>Horse</th>
+                <th>Type</th>
+                <th>Duration</th>
+                <th>Trainer</th>
+                <th>Fee</th>
+                <th>Paid</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="lessons-table">
+            </tbody>
+          </table>
+        </div>
+        <div class="empty" id="lessons-empty" style="display:none">
+          <div class="empty-icon">🎓</div>
+          No lessons logged for this month yet. Click "Log lesson" to add one.
+        </div>
+      </div>
+    </div>    <!-- IEA SHOWS -->
     <div class="page" id="page-iea">
       <div class="section-header">
         <div class="section-title">IEA Shows</div>
@@ -787,6 +857,8 @@ tr:hover td { background: var(--cream); }
         <div style="font-size:32px;margin-bottom:8px">🏆</div>
         Select a show above or add a new one to get started.
       </div>
+    </div>
+    </div>
     </div>
 
     <!-- SHOWS -->
@@ -895,8 +967,8 @@ tr:hover td { background: var(--cream); }
         <div id="show-photos" style="display:none">
           <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-              <div style="font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:0.04em">Show photos</div>
-              <button class="btn btn-primary btn-sm" onclick="uploadShowPhoto('show')">📷 Upload photo</button>
+              <div style="font-family:serif;font-size:17px">Show photos</div>
+              <button class="btn btn-primary btn-sm" onclick="uploadShowPhoto('show')">&#128247; Upload photo</button>
             </div>
             <div id="show-photos-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:8px"></div>
             <div id="show-photos-empty" style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">No photos yet. Click Upload photo to add some!</div>
@@ -911,6 +983,7 @@ tr:hover td { background: var(--cream); }
       <div class="section-header">
         <div class="section-title">Farrier schedule</div>
         <button class="btn btn-primary btn-sm" onclick="openFarrierModal()">+ Add appointment</button>
+        <button class="btn btn-sm" onclick="addAllHorsesFarrier()" style="border-color:var(--gold);color:var(--gold)">+ Add all horses</button>
       </div>
 
       <!-- Horse selector -->
@@ -1075,77 +1148,106 @@ tr:hover td { background: var(--cream); }
 
     </div>
 
-    <!-- LESSONS LOG -->
-    <div class="page" id="page-lessons">
+    <!-- WAIVERS / DOCUMENTS -->
+    <div class="page" id="page-waivers">
       <div class="section-header">
-        <div class="section-title">Lessons log</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select class="filter-select" id="lesson-month-filter" onchange="filterLessons()">
-            <option value="2026-05">May 2026</option>
-            <option value="2026-04">April 2026</option>
-            <option value="2026-03">March 2026</option>
-            <option value="2026-02">February 2026</option>
-            <option value="2026-01">January 2026</option>
-          </select>
-          <select class="filter-select" id="lesson-trainer-filter" onchange="filterLessons()">
-            <option value="all">All trainers</option>
-            <option value="Alex Charles">Alex Charles</option>
-          </select>
-          <button class="btn btn-sm" onclick="emailLessonsReport()" style="background:var(--amber-pale);border-color:var(--amber);color:var(--amber)">📤 Share with Pato</button>
-          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-lesson')">+ Log lesson</button>
-        </div>
+        <div class="section-title">Documents</div>
+        <button class="btn btn-primary btn-sm" onclick="openDocUpload()">+ Upload doc</button>
+      </div>
+      <div class="tabs" id="waivers-tabs">
+        <div class="tab active" onclick="switchWaiversTab(this,'docs-waivers')">Waivers</div>
+        <div class="tab" onclick="switchWaiversTab(this,'docs-leases')">Leases</div>
+        <div class="tab" onclick="switchWaiversTab(this,'docs-board')">Board agreements</div>
+        <div class="tab" onclick="switchWaiversTab(this,'docs-other')">Other docs</div>
       </div>
 
-      <div class="metrics-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
-        <div class="metric-card">
-          <div class="metric-label">Lessons this month</div>
-          <div class="metric-value" id="stat-total">0</div>
-          <div class="metric-sub">Logged so far</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Total hours</div>
-          <div class="metric-value" id="stat-hours">0</div>
-          <div class="metric-sub">Riding time</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Unique riders</div>
-          <div class="metric-value" id="stat-riders">0</div>
-          <div class="metric-sub">This month</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Month revenue</div>
-          <div class="metric-value" id="stat-revenue">$0</div>
-          <div class="metric-sub">Lesson fees</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="table-wrap">
+      <div id="docs-waivers">
+        <div class="card">
           <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Rider</th>
-                <th>Horse</th>
-                <th>Type</th>
-                <th>Duration</th>
-                <th>Trainer</th>
-                <th>Fee</th>
-                <th>Paid</th>
-                <th>Notes</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="lessons-table">
+            <thead><tr><th>Client</th><th>Document</th><th>Date on file</th><th>Status</th><th></th></tr></thead>
+            <tbody id="manual-docs-waivers"></tbody>
+            <tbody>
+              <tr><td>Alexandra Kutovoy</td><td>Heron Stables Waiver</td><td>2025-01-28</td><td><span class="badge badge-green">Signed</span></td><td></td></tr>
+              <tr><td>Anna Baskevich</td><td>Heron Stables Waiver</td><td>2025-02-10</td><td><span class="badge badge-green">Signed</span></td><td></td></tr>
+              <tr><td>Bridget Lang</td><td>Heron Stables Waiver</td><td>2025-01-15</td><td><span class="badge badge-green">Signed</span></td><td></td></tr>
+              <tr><td>Caryn Biehl</td><td>Heron Stables Waiver</td><td>2025-03-01</td><td><span class="badge badge-green">Signed</span></td><td></td></tr>
+              <tr><td>Courtney McCaffrey</td><td>Heron Stables Waiver</td><td>2025-02-20</td><td><span class="badge badge-green">Signed</span></td><td></td></tr>
+              <tr><td>Emma Brown</td><td>Heron Stables Waiver</td><td>2025-01-10</td><td><span class="badge badge-green">Signed</span></td><td></td></tr>
+              <tr><td>Erin Polos</td><td>Heron Stables Waiver</td><td>2025-01-22</td><td><span class="badge badge-green">Signed</span></td><td></td></tr>
+              <tr><td>Kate Tsirelman</td><td>Heron Stables Waiver</td><td>2025-04-05</td><td><span class="badge badge-green">Signed</span></td><td></td></tr>
+              <tr><td>Kristen Caporaso</td><td>Heron Stables Waiver</td><td>2025-03-15</td><td><span class="badge badge-green">Signed</span></td><td></td></tr>
+              <tr><td>Sherri Pyka</td><td>Heron Stables Waiver</td><td>2025-02-01</td><td><span class="badge badge-green">Signed</span></td><td></td></tr>
             </tbody>
           </table>
         </div>
-        <div class="empty" id="lessons-empty" style="display:none">
-          <div class="empty-icon">🎓</div>
-          No lessons logged for this month yet. Click "Log lesson" to add one.
+      </div>
+
+      <div id="docs-leases" style="display:none">
+        <div class="card">
+          <div style="margin-bottom:12px;font-size:13px;color:var(--text-muted)">Lease agreements on file.</div>
+          <table>
+            <thead><tr><th>Client</th><th>Horse</th><th>Document</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="manual-docs-leases"></tbody>
+            <tbody></tbody>
+          </table>
+          <div class="empty"><div class="empty-icon">📄</div>No lease agreements on file yet. Use + Upload doc to add one.</div>
+        </div>
+      </div>
+
+      <div id="docs-board" style="display:none">
+        <div class="card">
+          <div style="margin-bottom:12px;font-size:13px;color:var(--text-muted)">Click any document to open it.</div>
+          <table>
+            <thead><tr><th>Client</th><th>Horse</th><th>Agreement</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="manual-docs-board"></tbody>
+            <tbody>
+              <tr><td>Alex Charles</td><td>Stanley</td><td>Board agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Melissa Girnius</td><td>Gigi</td><td>Board agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Sherri Pyka</td><td>–</td><td>Boarding agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="docs-other" style="display:none">
+        <div class="card">
+          <table>
+            <thead><tr><th>Document</th><th>Notes</th><th>Date</th><th>Status</th><th></th></tr></thead>
+            <tbody id="manual-docs-other"></tbody>
+            <tbody></tbody>
+          </table>
+          <div class="empty"><div class="empty-icon">📄</div>No other documents yet.</div>
         </div>
       </div>
     </div>
+
+    <!-- COGGINS -->
+    <div class="page" id="page-coggins">
+      <div class="section-header">
+        <div class="section-title">Coggins / EIA records</div>
+        <button class="btn btn-primary btn-sm" onclick="openFileUpload(null,'coggins',function(url,name){ addCogginsDoc(url,name); })">+ Upload record</button>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Horse</th><th>EIA / Accession #</th><th>Test date</th><th>Result</th><th>Valid until</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Stanley (A Happy Medium)</strong></td><td>EIA21459861</td><td>2021</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current (May 2025)</span></td></tr>
+            <tr><td><strong>Diplo</strong></td><td>EIA22491692</td><td>2022</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
+            <tr><td><strong>Destiny</strong></td><td>EIA23095032</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
+            <tr><td><strong>Kingston</strong></td><td>EIA23095198</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
+            <tr><td><strong>Valencio</strong></td><td>EIA23095292</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-red">Renew now</span></td></tr>
+            <tr><td><strong>Coco</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
+            <tr><td><strong>Milton</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-amber">Check</span></td></tr>
+            <tr><td><strong>Q</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text-muted);padding:0 4px">
+        All EIA (Coggins) tests must be renewed annually. Contact Dr. Nicole Jochec at Running Equine (908) 832-5484 to schedule testing.
+      </div>
+    </div>
+
+
 
   </div><!-- end content -->
 </div><!-- end main -->
@@ -1183,6 +1285,7 @@ tr:hover td { background: var(--cream); }
       </div>
       <div class="form-row">
         <div class="form-group"><label>EIA / Coggins #</label><input type="text" id="h-eia" placeholder="e.g. EIA21459861"></div>
+        <div class="form-group"><label>Microchip #</label><input type="text" id="h-microchip" placeholder="e.g. 985141000123456"></div>
         <div class="form-group"><label>Owner</label><select id="h-owner"><option value="">Select owner…</option></select></div>
       </div>
       <div style="font-size:11px;font-weight:500;color:var(--green);text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 4px">Physical description</div>
@@ -1294,7 +1397,7 @@ tr:hover td { background: var(--cream); }
     <div class="modal-body">
       <div class="form-row">
         <div class="form-group"><label>Date *</label><input type="date" id="l-date"></div>
-        <div class="form-group"><label>Trainer *</label><select id="l-trainer"><option>Alex Charles</option><option>Patricia Amador</option><option>Bridget Lang</option><option>Other</option></select></div>
+        <div class="form-group"><label>Trainer *</label><select id="l-trainer"><option>Alex Charles</option><option>Caroline Johnston</option><option>Patricia Amador</option><option>Bridget Lang</option><option>Other</option></select></div>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -1832,6 +1935,104 @@ tr:hover td { background: var(--cream); }
     </div>
   </div>
 
+  <!-- ADD CALENDAR EVENT -->
+  <div class="modal-box" id="modal-add-cal-event" style="display:none;max-width:540px">
+    <div class="modal-header"><span>Add event</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Event type *</label>
+          <select id="cal-event-type" onchange="updateCalEventForm(this.value)" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option value="lesson">Lesson</option>
+            <option value="vet">Vet appointment</option>
+            <option value="farrier">Farrier</option>
+            <option value="show">Show</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Date *</label><input type="date" id="cal-event-date"></div>
+      </div>
+      <div id="cal-fields-lesson">
+        <div class="form-row">
+          <div class="form-group"><label>Rider</label>
+            <select id="cal-lesson-rider" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none"><option value="">Select rider…</option></select>
+          </div>
+          <div class="form-group"><label>Horse</label>
+            <select id="cal-lesson-horse" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none"><option value="">Select horse…</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Trainer</label>
+            <select id="cal-lesson-trainer" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+              <option>Alex Charles</option><option>Caroline Johnston</option><option>Patricia Amador</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Lesson type</label>
+            <select id="cal-lesson-type" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+              <option>Jump lesson</option><option>Flatwork</option><option>Dressage</option><option>Hunter lesson</option><option>Private lesson</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Duration</label>
+            <select id="cal-lesson-duration" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+              <option>30 min</option><option>45 min</option><option>1 hour</option><option>1.5 hours</option><option>2 hours</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Fee</label><input type="text" id="cal-lesson-fee" placeholder="e.g. 120"></div>
+        </div>
+      </div>
+      <div id="cal-fields-vet" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label>Horse</label>
+            <select id="cal-vet-horse" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none"><option value="">Select horse…</option><option value="All horses">All horses</option></select>
+          </div>
+          <div class="form-group"><label>Category</label>
+            <select id="cal-vet-category" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+              <option>Routine</option><option>Deworming</option><option>Emergency</option><option>Dental</option><option>Coggins</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Vet</label>
+          <select id="cal-vet-vet" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option>Dr. Nicole Jochec</option><option>Dr. Travis Bowers</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Description</label><input type="text" id="cal-vet-desc" placeholder="e.g. Annual wellness exam"></div>
+      </div>
+      <div id="cal-fields-farrier" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label>Horse</label>
+            <select id="cal-farrier-horse" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none"><option value="">Select horse…</option></select>
+          </div>
+          <div class="form-group"><label>Service</label>
+            <select id="cal-farrier-service" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+              <option>Full reset (4 shoes)</option><option>Front shoes only</option><option>Trim only</option><option>New set (4 shoes)</option><option>Corrective shoeing</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="cal-fields-show" style="display:none">
+        <div class="form-group"><label>Show name *</label><input type="text" id="cal-show-name" placeholder="e.g. HITS Ocala Spring Circuit"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Type</label>
+            <select id="cal-show-type" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+              <option value="show">Regular show</option><option value="iea">IEA show</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Location</label><input type="text" id="cal-show-location" placeholder="Venue name"></div>
+        </div>
+      </div>
+      <div id="cal-fields-other" style="display:none">
+        <div class="form-group"><label>Title *</label><input type="text" id="cal-other-title" placeholder="e.g. Barn meeting, Farm inspection…"></div>
+      </div>
+      <div class="form-group" style="margin-top:8px"><label>Notes</label><input type="text" id="cal-event-notes" placeholder="Any additional notes…"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCalEvent()">Add to calendar</button>
+    </div>
+  </div>
+
 </div><!-- end modal overlay -->
 
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:2000;box-shadow:0 4px 16px rgba(0,0,0,0.15)"></div>
@@ -2019,6 +2220,8 @@ function loadFromStorage() {
     if (data.vendors) vendors.splice(0, vendors.length, ...data.vendors);
     if (data.manualDocs) Object.assign(manualDocs, data.manualDocs);
     if (data.feedProducts) feedProducts.splice(0, feedProducts.length, ...data.feedProducts);
+    if (data.feedOrderHistory) feedOrderHistory.splice(0, feedOrderHistory.length, ...data.feedOrderHistory);
+    if (data.calOtherEvents) calOtherEvents.splice(0, calOtherEvents.length, ...data.calOtherEvents);
     return true;
   } catch(e) { return false; }
 }
@@ -2257,7 +2460,7 @@ function renderAll() {
   renderHorseProfiles();
   renderVendors();
   renderFeedProducts();
-  if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar();
+  renderCalendar();
   renderClients();
   renderBoarders();
   renderLessons();
@@ -2566,9 +2769,13 @@ function showPage(id, el) {
   if (sidebar) sidebar.classList.remove('open');
   if (overlay) overlay.classList.remove('open');
   var titles = {
-    dashboard:'Dashboard', 'horse-profiles':'Horse Profiles', clients:'Clients', archive:'Archive',
-    boarding:'Boarding & Training', schedule:'Lesson Schedule', vaccinations:'Vaccinations',
-    lessons:'Lessons Log', waivers:'Waivers & Documents', coggins:'Coggins / EIA Records'
+    dashboard:'Dashboard', calendar:'Calendar',
+    'horse-profiles':'Horse Profiles', clients:'Clients', vendors:'Vendors',
+    feed:'Feed & Supplies', archive:'Archive',
+    boarding:'Boarding & Training', lessons:'Lessons Log',
+    iea:'IEA Shows', shows:'Shows', farrier:'Farrier Schedule',
+    vet:'Veterinary', vaccinations:'Veterinary', coggins:'Veterinary',
+    waivers:'Documents'
   };
   document.getElementById('topbar-title').textContent = titles[id] || id;
   updateTopbar('page-' + id);
@@ -2656,7 +2863,7 @@ function handleAdd() {
 function updateTopbar(pageId) {
   var addBtn = document.querySelector('.topbar .btn-primary');
   var search = document.querySelector('.topbar-search');
-  var noAddPages = ['page-dashboard','page-vendors','page-farrier','page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations'];
+  var noAddPages = ['page-dashboard','page-calendar','page-vendors','page-farrier','page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations'];
   var noSearchPages = ['page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations','page-boarding','page-lessons','page-horse-profiles'];
   if (addBtn) addBtn.style.display = noAddPages.includes(pageId) ? 'none' : 'inline-flex';
   if (search) search.style.display = noSearchPages.includes(pageId) ? 'none' : 'flex';
@@ -2880,7 +3087,7 @@ function saveHorse() {
   syncHorseSelects(); renderHorseProfiles(); saveToStorage(); closeModal();
   document.getElementById('modal-add-horse').querySelector('.modal-header span').textContent = 'Add new horse';
   document.getElementById('horse-save-btn').textContent = 'Add horse';
-  ['h-name','h-showname','h-regname','h-breed','h-color','h-height','h-dob','h-usef','h-eia','h-notes','h-farrier-notes','h-feed-hay','h-feed-grain','h-feed-supplements','h-feed-notes'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
+  ['h-name','h-showname','h-regname','h-breed','h-color','h-height','h-dob','h-usef','h-eia','h-microchip','h-notes','h-farrier-notes','h-feed-hay','h-feed-grain','h-feed-supplements','h-feed-notes'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
   document.getElementById('h-fee').value = '';
 }
 
@@ -2890,6 +3097,7 @@ function saveHorse() {
 // ==========================================
 var feedProducts = [];
 var feedOrder = {};
+var feedOrderHistory = [];
 var editingFeedIdx = -1;
 
 var feedCategoryColors = {
@@ -3009,19 +3217,48 @@ function clearFeedOrder() {
 function sendFeedOrder() {
   var items = Object.keys(feedOrder).filter(function(k) { return feedOrder[k] > 0; });
   if (!items.length) { toast('No items selected', '#c0392b'); return; }
-  var lines = ['🌾 HERON STABLES FEED ORDER', new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}), ''];
+  var dateStr = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  var lines = ['🌾 HERON STABLES — FEED ORDER', dateStr, '─────────────────────'];
   items.forEach(function(name) {
     var p = feedProducts.find(function(p){ return p.name===name; });
     var unit = p ? (p.unit||'unit') : 'unit';
-    lines.push('• ' + feedOrder[name] + 'x ' + name + (p&&p.brand?' ('+p.brand+')':'') + ' — ' + feedOrder[name] + ' ' + unit);
+    var brand = p && p.brand ? ' (' + p.brand + ')' : '';
+    lines.push('• ' + feedOrder[name] + ' ' + unit + (feedOrder[name]>1&&!unit.endsWith('s')?'s':'') + ' — ' + name + brand);
   });
-  lines.push('');
-  lines.push('Total items: ' + items.length);
+  lines.push('─────────────────────');
+  lines.push('Total: ' + items.length + ' item' + (items.length>1?'s':''));
   var msg = lines.join('\n');
-  // Open SMS to Pato's number
   var smsUrl = 'sms:6465098774?body=' + encodeURIComponent(msg);
   window.location.href = smsUrl;
+  // Show archive option after sending
+  setTimeout(function() {
+    var card = document.getElementById('feed-archive-prompt');
+    if (card) card.style.display = 'block';
+    window._lastFeedOrder = {items: JSON.parse(JSON.stringify(feedOrder)), date: new Date().toISOString().slice(0,10), msg: msg};
+  }, 500);
   toast('📱 Opening Messages…');
+}
+
+function archiveFeedOrder() {
+  if (!window._lastFeedOrder) return;
+  var defaultName = 'Feed order ' + window._lastFeedOrder.date;
+  var name = prompt('Name this order:', defaultName);
+  if (!name) return;
+  if (!feedOrderHistory) feedOrderHistory = [];
+  feedOrderHistory.unshift({
+    name: name,
+    date: window._lastFeedOrder.date,
+    items: window._lastFeedOrder.items,
+    msg: window._lastFeedOrder.msg
+  });
+  saveToStorage();
+  // Hide archive prompt and clear order
+  var card = document.getElementById('feed-archive-prompt');
+  if (card) card.style.display = 'none';
+  clearFeedOrder();
+  window._lastFeedOrder = null;
+  toast('📦 Order archived as "' + name + '"!');
+  renderFeedOrderHistory();
 }
 
 function openAddFeedProductModal() {
@@ -3049,6 +3286,68 @@ function saveFeedProduct() {
   else { feedProducts.push(p); toast('🌾 '+name+' added!'); }
   renderFeedProducts();
   if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar(); saveToStorage(); closeModal();
+}
+
+function renderFeedOrderHistory() {
+  var container = document.getElementById('feed-history-list');
+  if (!container) return;
+  container.innerHTML = '';
+  if (!feedOrderHistory || !feedOrderHistory.length) return;
+  var heading = document.createElement('div');
+  heading.style.cssText = 'font-size:18px;margin-bottom:12px;margin-top:8px';
+  heading.textContent = 'Order history';
+  container.appendChild(heading);
+  feedOrderHistory.forEach(function(o, i) {
+    var itemCount = Object.keys(o.items).length;
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.style.marginBottom = '8px';
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;justify-content:space-between;align-items:center';
+    var info = document.createElement('div');
+    var name = document.createElement('div');
+    name.style.fontWeight = '600';
+    name.textContent = o.name;
+    var sub = document.createElement('div');
+    sub.style.cssText = 'font-size:12px;color:var(--text-muted)';
+    sub.textContent = o.date + ' · ' + itemCount + ' item' + (itemCount>1?'s':'');
+    info.appendChild(name);
+    info.appendChild(sub);
+    var btns = document.createElement('div');
+    btns.style.cssText = 'display:flex;gap:6px';
+    var reorder = document.createElement('button');
+    reorder.className = 'btn btn-sm';
+    reorder.textContent = '🔄 Reorder';
+    var del = document.createElement('button');
+    del.className = 'btn btn-sm';
+    del.style.cssText = 'color:var(--red);border-color:var(--red)';
+    del.textContent = '✕';
+    (function(idx) {
+      reorder.addEventListener('click', function() { reorderFeed(idx); });
+      del.addEventListener('click', function() { deleteFeedOrderHistory(idx); });
+    })(i);
+    btns.appendChild(reorder);
+    btns.appendChild(del);
+    row.appendChild(info);
+    row.appendChild(btns);
+    card.appendChild(row);
+    container.appendChild(card);
+  });
+}
+
+
+function reorderFeed(i) {
+  var o = feedOrderHistory[i]; if (!o) return;
+  feedOrder = JSON.parse(JSON.stringify(o.items));
+  renderFeedProducts();
+  toast('🛒 Order loaded — review and share when ready!');
+}
+
+function deleteFeedOrderHistory(i) {
+  if (!confirm('Delete this order record?')) return;
+  feedOrderHistory.splice(i, 1);
+  saveToStorage();
+  renderFeedOrderHistory();
 }
 
 function editFeedProduct(idx) {
@@ -3473,8 +3772,8 @@ function renderLessons() {
     var globalIdx = lessonsData.indexOf(l);
     var d = new Date(l.date + 'T12:00:00');
     var dateStr = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    var paidClass = l.paid === 'paid' ? 'badge-green' : l.paid === 'pending' ? 'badge-amber' : 'badge-red';
-    var paidLabel = l.paid === 'paid' ? 'Paid' : l.paid === 'pending' ? 'Pending' : 'Unpaid';
+    var paidClass = l.paid === 'paid' ? 'badge-green' : l.paid === 'pending' ? 'badge-amber' : l.paid === 'followup' ? 'badge-blue' : 'badge-red';
+    var paidLabel = l.paid === 'paid' ? 'Paid' : l.paid === 'pending' ? 'Pending' : l.paid === 'followup' ? 'Follow up' : 'Unpaid';
     var row = document.createElement('tr');
     row.innerHTML = '<td>' + dateStr + '</td><td><strong>' + l.rider + '</strong></td><td>' + l.horse + '</td><td><span class="badge badge-blue" style="font-size:10px">' + l.type + '</span></td><td>' + l.duration + '</td><td style="color:var(--text-muted)">' + l.trainer + '</td><td>$' + l.fee + '</td><td><span class="badge ' + paidClass + '">' + paidLabel + '</span></td><td style="color:var(--text-muted);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.notes||'–') + '</td><td style="white-space:nowrap"><button class="btn btn-sm" title="Add to calendar" style="margin-right:2px">&#128197;</button><button class="btn btn-sm" onclick="editLesson(' + globalIdx + ')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteLesson(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td>';
     // Attach calendar button event safely
@@ -3776,6 +4075,15 @@ function saveVaccRow() {
   closeModal();
   dbSaveVacc(vRow);
   toast('💉 Vaccination record updated!');
+}
+
+function switchWaiversTab(el, show) {
+  document.querySelectorAll('#waivers-tabs .tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  ['docs-waivers','docs-leases','docs-board','docs-other'].forEach(function(id){
+    var el2=document.getElementById(id); if(el2) el2.style.display=id===show?'block':'none';
+  });
+  renderManualDocs(show.replace('docs-',''));
 }
 
 function openDocUpload() {
@@ -4230,6 +4538,29 @@ function markFarrierComplete(idx) {
   toast('✅ Visit marked as completed!');
 }
 
+function addAllHorsesFarrier() {
+  if (!horses.length) { toast('No active horses found', '#c0392b'); return; }
+  var date = prompt('Date for all horses (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
+  if (!date) return;
+  var service = 'Full reset (4 shoes)';
+  horses.forEach(function(h) {
+    var visit = {
+      id: 'fv' + Date.now() + Math.random(),
+      date: date,
+      horse: h.name,
+      farrier: 'Joshua Smith',
+      service: service,
+      status: 'scheduled',
+      notes: ''
+    };
+    farrierVisits.push(visit);
+    dbSaveFarrier(visit);
+  });
+  renderFarrier();
+  saveToStorage();
+  toast('✅ ' + horses.length + ' horses scheduled for ' + date + '!');
+}
+
 function openFarrierModal(defaultHorse, defaultStatus) {
   populateFarrierHorseSelect();
   document.getElementById('fv-date').value = new Date().toISOString().slice(0,10);
@@ -4312,6 +4643,138 @@ function populateFarrierHorseSelect() {
 }
 
 // ==========================================
+// CALENDAR EVENTS
+// ==========================================
+var calOtherEvents = []; // for "Other" type events
+
+function openCalEventModal(dateStr) {
+  // Populate horse/rider selects
+  var horses_sel = ['cal-lesson-horse','cal-vet-horse','cal-farrier-horse'];
+  horses_sel.forEach(function(id) {
+    var sel = document.getElementById(id);
+    if (!sel) return;
+    while (sel.options.length > 1) sel.remove(1);
+    horses.forEach(function(h) {
+      var o = document.createElement('option'); o.value = h.name; o.textContent = h.name; sel.appendChild(o);
+    });
+  });
+  var riderSel = document.getElementById('cal-lesson-rider');
+  if (riderSel) {
+    while (riderSel.options.length > 1) riderSel.remove(1);
+    clients.filter(function(c){ return c.roles && (c.roles.includes('rider') || c.roles.includes('lesson student')); })
+      .sort(function(a,b){return a.name.localeCompare(b.name);})
+      .forEach(function(c) {
+        var o = document.createElement('option'); o.value = c.name; o.textContent = c.name; riderSel.appendChild(o);
+      });
+  }
+  // Set date
+  var dateEl = document.getElementById('cal-event-date');
+  if (dateEl) dateEl.value = dateStr || calDate.toISOString().slice(0,10);
+  // Reset form
+  document.getElementById('cal-event-type').value = 'lesson';
+  updateCalEventForm('lesson');
+  document.getElementById('cal-event-notes').value = '';
+  openModal('modal-add-cal-event');
+}
+
+function updateCalEventForm(type) {
+  ['lesson','vet','farrier','show','other'].forEach(function(t) {
+    var el = document.getElementById('cal-fields-' + t);
+    if (el) el.style.display = t === type ? 'block' : 'none';
+  });
+}
+
+function saveCalEvent() {
+  var type = document.getElementById('cal-event-type').value;
+  var date = document.getElementById('cal-event-date').value;
+  var notes = document.getElementById('cal-event-notes').value.trim();
+  if (!date) { toast('Please select a date', '#c0392b'); return; }
+
+  if (type === 'lesson') {
+    var rider = document.getElementById('cal-lesson-rider').value;
+    var horse = document.getElementById('cal-lesson-horse').value;
+    if (!rider || !horse) { toast('Please select rider and horse', '#c0392b'); return; }
+    var lesson = {
+      date: date,
+      trainer: document.getElementById('cal-lesson-trainer').value,
+      rider: rider,
+      horse: horse,
+      type: document.getElementById('cal-lesson-type').value,
+      duration: document.getElementById('cal-lesson-duration').value,
+      fee: document.getElementById('cal-lesson-fee').value || '120',
+      paid: 'unpaid',
+      notes: notes
+    };
+    lessonsData.push(lesson);
+    dbSaveLesson(lesson);
+    renderLessons();
+    toast('✅ Lesson added to calendar and Lessons Log!');
+
+  } else if (type === 'vet') {
+    var horse = document.getElementById('cal-vet-horse').value;
+    if (!horse) { toast('Please select a horse', '#c0392b'); return; }
+    var visit = {
+      date: date,
+      horse: horse,
+      vet: document.getElementById('cal-vet-vet').value,
+      category: document.getElementById('cal-vet-category').value,
+      status: 'scheduled',
+      desc: document.getElementById('cal-vet-desc').value.trim(),
+      notes: notes
+    };
+    vetVisits.push(visit);
+    dbSaveVet(visit);
+    renderVetVisits();
+    toast('✅ Vet appointment added to calendar and Veterinary!');
+
+  } else if (type === 'farrier') {
+    var horse = document.getElementById('cal-farrier-horse').value;
+    if (!horse) { toast('Please select a horse', '#c0392b'); return; }
+    var visit = {
+      id: 'fv' + Date.now(),
+      date: date,
+      horse: horse,
+      farrier: 'Joshua Smith',
+      service: document.getElementById('cal-farrier-service').value,
+      status: 'scheduled',
+      notes: notes
+    };
+    farrierVisits.push(visit);
+    dbSaveFarrier(visit);
+    renderFarrier();
+    toast('✅ Farrier appointment added to calendar and Farrier!');
+
+  } else if (type === 'show') {
+    var showName = document.getElementById('cal-show-name').value.trim();
+    if (!showName) { toast('Please enter a show name', '#c0392b'); return; }
+    var showType = document.getElementById('cal-show-type').value;
+    var location = document.getElementById('cal-show-location').value.trim();
+    var show = { id: 'sh' + Date.now(), name: showName, date: date, location: location, notes: notes, riders: [], categories: [], expenses: [] };
+    if (showType === 'iea') {
+      show.riders = [];
+      ieaShows.unshift(show);
+      dbSaveIeaShow(show);
+      populateIeaShowSelect();
+    } else {
+      showsData.unshift(show);
+      dbSaveShow(show);
+      populateShowSelect();
+    }
+    toast('✅ Show added to calendar and Shows!');
+
+  } else if (type === 'other') {
+    var title = document.getElementById('cal-other-title').value.trim();
+    if (!title) { toast('Please enter a title', '#c0392b'); return; }
+    calOtherEvents.push({ date: date, title: title, notes: notes });
+    saveToStorage();
+    toast('✅ Event added to calendar!');
+  }
+
+  renderCalendar();
+  closeModal();
+}
+
+// ==========================================
 // CALENDAR
 // ==========================================
 var calView = 'month';  // 'day', 'week', 'month'
@@ -4362,6 +4825,10 @@ function getCalEvents() {
   showsData.forEach(function(s) {
     if (!s.date) return;
     events.push({date: s.date, title: 'Show: ' + s.name, sub: s.location || '', color: '#c9a96e', type: 'show', time: '08:00'});
+  });
+  // Other events
+  calOtherEvents.forEach(function(e) {
+    events.push({date: e.date, title: e.title, sub: e.notes || '', color: '#888', type: 'other', time: '09:00'});
   });
   return events;
 }
@@ -4461,8 +4928,10 @@ function renderDayView(container, title, events) {
   if (title) title.textContent = dayNames[calDate.getDay()] + ', ' + monthNames[calDate.getMonth()] + ' ' + calDate.getDate();
   var dayEvents = events.filter(function(e) { return e.date === dateStr; });
   var html = '<div style="padding:16px">';
+  var addDateStr = calDate.toISOString().slice(0,10);
+  html += '<div style="text-align:right;margin-bottom:8px"><button class="btn btn-sm btn-primary" data-date="' + addDateStr + '" onclick="openCalEventModal(this.getAttribute(\"data-date\"))">+ Add event</button></div>';
   if (!dayEvents.length) {
-    html += '<div style="text-align:center;padding:48px;color:var(--text-muted);font-size:14px">No events scheduled for this day.</div>';
+    html += '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:14px">No events scheduled for this day.</div>';
   } else {
     dayEvents.forEach(function(e) {
       html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">' +
@@ -4492,16 +4961,50 @@ function switchIeaShowTab(el, show) {
 function uploadShowPhoto(type) {
   var showId = type === 'iea' ? currentIeaShowId : currentShowId;
   if (!showId) { toast('Please select a show first', '#c0392b'); return; }
-  openFileUpload(null, 'show-photos', function(url, name) {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.onchange = function() {
+    var files = Array.from(input.files);
+    if (!files.length) return;
     var showArr = type === 'iea' ? ieaShows : showsData;
     var show = showArr.find(function(s){ return s.id === showId; });
     if (!show) return;
     if (!show.photos) show.photos = [];
-    show.photos.push({url: url, name: name, date: new Date().toISOString().slice(0,10)});
-    if (type === 'iea') { dbSaveIeaShow(show); renderShowPhotos('iea'); }
-    else { dbSaveShow(show); renderShowPhotos('show'); }
-    toast('📸 Photo uploaded!');
-  });
+    var processed = 0;
+    files.forEach(function(file) {
+      // Try Supabase first, fall back to base64
+      uploadDoc(file, 'show-photos').then(function(url) {
+        if (url) {
+          show.photos.push({url: url, name: file.name, date: new Date().toISOString().slice(0,10)});
+        } else {
+          // Fallback: store as base64
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            show.photos.push({url: e.target.result, name: file.name, date: new Date().toISOString().slice(0,10)});
+            processed++;
+            if (processed === files.length) {
+              if (type === 'iea') { dbSaveIeaShow(show); renderShowPhotos('iea'); }
+              else { dbSaveShow(show); renderShowPhotos('show'); }
+              saveToStorage();
+              toast('📸 ' + files.length + ' photo' + (files.length>1?'s':'') + ' added!');
+            }
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+        processed++;
+        if (processed === files.length) {
+          if (type === 'iea') { dbSaveIeaShow(show); renderShowPhotos('iea'); }
+          else { dbSaveShow(show); renderShowPhotos('show'); }
+          saveToStorage();
+          toast('📸 ' + files.length + ' photo' + (files.length>1?'s':'') + ' added!');
+        }
+      });
+    });
+  };
+  input.click();
 }
 
 function renderShowPhotos(type) {
@@ -4573,7 +5076,8 @@ function populateShowRiderSelect() {
   var sel = document.getElementById('show-rider-select');
   if (!sel) return;
   while (sel.options.length > 2) sel.remove(2);
-  var addNew = sel.options[1]; sel.remove(1);
+  var addNew = sel.options.length > 1 ? sel.options[1] : null;
+  if (addNew) sel.remove(1);
   // Sort and populate from persistent showRiderList
   showRiderList.slice().sort().forEach(function(name) {
     var o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o);
@@ -4658,7 +5162,16 @@ function updateCurrentShow2(field, value) {
 function switchShowTab(el, show) {
   document.querySelectorAll('#show-tabs .tab').forEach(function(t){t.classList.remove('active');});
   el.classList.add('active');
-  ['show-participants','show-categories','show-expenses'].forEach(function(id){ document.getElementById(id).style.display=id===show?'block':'none'; });
+  ['show-participants','show-categories','show-expenses','show-photos'].forEach(function(id){
+    var div = document.getElementById(id);
+    if (div) div.style.display = id === show ? 'block' : 'none';
+  });
+  if (show === 'show-photos') {
+    // Force reflow and render
+    var photoDiv = document.getElementById('show-photos');
+    if (photoDiv) photoDiv.style.display = 'block';
+    setTimeout(function() { renderShowPhotos('show'); }, 50);
+  }
 }
 
 // ── SHOWS CRUD ──
