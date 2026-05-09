@@ -2859,7 +2859,6 @@ function renderClients() {
       '<td style="color:var(--text-muted)">' + (c.city ? c.city + (c.state ? ', ' + c.state : '') : '–') + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
         '<button class="btn btn-sm" onclick="editClient(' + globalIdx + ')" style="margin-right:2px">&#9999; Edit</button>' +
-        '<button class="btn btn-sm" onclick="moveToVendors(' + globalIdx + ')" style="margin-right:2px;color:#6888BE;border-color:#6888BE" title="Move to Vendors">&#127978;</button>' +
         '<button class="btn btn-sm" onclick="archiveClient(' + globalIdx + ')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)">&#128230;</button>' +
         '<button class="btn btn-sm" onclick="confirmDeleteClient(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button>' +
       '</td></tr>';
@@ -2868,28 +2867,6 @@ function renderClients() {
 
 function filterClients() { renderClients(); }
 
-function moveToVendors(idx) {
-  var c = clients[idx]; if (!c) return;
-  if (!confirm('Move ' + c.name + ' to Vendors?')) return;
-  var v = {
-    name: c.name,
-    company: '',
-    type: c.roles && c.roles.includes('veterinarian') ? 'veterinarian' :
-          c.roles && c.roles.includes('farrier') ? 'farrier' :
-          c.roles && c.roles.includes('trainer') ? 'trainer' : 'other',
-    phone: c.phone || '',
-    email: c.email || '',
-    website: '',
-    notes: 'Moved from clients'
-  };
-  vendors.push(v);
-  clients.splice(idx, 1);
-  populateSelects();
-  renderClients();
-  renderVendors();
-  saveToStorage();
-  toast('🏪 ' + c.name + ' moved to Vendors!');
-}
 
 function editClient(idx) {
   var c = clients[idx];
