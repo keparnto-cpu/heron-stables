@@ -964,7 +964,8 @@ tr:hover td { background: var(--cream); }
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Horse</th><th>EIA / Accession #</th><th>Test date</th><th>Result</th><th>Valid until</th><th>Status</th></tr></thead>
+              <thead><tr><th>Horse</th><th>Test date</th><th>Result</th><th>Valid until</th><th>Status</th><th>Document</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody id="coggins-uploaded-docs"></tbody>
               <tbody>
                 <tr><td><strong>Stanley (A Happy Medium)</strong></td><td>EIA21459861</td><td>2021</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current (May 2025)</span></td></tr>
                 <tr><td><strong>Diplo</strong></td><td>EIA22491692</td><td>2022</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
@@ -999,7 +1000,7 @@ tr:hover td { background: var(--cream); }
             <option value="all">All trainers</option>
             <option value="Alex Charles">Alex Charles</option>
           </select>
-          <button class="btn btn-sm" onclick="exportLessons()" style="background:var(--amber-pale);border-color:var(--amber);color:var(--amber)">📤 Share with Pato</button>
+          <button class="btn btn-sm" onclick="emailLessonsReport()" style="background:var(--amber-pale);border-color:var(--amber);color:var(--amber)">📤 Share with Pato</button>
           <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-lesson')">+ Log lesson</button>
         </div>
       </div>
@@ -1889,6 +1890,7 @@ function loadFromStorage() {
     if (data.manualAlerts) manualAlerts.splice(0, manualAlerts.length, ...data.manualAlerts);
     if (data.vetDocs) vetDocs.splice(0, vetDocs.length, ...data.vetDocs);
     if (data.vendors) vendors.splice(0, vendors.length, ...data.vendors);
+    if (data.manualDocs) Object.assign(manualDocs, data.manualDocs);
     return true;
   } catch(e) { return false; }
 }
@@ -3225,6 +3227,20 @@ function saveLesson() {
   document.getElementById('dropin-wrap').style.display = 'none'; document.getElementById('l-dropin').value = '';
 }
 
+function emailLessonsReport() {
+  // Build the report text first
+  exportLessons();
+  // Then open email after a short delay so the modal content is ready
+  setTimeout(function() {
+    var preview = document.getElementById('share-preview');
+    var body = preview ? preview.textContent : 'See lesson report attached.';
+    var subject = 'Heron Stables — Lesson Report';
+    var mailto = 'mailto:info@heronstables.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    window.location.href = mailto;
+    closeModal();
+  }, 300);
+}
+
 function exportLessons() {
   var month = document.getElementById('lesson-month-filter').value;
   var trainer = document.getElementById('lesson-trainer-filter').value;
@@ -3244,6 +3260,49 @@ function exportLessons() {
 function copyReport() {
   var text = document.getElementById('share-preview').textContent;
   navigator.clipboard.writeText(text).then(function() { toast('📋 Copied!'); closeModal(); }).catch(function() { toast('Select and copy manually', '#c0392b'); });
+}
+
+// ==========================================
+// MANUAL DOCUMENT MANAGEMENT
+// ==========================================
+var manualDocs = {waivers: [], leases: [], board: [], other: [], coggins: []};
+
+function addManualDoc(section, url, name, meta) {
+  manualDocs[section] = manualDocs[section] || [];
+  manualDocs[section].push({url: url, name: name, date: new Date().toISOString().slice(0,10), meta: meta||''});
+  renderManualDocs(section);
+  saveToStorage();
+}
+
+function deleteManualDoc(section, i) {
+  if (!confirm('Delete this document?')) return;
+  manualDocs[section].splice(i, 1);
+  renderManualDocs(section);
+  saveToStorage();
+  toast('Deleted', '#c0392b');
+}
+
+function renderManualDocs(section) {
+  var tbodyId = 'manual-docs-' + section;
+  var tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  var docs = manualDocs[section] || [];
+  tbody.innerHTML = '';
+  if (!docs.length) return;
+  docs.forEach(function(d, i) {
+    var tr = document.createElement('tr');
+    tr.style.background = 'var(--gold-pale)';
+    var link = d.url ? '<a href="' + d.url + '" target="_blank" class="doc-link">' + d.name + ' ↗</a>' : d.name;
+    tr.innerHTML = '<td>' + link + '</td><td>' + (d.meta||'') + '</td><td>' + d.date + '</td><td><span class="badge badge-green">Uploaded</span></td><td style="text-align:right"></td>';
+    var btn = document.createElement('button');
+    btn.className = 'btn btn-sm';
+    btn.textContent = '✕';
+    btn.style.color = 'var(--red)';
+    btn.style.borderColor = 'var(--red)';
+    (function(sec, idx) { btn.addEventListener('click', function() { deleteManualDoc(sec, idx); }); })(section, i);
+    tr.lastElementChild.appendChild(btn);
+    tbody.appendChild(tr);
+  });
 }
 
 // ==========================================
@@ -3359,6 +3418,23 @@ function saveVaccRow() {
   closeModal();
   dbSaveVacc(vRow);
   toast('💉 Vaccination record updated!');
+}
+
+function openDocUpload() {
+  var activeTab = document.querySelector('#waivers-tabs .tab.active');
+  var section = 'waivers';
+  if (activeTab) {
+    var text = activeTab.textContent.trim().toLowerCase();
+    if (text.includes('lease')) section = 'leases';
+    else if (text.includes('board')) section = 'board';
+    else if (text.includes('other')) section = 'other';
+  }
+  var desc = prompt('Document name / description (e.g. "John Smith waiver"):');
+  if (!desc) return;
+  openFileUpload(null, 'docs', function(url, name) {
+    addManualDoc(section, url, desc, '');
+    toast('✅ ' + name + ' uploaded!');
+  });
 }
 
 function openVaccModal() {
