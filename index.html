@@ -335,6 +335,9 @@ tr:hover td { background: var(--cream); }
     <div class="nav-item" onclick="showPage('vendors', this)">
       <span class="nav-icon">🏪</span> Vendors
     </div>
+    <div class="nav-item" onclick="showPage('feed', this)">
+      <span class="nav-icon">🌾</span> Feed & Supplies
+    </div>
     <div class="nav-item" onclick="showPage('archive', this)">
       <span class="nav-icon">📦</span> Archive
     </div>
@@ -434,6 +437,35 @@ tr:hover td { background: var(--cream); }
           <div id="dash-alerts"></div>
         </div>
       </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="page" id="page-calendar">
+      <div class="section-header">
+        <div class="section-title">Calendar</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-sm" onclick="calNav(-1)">&#8592;</button>
+          <span id="cal-title" style="font-family:'Cormorant Garamond',serif;font-size:18px;min-width:160px;text-align:center"></span>
+          <button class="btn btn-sm" onclick="calNav(1)">&#8594;</button>
+          <button class="btn btn-sm" onclick="calGoToday()">Today</button>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-sm" id="cal-btn-day" onclick="setCalView('day')">Day</button>
+          <button class="btn btn-sm" id="cal-btn-week" onclick="setCalView('week')">Week</button>
+          <button class="btn btn-sm btn-primary" id="cal-btn-month" onclick="setCalView('month')">Month</button>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px">
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#6888BE;margin-right:4px"></span>Lessons</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2d5a3d;margin-right:4px"></span>Vet visits</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c4830a;margin-right:4px"></span>Farrier</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c9a96e;margin-right:4px"></span>Shows</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#b33a2a;margin-right:4px"></span>Emergency</span>
+      </div>
+
+      <div id="cal-container" class="card" style="padding:0;overflow:hidden"></div>
     </div>
 
     <!-- HORSE PROFILES -->
@@ -567,6 +599,45 @@ tr:hover td { background: var(--cream); }
       </div>
     </div>
 
+    <!-- FEED & SUPPLIES -->
+    <div class="page" id="page-feed">
+      <div class="section-header">
+        <div class="section-title">Feed & Supplies</div>
+        <button class="btn btn-primary btn-sm" onclick="openAddFeedProductModal()">+ Add product</button>
+      </div>
+
+      <div style="margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <input type="text" id="feed-search" placeholder="🔍 Search products…" oninput="renderFeedProducts()" style="padding:8px 12px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:14px;background:var(--cream);outline:none;min-width:200px">
+        <select id="feed-category-filter" onchange="renderFeedProducts()" style="padding:8px 12px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:14px;background:var(--cream);outline:none">
+          <option value="all">All categories</option>
+          <option value="hay">Hay</option>
+          <option value="grain">Grain & feed</option>
+          <option value="supplement">Supplements</option>
+          <option value="bedding">Bedding</option>
+          <option value="equipment">Equipment</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <!-- Product grid -->
+      <div id="feed-products-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
+      <div class="empty" id="feed-products-empty" style="display:none"><div class="empty-icon">🌾</div>No products yet. Add your usual feed and supplies.</div>
+
+      <!-- Order summary -->
+      <div id="feed-order-card" style="display:none">
+        <div class="card" style="border-left:3px solid var(--gold)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px">🛒 Order summary</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-sm" onclick="clearFeedOrder()" style="color:var(--red);border-color:var(--red)">Clear</button>
+              <button class="btn btn-primary btn-sm" onclick="sendFeedOrder()">📱 Share with Pato</button>
+            </div>
+          </div>
+          <div id="feed-order-list"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- BOARDING -->
     <div class="page" id="page-boarding">
       <div class="section-header">
@@ -682,8 +753,15 @@ tr:hover td { background: var(--cream); }
         </div>
       </div>
 
-      <!-- Participants table -->
-      <div class="card" id="iea-participants-card" style="display:none">
+      <!-- IEA Show tabs -->
+      <div id="iea-participants-card" style="display:none">
+        <div class="tabs" id="iea-show-tabs">
+          <div class="tab active" onclick="switchIeaShowTab(this,'iea-tab-riders')">Participants</div>
+          <div class="tab" onclick="switchIeaShowTab(this,'iea-tab-photos')">Photos</div>
+        </div>
+
+        <div id="iea-tab-riders">
+        <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <div style="font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:0.04em">Participants</div>
           <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-iea-rider')">+ Add rider</button>
@@ -757,6 +835,7 @@ tr:hover td { background: var(--cream); }
           <div class="tab active" onclick="switchShowTab(this,'show-participants')">Participants</div>
           <div class="tab" onclick="switchShowTab(this,'show-categories')">Classes & Categories</div>
           <div class="tab" onclick="switchShowTab(this,'show-expenses')">Expenses</div>
+          <div class="tab" onclick="switchShowTab(this,'show-photos')">Photos</div>
         </div>
 
         <!-- PARTICIPANTS TAB -->
@@ -809,6 +888,18 @@ tr:hover td { background: var(--cream); }
             </div>
             <div class="empty" id="show-expenses-empty" style="display:none"><div class="empty-icon">💰</div>No expenses logged yet.</div>
             <div id="show-expenses-total" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);text-align:right;font-size:14px;font-family:'Cormorant Garamond',serif;letter-spacing:0.04em"></div>
+          </div>
+        </div>
+
+        <!-- PHOTOS TAB -->
+        <div id="show-photos" style="display:none">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:0.04em">Show photos</div>
+              <button class="btn btn-primary btn-sm" onclick="uploadShowPhoto('show')">📷 Upload photo</button>
+            </div>
+            <div id="show-photos-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:8px"></div>
+            <div id="show-photos-empty" style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">No photos yet. Click Upload photo to add some!</div>
           </div>
         </div>
 
@@ -1705,6 +1796,42 @@ tr:hover td { background: var(--cream); }
     </div>
   </div>
 
+  <!-- ADD / EDIT FEED PRODUCT -->
+  <div class="modal-box" id="modal-add-feed-product" style="display:none">
+    <div class="modal-header"><span>Add product</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Product name *</label><input type="text" id="fp-name" placeholder="e.g. Timothy Hay Bale"></div>
+        <div class="form-group"><label>Brand</label><input type="text" id="fp-brand" placeholder="e.g. Standlee, Triple Crown"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Category</label>
+          <select id="fp-category" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+            <option value="hay">Hay</option>
+            <option value="grain">Grain & feed</option>
+            <option value="supplement">Supplements</option>
+            <option value="bedding">Bedding</option>
+            <option value="equipment">Equipment</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Unit</label><input type="text" id="fp-unit" placeholder="e.g. bale, bag, bottle"></div>
+      </div>
+      <div class="form-group"><label>Notes</label><input type="text" id="fp-notes" placeholder="e.g. 50lb bag, order from Valley Feed"></div>
+      <div class="form-group"><label>Photo / thumbnail <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional — upload product image)</span></label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="fp-photo" placeholder="Photo URL or click Upload →" style="flex:1">
+          <button class="btn btn-sm" type="button" onclick="openFileUpload('fp-photo','feed-photos')">📎 Upload</button>
+        </div>
+        <div id="fp-photo-preview" style="margin-top:8px;display:none"><img id="fp-photo-img" style="height:80px;border-radius:4px;object-fit:cover" alt="preview"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="feed-product-save-btn" onclick="saveFeedProduct()">Add product</button>
+    </div>
+  </div>
+
 </div><!-- end modal overlay -->
 
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:2000;box-shadow:0 4px 16px rgba(0,0,0,0.15)"></div>
@@ -1891,6 +2018,7 @@ function loadFromStorage() {
     if (data.vetDocs) vetDocs.splice(0, vetDocs.length, ...data.vetDocs);
     if (data.vendors) vendors.splice(0, vendors.length, ...data.vendors);
     if (data.manualDocs) Object.assign(manualDocs, data.manualDocs);
+    if (data.feedProducts) feedProducts.splice(0, feedProducts.length, ...data.feedProducts);
     return true;
   } catch(e) { return false; }
 }
@@ -2128,6 +2256,8 @@ function renderAll() {
   renderDashboard();
   renderHorseProfiles();
   renderVendors();
+  renderFeedProducts();
+  if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar();
   renderClients();
   renderBoarders();
   renderLessons();
@@ -2756,6 +2886,206 @@ function saveHorse() {
 
 // ==========================================
 // ==========================================
+// FEED & SUPPLIES
+// ==========================================
+var feedProducts = [];
+var feedOrder = {};
+var editingFeedIdx = -1;
+
+var feedCategoryColors = {
+  hay: '#c9a96e', grain: '#6888BE', supplement: '#2d5a3d',
+  bedding: '#c4830a', equipment: '#666', other: '#999'
+};
+
+function renderFeedProducts() {
+  var grid = document.getElementById('feed-products-grid');
+  var empty = document.getElementById('feed-products-empty');
+  if (!grid) return;
+  var search = (document.getElementById('feed-search') ? document.getElementById('feed-search').value : '').toLowerCase();
+  var cat = document.getElementById('feed-category-filter') ? document.getElementById('feed-category-filter').value : 'all';
+  var list = feedProducts.filter(function(p) {
+    if (cat !== 'all' && p.category !== cat) return false;
+    if (search && !(p.name + ' ' + (p.brand||'')).toLowerCase().includes(search)) return false;
+    return true;
+  });
+  if (!list.length) { grid.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
+  if(empty) empty.style.display = 'none';
+  grid.innerHTML = '';
+  list.forEach(function(p, i) {
+    var realIdx = feedProducts.indexOf(p);
+    var color = feedCategoryColors[p.category] || '#999';
+    var qty = feedOrder[p.name] || 0;
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--white);border:1px solid var(--border);border-radius:6px;overflow:hidden;display:flex;flex-direction:column';
+    // Photo area
+    var photoDiv = document.createElement('div');
+    photoDiv.style.cssText = 'height:130px;background:' + color + '20;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden';
+    if (p.photo) {
+      var img = document.createElement('img');
+      img.src = p.photo;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+      img.onerror = function() { this.style.display='none'; };
+      photoDiv.appendChild(img);
+    } else {
+      photoDiv.innerHTML = '<span style="font-size:36px">' + (p.category==='hay'?'🌾':p.category==='grain'?'🌽':p.category==='supplement'?'💊':p.category==='bedding'?'🛏️':'📦') + '</span>';
+    }
+    // Edit button overlay
+    var editBtn = document.createElement('button');
+    editBtn.innerHTML = '&#9999;';
+    editBtn.style.cssText = 'position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center';
+    (function(idx) { editBtn.addEventListener('click', function(e) { e.stopPropagation(); editFeedProduct(idx); }); })(realIdx);
+    photoDiv.appendChild(editBtn);
+    card.appendChild(photoDiv);
+    // Info area
+    var info = document.createElement('div');
+    info.style.cssText = 'padding:10px 12px;flex:1;display:flex;flex-direction:column;gap:4px';
+    info.innerHTML = '<div style="font-weight:600;font-size:14px;color:var(--text)">' + p.name + '</div>' +
+      (p.brand ? '<div style="font-size:12px;color:var(--text-muted)">' + p.brand + '</div>' : '') +
+      '<div style="margin-top:2px"><span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:' + color + '">' + p.category + '</span></div>' +
+      (p.notes ? '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">' + p.notes + '</div>' : '');
+    card.appendChild(info);
+    // Order controls
+    var orderDiv = document.createElement('div');
+    orderDiv.style.cssText = 'padding:8px 12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:' + (qty > 0 ? 'var(--gold-pale)' : 'transparent');
+    orderDiv.innerHTML = '<span style="font-size:12px;color:var(--text-muted)">' + (p.unit || 'unit') + '</span>';
+    var controls = document.createElement('div');
+    controls.style.cssText = 'display:flex;align-items:center;gap:6px';
+    var minus = document.createElement('button');
+    minus.textContent = '−';
+    minus.style.cssText = 'width:26px;height:26px;border:1px solid var(--border);border-radius:50%;background:var(--cream);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;font-family:inherit';
+    var qtySpan = document.createElement('span');
+    qtySpan.style.cssText = 'font-size:15px;font-weight:600;min-width:20px;text-align:center';
+    qtySpan.textContent = qty;
+    var plus = document.createElement('button');
+    plus.textContent = '+';
+    plus.style.cssText = 'width:26px;height:26px;border:1px solid var(--navy);border-radius:50%;background:var(--navy);color:white;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;font-family:inherit';
+    (function(name, qSpan, oDiv, pUnit) {
+      minus.addEventListener('click', function() {
+        var cur = feedOrder[name] || 0;
+        if (cur > 0) { feedOrder[name] = cur - 1; if (feedOrder[name] === 0) delete feedOrder[name]; }
+        qSpan.textContent = feedOrder[name] || 0;
+        oDiv.style.background = feedOrder[name] ? 'var(--gold-pale)' : 'transparent';
+        renderFeedOrderSummary();
+      });
+      plus.addEventListener('click', function() {
+        feedOrder[name] = (feedOrder[name] || 0) + 1;
+        qSpan.textContent = feedOrder[name];
+        oDiv.style.background = 'var(--gold-pale)';
+        renderFeedOrderSummary();
+      });
+    })(p.name, qtySpan, orderDiv, p.unit);
+    controls.appendChild(minus);
+    controls.appendChild(qtySpan);
+    controls.appendChild(plus);
+    orderDiv.appendChild(controls);
+    card.appendChild(orderDiv);
+    grid.appendChild(card);
+  });
+  renderFeedOrderSummary();
+}
+
+function renderFeedOrderSummary() {
+  var card = document.getElementById('feed-order-card');
+  var list = document.getElementById('feed-order-list');
+  var items = Object.keys(feedOrder).filter(function(k) { return feedOrder[k] > 0; });
+  if (!card || !list) return;
+  if (!items.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  list.innerHTML = items.map(function(name) {
+    var p = feedProducts.find(function(p) { return p.name === name; });
+    var unit = p ? (p.unit || 'unit') : 'unit';
+    return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px">' +
+      '<span><strong>' + feedOrder[name] + 'x</strong> ' + name + '</span>' +
+      '<span style="color:var(--text-muted)">' + feedOrder[name] + ' ' + unit + (feedOrder[name]>1&&!unit.endsWith('s')?'s':'') + '</span></div>';
+  }).join('');
+}
+
+function clearFeedOrder() {
+  feedOrder = {};
+  renderFeedProducts();
+  if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar();
+}
+
+function sendFeedOrder() {
+  var items = Object.keys(feedOrder).filter(function(k) { return feedOrder[k] > 0; });
+  if (!items.length) { toast('No items selected', '#c0392b'); return; }
+  var lines = ['🌾 HERON STABLES FEED ORDER', new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}), ''];
+  items.forEach(function(name) {
+    var p = feedProducts.find(function(p){ return p.name===name; });
+    var unit = p ? (p.unit||'unit') : 'unit';
+    lines.push('• ' + feedOrder[name] + 'x ' + name + (p&&p.brand?' ('+p.brand+')':'') + ' — ' + feedOrder[name] + ' ' + unit);
+  });
+  lines.push('');
+  lines.push('Total items: ' + items.length);
+  var msg = lines.join('\n');
+  // Open SMS to Pato's number
+  var smsUrl = 'sms:6465098774?body=' + encodeURIComponent(msg);
+  window.location.href = smsUrl;
+  toast('📱 Opening Messages…');
+}
+
+function openAddFeedProductModal() {
+  editingFeedIdx = -1;
+  document.getElementById('modal-add-feed-product').querySelector('.modal-header span').textContent = 'Add product';
+  document.getElementById('feed-product-save-btn').textContent = 'Add product';
+  ['fp-name','fp-brand','fp-unit','fp-notes','fp-photo'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('fp-category').value = 'hay';
+  var prev = document.getElementById('fp-photo-preview'); if(prev) prev.style.display='none';
+  openModal('modal-add-feed-product');
+}
+
+function saveFeedProduct() {
+  var name = document.getElementById('fp-name').value.trim();
+  if (!name) { toast('Please enter a product name','#c0392b'); return; }
+  var p = {
+    name: name,
+    brand: document.getElementById('fp-brand').value.trim(),
+    category: document.getElementById('fp-category').value,
+    unit: document.getElementById('fp-unit').value.trim(),
+    notes: document.getElementById('fp-notes').value.trim(),
+    photo: document.getElementById('fp-photo').value.trim()
+  };
+  if (editingFeedIdx >= 0) { feedProducts[editingFeedIdx] = p; toast('✅ '+name+' updated!'); editingFeedIdx=-1; }
+  else { feedProducts.push(p); toast('🌾 '+name+' added!'); }
+  renderFeedProducts();
+  if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar(); saveToStorage(); closeModal();
+}
+
+function editFeedProduct(idx) {
+  var p = feedProducts[idx]; if(!p) return;
+  editingFeedIdx = idx;
+  document.getElementById('fp-name').value = p.name||'';
+  document.getElementById('fp-brand').value = p.brand||'';
+  document.getElementById('fp-category').value = p.category||'hay';
+  document.getElementById('fp-unit').value = p.unit||'';
+  document.getElementById('fp-notes').value = p.notes||'';
+  document.getElementById('fp-photo').value = p.photo||'';
+  if (p.photo) {
+    var prev = document.getElementById('fp-photo-preview');
+    var img = document.getElementById('fp-photo-img');
+    if(prev) prev.style.display='block';
+    if(img) img.src = p.photo;
+  }
+  document.getElementById('modal-add-feed-product').querySelector('.modal-header span').textContent = 'Edit — '+p.name;
+  document.getElementById('feed-product-save-btn').textContent = 'Save changes';
+  openModal('modal-add-feed-product');
+}
+
+// Show photo preview when URL is pasted
+document.addEventListener('DOMContentLoaded', function() {
+  var photoInput = document.getElementById('fp-photo');
+  if (photoInput) {
+    photoInput.addEventListener('input', function() {
+      var val = this.value.trim();
+      var prev = document.getElementById('fp-photo-preview');
+      var img = document.getElementById('fp-photo-img');
+      if (val && prev && img) { prev.style.display='block'; img.src=val; }
+      else if (prev) { prev.style.display='none'; }
+    });
+  }
+});
+
+// ==========================================
 // VENDORS
 // ==========================================
 var vendors = [];
@@ -3146,7 +3476,12 @@ function renderLessons() {
     var paidClass = l.paid === 'paid' ? 'badge-green' : l.paid === 'pending' ? 'badge-amber' : 'badge-red';
     var paidLabel = l.paid === 'paid' ? 'Paid' : l.paid === 'pending' ? 'Pending' : 'Unpaid';
     var row = document.createElement('tr');
-    row.innerHTML = '<td>' + dateStr + '</td><td><strong>' + l.rider + '</strong></td><td>' + l.horse + '</td><td><span class="badge badge-blue" style="font-size:10px">' + l.type + '</span></td><td>' + l.duration + '</td><td style="color:var(--text-muted)">' + l.trainer + '</td><td>$' + l.fee + '</td><td><span class="badge ' + paidClass + '">' + paidLabel + '</span></td><td style="color:var(--text-muted);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.notes||'–') + '</td><td style="white-space:nowrap"><button class="btn btn-sm" onclick="editLesson(' + globalIdx + ')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteLesson(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td>';
+    row.innerHTML = '<td>' + dateStr + '</td><td><strong>' + l.rider + '</strong></td><td>' + l.horse + '</td><td><span class="badge badge-blue" style="font-size:10px">' + l.type + '</span></td><td>' + l.duration + '</td><td style="color:var(--text-muted)">' + l.trainer + '</td><td>$' + l.fee + '</td><td><span class="badge ' + paidClass + '">' + paidLabel + '</span></td><td style="color:var(--text-muted);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.notes||'–') + '</td><td style="white-space:nowrap"><button class="btn btn-sm" title="Add to calendar" style="margin-right:2px">&#128197;</button><button class="btn btn-sm" onclick="editLesson(' + globalIdx + ')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteLesson(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td>';
+    // Attach calendar button event safely
+    var calBtn = row.querySelector('button[title="Add to calendar"]');
+    (function(lesson) {
+      calBtn.addEventListener('click', function() { addLessonToCalendar(lesson); });
+    })(l);
     tbody.appendChild(row);
   });
   var total = list.length;
@@ -3160,6 +3495,29 @@ function renderLessons() {
 }
 
 function filterLessons() { renderLessons(); }
+
+function addLessonToCalendar(l) {
+  var date = l.date.replace(/-/g,'');
+  var hours = durationToHours(l.duration) || 1;
+  var endHour = 9 + Math.floor(hours);
+  var endMin = Math.round((hours % 1) * 60);
+  var startStr = date + 'T090000';
+  var endStr = date + 'T' + String(endHour).padStart(2,'0') + String(endMin).padStart(2,'0') + '00';
+  var title = l.type + ' - ' + l.rider + ' on ' + l.horse;
+  var desc = 'Trainer: ' + l.trainer + ' | Duration: ' + l.duration + ' | Fee: $' + l.fee + (l.notes ? ' | ' + l.notes : '');
+  var uid = 'lesson-' + Date.now() + '@heronstables';
+  var ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Heron Stables//EN\r\nBEGIN:VEVENT\r\nUID:' + uid + '\r\nDTSTART:' + startStr + '\r\nDTEND:' + endStr + '\r\nSUMMARY:' + title + '\r\nDESCRIPTION:' + desc + '\r\nLOCATION:Heron Stables\r\nEND:VEVENT\r\nEND:VCALENDAR';
+  var blob = new Blob([ics], {type: 'text/calendar;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'lesson_' + l.rider.split(' ').join('_') + '_' + l.date + '.ics';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('📅 Lesson saved — open the .ics file to add to Calendar!');
+}
 
 function editLesson(globalIdx) {
   var l = lessonsData[globalIdx]; if (!l) return;
@@ -3950,6 +4308,240 @@ function populateFarrierHorseSelect() {
   while (sel.options.length > 1) sel.remove(1);
   horses.forEach(function(h) {
     var o = document.createElement('option'); o.value = h.name; o.textContent = h.name; sel.appendChild(o);
+  });
+}
+
+// ==========================================
+// CALENDAR
+// ==========================================
+var calView = 'month';  // 'day', 'week', 'month'
+var calDate = new Date();
+
+function setCalView(view) {
+  calView = view;
+  ['day','week','month'].forEach(function(v) {
+    var btn = document.getElementById('cal-btn-' + v);
+    if (btn) { btn.className = 'btn btn-sm' + (v === view ? ' btn-primary' : ''); }
+  });
+  renderCalendar();
+}
+
+function calNav(dir) {
+  if (calView === 'day') calDate.setDate(calDate.getDate() + dir);
+  else if (calView === 'week') calDate.setDate(calDate.getDate() + dir * 7);
+  else calDate.setMonth(calDate.getMonth() + dir);
+  renderCalendar();
+}
+
+function calGoToday() { calDate = new Date(); renderCalendar(); }
+
+function getCalEvents() {
+  var events = [];
+  // Lessons
+  lessonsData.forEach(function(l) {
+    if (!l.date) return;
+    events.push({date: l.date, title: l.rider + ' — ' + l.type, sub: l.horse + ' · ' + l.trainer, color: '#6888BE', type: 'lesson', time: '09:00'});
+  });
+  // Vet visits
+  vetVisits.forEach(function(v) {
+    if (!v.date) return;
+    var color = v.category === 'Emergency' ? '#b33a2a' : '#2d5a3d';
+    events.push({date: v.date, title: v.horse + ' — ' + v.category, sub: v.vet || '', color: color, type: 'vet', time: '10:00'});
+  });
+  // Farrier
+  farrierVisits.forEach(function(v) {
+    if (!v.date) return;
+    events.push({date: v.date, title: v.horse + ' — Farrier', sub: v.service || '', color: '#c4830a', type: 'farrier', time: '11:00'});
+  });
+  // IEA Shows
+  ieaShows.forEach(function(s) {
+    if (!s.date) return;
+    events.push({date: s.date, title: 'IEA: ' + s.name, sub: s.location || '', color: '#c9a96e', type: 'show', time: '08:00'});
+  });
+  // Shows
+  showsData.forEach(function(s) {
+    if (!s.date) return;
+    events.push({date: s.date, title: 'Show: ' + s.name, sub: s.location || '', color: '#c9a96e', type: 'show', time: '08:00'});
+  });
+  return events;
+}
+
+function renderCalendar() {
+  var container = document.getElementById('cal-container');
+  var title = document.getElementById('cal-title');
+  if (!container) return;
+  var events = getCalEvents();
+  if (calView === 'month') renderMonthView(container, title, events);
+  else if (calView === 'week') renderWeekView(container, title, events);
+  else renderDayView(container, title, events);
+}
+
+function calClickDay(el) {
+  var d = el.getAttribute('data-date');
+  if (d) { calDate = new Date(d + 'T12:00:00'); setCalView('day'); }
+}
+
+function renderMonthView(container, title, events) {
+  var year = calDate.getFullYear();
+  var month = calDate.getMonth();
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  if (title) title.textContent = monthNames[month] + ' ' + year;
+  var firstDay = new Date(year, month, 1).getDay();
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+  var today = new Date().toISOString().slice(0,10);
+  var html = '<table style="width:100%;border-collapse:collapse">';
+  html += '<thead><tr>';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(function(d) {
+    html += '<th style="padding:8px 4px;font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;text-align:center;border-bottom:1px solid var(--border)">' + d + '</th>';
+  });
+  html += '</tr></thead><tbody><tr>';
+  for (var i = 0; i < firstDay; i++) html += '<td style="border:1px solid var(--border);padding:4px;min-height:80px;vertical-align:top;background:var(--cream-dark)"></td>';
+  var dayCount = 0;
+  for (var d = 1; d <= daysInMonth; d++) {
+    if ((firstDay + dayCount) % 7 === 0 && dayCount > 0) html += '</tr><tr>';
+    var dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    var isToday = dateStr === today;
+    var dayEvents = events.filter(function(e) { return e.date === dateStr; });
+    html += '<td style="border:1px solid var(--border);padding:4px;min-height:80px;vertical-align:top;cursor:pointer" data-date="' + dateStr + '" onclick="calClickDay(this)">';
+    html += '<div style="font-size:12px;font-weight:' + (isToday?'700':'400') + ';color:' + (isToday?'var(--navy)':'var(--text)') + ';margin-bottom:4px' + (isToday?';background:var(--navy);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center':'') + '">' + d + '</div>';
+    dayEvents.slice(0,3).forEach(function(e) {
+      html += '<div style="font-size:10px;background:' + e.color + '20;border-left:2px solid ' + e.color + ';padding:1px 4px;margin-bottom:2px;border-radius:0 2px 2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">' + e.title + '</div>';
+    });
+    if (dayEvents.length > 3) html += '<div style="font-size:10px;color:var(--text-muted)">+' + (dayEvents.length-3) + ' more</div>';
+    html += '</td>';
+    dayCount++;
+  }
+  var remaining = 7 - ((firstDay + daysInMonth) % 7);
+  if (remaining < 7) for (var i = 0; i < remaining; i++) html += '<td style="border:1px solid var(--border);padding:4px;min-height:80px;background:var(--cream-dark)"></td>';
+  html += '</tr></tbody></table>';
+  container.innerHTML = html;
+}
+
+function renderWeekView(container, title, events) {
+  var startOfWeek = new Date(calDate);
+  startOfWeek.setDate(calDate.getDate() - calDate.getDay());
+  var days = [];
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + i);
+    days.push(d);
+  }
+  var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if (title) title.textContent = monthNames[days[0].getMonth()] + ' ' + days[0].getDate() + ' – ' + monthNames[days[6].getMonth()] + ' ' + days[6].getDate() + ', ' + days[6].getFullYear();
+  var today = new Date().toISOString().slice(0,10);
+  var html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border)">';
+  days.forEach(function(d, i) {
+    var dateStr = d.toISOString().slice(0,10);
+    var isToday = dateStr === today;
+    html += '<div style="padding:8px 4px;text-align:center;border-right:1px solid var(--border);background:' + (isToday?'var(--navy)':'transparent') + ';color:' + (isToday?'white':'var(--text)') + '">' +
+      '<div style="font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;opacity:0.7">' + dayNames[i] + '</div>' +
+      '<div style="font-size:16px;font-weight:' + (isToday?'700':'400') + '">' + d.getDate() + '</div></div>';
+  });
+  html += '</div><div style="display:grid;grid-template-columns:repeat(7,1fr)">';
+  days.forEach(function(d) {
+    var dateStr = d.toISOString().slice(0,10);
+    var dayEvents = events.filter(function(e) { return e.date === dateStr; });
+    html += '<div style="min-height:120px;padding:4px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)">';
+    dayEvents.forEach(function(e) {
+      html += '<div style="font-size:11px;background:' + e.color + '20;border-left:2px solid ' + e.color + ';padding:3px 5px;margin-bottom:3px;border-radius:0 3px 3px 0;color:var(--text)">' +
+        '<div style="font-weight:500">' + e.title + '</div>' +
+        (e.sub ? '<div style="opacity:0.7;font-size:10px">' + e.sub + '</div>' : '') + '</div>';
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderDayView(container, title, events) {
+  var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var dateStr = calDate.toISOString().slice(0,10);
+  if (title) title.textContent = dayNames[calDate.getDay()] + ', ' + monthNames[calDate.getMonth()] + ' ' + calDate.getDate();
+  var dayEvents = events.filter(function(e) { return e.date === dateStr; });
+  var html = '<div style="padding:16px">';
+  if (!dayEvents.length) {
+    html += '<div style="text-align:center;padding:48px;color:var(--text-muted);font-size:14px">No events scheduled for this day.</div>';
+  } else {
+    dayEvents.forEach(function(e) {
+      html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">' +
+        '<div style="width:4px;border-radius:2px;background:' + e.color + ';align-self:stretch;flex-shrink:0"></div>' +
+        '<div style="flex:1">' +
+          '<div style="font-weight:600;font-size:15px;color:var(--text)">' + e.title + '</div>' +
+          (e.sub ? '<div style="font-size:13px;color:var(--text-muted);margin-top:2px">' + e.sub + '</div>' : '') +
+          '<div style="margin-top:4px"><span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:' + e.color + '">' + e.type + '</span></div>' +
+        '</div></div>';
+    });
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ==========================================
+// SHOW PHOTOS
+// ==========================================
+function switchIeaShowTab(el, show) {
+  document.querySelectorAll('#iea-show-tabs .tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('iea-tab-riders').style.display = show === 'iea-tab-riders' ? 'block' : 'none';
+  document.getElementById('iea-tab-photos').style.display = show === 'iea-tab-photos' ? 'block' : 'none';
+  if (show === 'iea-tab-photos') renderShowPhotos('iea');
+}
+
+function uploadShowPhoto(type) {
+  var showId = type === 'iea' ? currentIeaShowId : currentShowId;
+  if (!showId) { toast('Please select a show first', '#c0392b'); return; }
+  openFileUpload(null, 'show-photos', function(url, name) {
+    var showArr = type === 'iea' ? ieaShows : showsData;
+    var show = showArr.find(function(s){ return s.id === showId; });
+    if (!show) return;
+    if (!show.photos) show.photos = [];
+    show.photos.push({url: url, name: name, date: new Date().toISOString().slice(0,10)});
+    if (type === 'iea') { dbSaveIeaShow(show); renderShowPhotos('iea'); }
+    else { dbSaveShow(show); renderShowPhotos('show'); }
+    toast('📸 Photo uploaded!');
+  });
+}
+
+function renderShowPhotos(type) {
+  var showId = type === 'iea' ? currentIeaShowId : currentShowId;
+  var gridId = type === 'iea' ? 'iea-photos-grid' : 'show-photos-grid';
+  var emptyId = type === 'iea' ? 'iea-photos-empty' : 'show-photos-empty';
+  var grid = document.getElementById(gridId);
+  var empty = document.getElementById(emptyId);
+  if (!grid) return;
+  var showArr = type === 'iea' ? ieaShows : showsData;
+  var show = showArr.find(function(s){ return s.id === showId; });
+  var photos = (show && show.photos) ? show.photos : [];
+  if (!photos.length) { grid.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
+  if(empty) empty.style.display = 'none';
+  grid.innerHTML = '';
+  photos.forEach(function(p, i) {
+    var div = document.createElement('div');
+    div.style.cssText = 'position:relative;border-radius:6px;overflow:hidden;aspect-ratio:1;background:var(--cream-dark)';
+    var img = document.createElement('img');
+    img.src = p.url;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
+    img.alt = p.name;
+    var del = document.createElement('button');
+    del.innerHTML = '&#10005;';
+    del.style.cssText = 'position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center';
+    (function(idx, t) {
+      del.addEventListener('click', function() {
+        if (!confirm('Delete this photo?')) return;
+        var sa = t === 'iea' ? ieaShows : showsData;
+        var sid = t === 'iea' ? currentIeaShowId : currentShowId;
+        var sh = sa.find(function(s){ return s.id === sid; });
+        if (sh && sh.photos) { sh.photos.splice(idx, 1); }
+        if (t === 'iea') { dbSaveIeaShow(sh); renderShowPhotos('iea'); }
+        else { dbSaveShow(sh); renderShowPhotos('show'); }
+        toast('Deleted', '#c0392b');
+      });
+    })(i, type);
+    div.appendChild(img);
+    div.appendChild(del);
+    grid.appendChild(div);
   });
 }
 
