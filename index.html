@@ -3333,7 +3333,7 @@ function saveHorse() {
   };
   if (editingHorseIdx >= 0) { horses[editingHorseIdx] = h; toast('✅ ' + name + ' updated!'); editingHorseIdx = -1; }
   else { horses.push(h); toast('🐴 ' + name + ' added!'); }
-  syncHorseSelects(); renderHorseProfiles(); saveToStorage(); closeModal();
+  syncHorseSelects(); renderHorseProfiles(); dbSaveHorse(h); saveToStorage(); closeModal();
   document.getElementById('modal-add-horse').querySelector('.modal-header span').textContent = 'Add new horse';
   document.getElementById('horse-save-btn').textContent = 'Add horse';
   ['h-name','h-showname','h-regname','h-breed','h-color','h-height','h-dob','h-usef','h-eia','h-microchip','h-notes','h-farrier-notes','h-feed-hay','h-feed-grain','h-feed-supplements','h-feed-notes','h-meds'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
