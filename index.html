@@ -5461,6 +5461,30 @@ function renderDayView(container, title, events) {
   container.innerHTML = html;
 }
 
+
+// ==========================================
+// APP STARTUP
+// ==========================================
+window.addEventListener('load', function() {
+  updateTopbar('page-dashboard');
+  dbLoadAll().then(function(loaded) {
+    // Restore last page after data loads
+    try {
+      var lastPage = sessionStorage.getItem('hs_page');
+      if (lastPage && lastPage !== 'dashboard') {
+        var navEl = document.querySelector('[onclick*="' + lastPage + '"]');
+        if (navEl) navEl.click();
+        else showPage(lastPage, null);
+      }
+    } catch(e) {}
+    if (loaded) {
+      var hadLocal = false;
+      syncUnsavedData && syncUnsavedData();
+    }
+  });
+});
+
+
 </script>
 </body>
 </html>
