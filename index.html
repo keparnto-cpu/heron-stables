@@ -1413,6 +1413,7 @@ function checkAppPassword() {
         <div class="form-group"><label>Supplements</label><input type="text" id="h-feed-supplements" placeholder="e.g. SmartPak, joint supplement"></div>
         <div class="form-group"><label>Feeding notes</label><input type="text" id="h-feed-notes" placeholder="e.g. slow feeder, soaked hay, no treats"></div>
       </div>
+      <div class="form-group"><label>Medications <span style="font-weight:300;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-light)">(current prescriptions, dosage, frequency)</span></label><input type="text" id="h-meds" placeholder="e.g. Gastrogard 1 tube daily, Bute 1g twice daily"></div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal()">Cancel</button>
@@ -3076,6 +3077,7 @@ function renderHorseProfiles() {
             (h.feedGrain ? '<div style="font-size:12px;margin-bottom:3px"><span style="color:var(--text-muted)">Grain: </span>' + h.feedGrain + '</div>' : '') +
             (h.feedSupplements ? '<div style="font-size:12px;margin-bottom:3px"><span style="color:var(--text-muted)">Supplements: </span>' + h.feedSupplements + '</div>' : '') +
             (h.feedNotes ? '<div style="font-size:12px;font-style:italic;color:var(--text-muted)">' + h.feedNotes + '</div>' : '') +
+            (h.meds ? '<div style="font-size:12px;color:#c0392b;margin-top:4px">💊 ' + h.meds + '</div>' : '') +
           '</div>'
         : '') +
         '<div style="border-top:1px solid var(--border);padding-top:10px">' +
@@ -3236,6 +3238,7 @@ function editHorse(idx) {
   var fg = document.getElementById('h-feed-grain'); if(fg) fg.value = h.feedGrain || '';
   var fs = document.getElementById('h-feed-supplements'); if(fs) fs.value = h.feedSupplements || '';
   var fno = document.getElementById('h-feed-notes'); if(fno) fno.value = h.feedNotes || '';
+  var hm = document.getElementById('h-meds'); if(hm) hm.value = h.meds || '';
   document.getElementById('modal-add-horse').querySelector('.modal-header span').textContent = 'Edit — ' + h.name;
   document.getElementById('horse-save-btn').textContent = 'Save changes';
   openModal('modal-add-horse');
@@ -3277,6 +3280,7 @@ function saveHorse() {
     feedGrain: document.getElementById('h-feed-grain') ? document.getElementById('h-feed-grain').value.trim() : '',
     feedSupplements: document.getElementById('h-feed-supplements') ? document.getElementById('h-feed-supplements').value.trim() : '',
     feedNotes: document.getElementById('h-feed-notes') ? document.getElementById('h-feed-notes').value.trim() : '',
+    meds: document.getElementById('h-meds') ? document.getElementById('h-meds').value.trim() : '',
     photo: (editingHorseIdx >= 0 && horses[editingHorseIdx]) ? (horses[editingHorseIdx].photo || '') : ''
   };
   if (editingHorseIdx >= 0) { horses[editingHorseIdx] = h; toast('✅ ' + name + ' updated!'); editingHorseIdx = -1; }
@@ -3284,7 +3288,7 @@ function saveHorse() {
   syncHorseSelects(); renderHorseProfiles(); saveToStorage(); closeModal();
   document.getElementById('modal-add-horse').querySelector('.modal-header span').textContent = 'Add new horse';
   document.getElementById('horse-save-btn').textContent = 'Add horse';
-  ['h-name','h-showname','h-regname','h-breed','h-color','h-height','h-dob','h-usef','h-eia','h-microchip','h-notes','h-farrier-notes','h-feed-hay','h-feed-grain','h-feed-supplements','h-feed-notes'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
+  ['h-name','h-showname','h-regname','h-breed','h-color','h-height','h-dob','h-usef','h-eia','h-microchip','h-notes','h-farrier-notes','h-feed-hay','h-feed-grain','h-feed-supplements','h-feed-notes','h-meds'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value = ''; });
   document.getElementById('h-fee').value = '';
 }
 
@@ -6222,4 +6226,3 @@ window.addEventListener('load', function() {
 </script>
 </body>
 </html>
-
