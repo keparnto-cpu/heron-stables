@@ -2496,7 +2496,7 @@ function dbToHorse(h) {
   return {name:h.name,showname:h.showname,regname:h.regname,owner:h.owner,board:h.board,breed:h.breed,color:h.color,sex:h.sex,height:h.height,dob:h.dob,usef:h.usef,eia:h.eia,fee:h.fee,coggins:h.coggins,vacc:h.vacc,notes:h.notes,photo:h.photo,archivedOn:h.archived_on,_id:h.id};
 }
 function dbToClient(c) {
-  return {name:c.name,roles:c.roles,phone:c.phone,email:c.email,city:c.city,state:c.state,archivedOn:c.archived_on,_id:c.id};
+  return {name:c.name||'',roles:c.roles||'',phone:c.phone||'',email:c.email||'',city:c.city||'',state:c.state||'',archivedOn:c.archived_on,_id:c.id};
 }
 function horseToDb(h) {
   return {name:h.name,showname:h.showname||h.name,regname:h.regname||'',owner:h.owner||'',board:h.board||'Full board',breed:h.breed||'',color:h.color||'',sex:h.sex||'',height:h.height||'',dob:h.dob||'',usef:h.usef||'',eia:h.eia||'',microchip:h.microchip||'',fee:parseFloat(h.fee)||2200,coggins:h.coggins||'Current',vacc:h.vacc||'Current',notes:h.notes||'',farrierNotes:h.farrierNotes||'',feedHay:h.feedHay||'',feedGrain:h.feedGrain||'',feedSupplements:h.feedSupplements||'',feedNotes:h.feedNotes||'',meds:h.meds||'',photo:h.photo||'',photoX:h.photoX||50,photoY:h.photoY||50,photoZoom:h.photoZoom||1,archived:false,archived_on:null};
@@ -2982,6 +2982,7 @@ function toast(msg, color) {
 
 // ---- HELPERS ----
 function roleColor(roles) {
+  roles = roles || "";
   if (roles.includes('horse owner')) return 'av-brown';
   if (roles.includes('staff') || roles.includes('barn manager') || roles.includes('trainer')) return 'av-green';
   if (roles.includes('veterinarian') || roles.includes('farrier')) return 'av-blue';
@@ -2989,9 +2990,10 @@ function roleColor(roles) {
   return 'av-purple';
 }
 function initials(name) {
-  return name.split(' ').filter(Boolean).slice(0,2).map(function(w) { return w[0]; }).join('').toUpperCase().slice(0,2);
+  return (name||"").split(' ').filter(Boolean).slice(0,2).map(function(w) { return w[0]; }).join('').toUpperCase().slice(0,2);
 }
 function roleBadge(roles) {
+  roles = roles || "";
   var first = roles.split(',')[0].trim();
   var map = {'horse owner':'badge-brown','rider':'badge-blue','lesson student':'badge-blue','staff':'badge-green','barn manager':'badge-green','bill payer':'badge-gray','parent':'badge-gray','veterinarian':'badge-blue','farrier':'badge-blue','vendor':'badge-amber','lessee':'badge-gray','trainer':'badge-green'};
   var cls = map[first] || 'badge-gray';
@@ -3921,7 +3923,7 @@ function renderClients() {
   var role = (document.getElementById('client-filter') ? document.getElementById('client-filter').value : 'all');
   var q = (document.getElementById('client-search') ? document.getElementById('client-search').value : '').toLowerCase().trim();
   var list = clients.slice();
-  if (role !== 'all') list = list.filter(function(c) { return c.roles.includes(role); });
+  if (role !== 'all') list = list.filter(function(c) { return (c.roles||'').includes(role); });
   if (q) list = list.filter(function(c) { return c.name.toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q) || (c.phone||'').includes(q) || (c.city||'').toLowerCase().includes(q); });
   var tbody = document.getElementById('client-table');
   var empty = document.getElementById('client-empty');
