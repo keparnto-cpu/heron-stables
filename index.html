@@ -2798,8 +2798,8 @@ async function dbDeleteVet(visit) {
 
 async function dbSaveIeaShow(show) {
   var row = {name:show.name,date:show.date||'',location:show.location||'',notes:show.notes||'',riders:show.riders||[]};
-  if (show.id && show.id.length > 10) row.id = show.id;
-  else show.id = row.id = crypto.randomUUID ? crypto.randomUUID() : 'is'+Date.now();
+  if (show.id && show.id.length === 36 && show.id.indexOf('-') !== -1) row.id = show.id;
+  else show.id = row.id = crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);});
   await dbSave('iea_shows', row);
   saveToStorage();
 }
@@ -2811,8 +2811,8 @@ async function dbDeleteIeaShow(id) {
 
 async function dbSaveShow(show) {
   var row = {name:show.name,date:show.date||'',location:show.location||'',notes:show.notes||'',riders:show.riders||[],categories:show.categories||[],expenses:show.expenses||[]};
-  if (show.id && show.id.length > 10) row.id = show.id;
-  else show.id = row.id = crypto.randomUUID ? crypto.randomUUID() : 'sh'+Date.now();
+  if (show.id && show.id.length === 36 && show.id.indexOf('-') !== -1) row.id = show.id;
+  else show.id = row.id = crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);});
   await dbSave('shows', row);
   saveToStorage();
 }
@@ -5600,7 +5600,7 @@ function saveShow() {
   var name = document.getElementById('show-name-input').value.trim();
   if (!name) { toast('Please enter a show name', '#c0392b'); return; }
   var show = {
-    id: 'sh' + Date.now(),
+    id: crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);}),
     name: name,
     date: document.getElementById('show-date-input').value,
     location: document.getElementById('show-loc-input').value.trim(),
@@ -5623,7 +5623,7 @@ function saveIeaShow() {
   var name = document.getElementById('iea-show-name').value.trim();
   if (!name) { toast('Please enter a show name', '#c0392b'); return; }
   var show = {
-    id: 'iea' + Date.now(),
+    id: crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);}),
     name: name,
     date: document.getElementById('iea-show-date-input').value,
     location: document.getElementById('iea-show-loc').value.trim(),
@@ -5944,6 +5944,19 @@ function switchIeaShowTab(el, show) {
   ['iea-tab-riders','iea-tab-photos'].forEach(function(id) {
     var el2 = document.getElementById(id); if (el2) el2.style.display = id === show ? 'block' : 'none';
   });
+}
+
+function locationSearch(input, suggestionsId) {
+  // Location autocomplete — no-op stub (can be enhanced later)
+  var el = document.getElementById(suggestionsId);
+  if (el) el.style.display = 'none';
+}
+
+function hideLocationSuggestions(suggestionsId, delay) {
+  setTimeout(function() {
+    var el = document.getElementById(suggestionsId);
+    if (el) el.style.display = 'none';
+  }, delay || 200);
 }
 
 
