@@ -5467,6 +5467,18 @@ function renderDayView(container, title, events) {
 // ==========================================
 // APP STARTUP
 // ==========================================
+function checkOpsPassword(el, page) {
+  showPage(page, el);
+}
+
+function checkDocsPassword(el) {
+  showPage('waivers', el);
+}
+
+function checkWaiversPassword(el) {
+  showPage('waivers', el);
+}
+
 function initApp() {
   updateTopbar('page-dashboard');
   dbLoadAll().then(function(loaded) {
