@@ -313,6 +313,51 @@ tr:hover td { background: var(--cream); }
 </style>
 </head>
 <body>
+<div id="app-lock" style="position:fixed;inset:0;background:#6888BE;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column">
+  <img src="https://keparnto-cpu.github.io/heron-stables/icon_1.jpg" alt="Heron Stables" style="height:80px;width:80px;border-radius:16px;margin-bottom:24px;object-fit:cover">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:white;letter-spacing:0.08em;margin-bottom:6px">Heron Stables</div>
+  <div style="font-size:12px;color:rgba(255,255,255,0.7);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:36px">Management Portal</div>
+  <div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:28px 32px;text-align:center;min-width:260px">
+    <div style="font-size:13px;color:rgba(255,255,255,0.8);margin-bottom:14px;letter-spacing:0.08em;text-transform:uppercase">Enter passcode</div>
+    <input type="password" id="app-passcode" maxlength="10" placeholder="••••" 
+      style="width:100%;padding:12px;border-radius:8px;border:none;font-size:20px;text-align:center;letter-spacing:0.3em;outline:none;background:rgba(255,255,255,0.9);color:#333;box-sizing:border-box"
+      onkeydown="if(event.key==='Enter') checkAppPassword()">
+    <div id="app-lock-error" style="color:#ffcccc;font-size:12px;margin-top:8px;display:none">Incorrect passcode. Try again.</div>
+    <button onclick="checkAppPassword()" 
+      style="margin-top:14px;width:100%;padding:12px;border-radius:8px;border:none;background:white;color:#6888BE;font-family:'Jost',sans-serif;font-size:14px;font-weight:600;letter-spacing:0.08em;cursor:pointer;text-transform:uppercase">
+      Unlock
+    </button>
+  </div>
+</div>
+
+<script>
+// App password check - runs before main script
+(function() {
+  var session = sessionStorage.getItem('hs_unlocked');
+  if (session === '1') {
+    document.getElementById('app-lock').style.display = 'none';
+  }
+  // Auto-focus passcode input
+  window.addEventListener('load', function() {
+    var el = document.getElementById('app-passcode');
+    if (el && document.getElementById('app-lock').style.display !== 'none') el.focus();
+  });
+})();
+
+function checkAppPassword() {
+  var val = document.getElementById('app-passcode').value;
+  var err = document.getElementById('app-lock-error');
+  if (val === '405') {
+    sessionStorage.setItem('hs_unlocked', '1');
+    document.getElementById('app-lock').style.display = 'none';
+  } else {
+    err.style.display = 'block';
+    document.getElementById('app-passcode').value = '';
+    document.getElementById('app-passcode').focus();
+  }
+}
+</script>
+
 
 <!-- Sidebar -->
 <div class="sidebar">
@@ -593,15 +638,20 @@ tr:hover td { background: var(--cream); }
       </div>
 
       <!-- Feed section -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em">Feed</div>
+      <div style="background:#f0f4f0;border-radius:8px;padding:16px;margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid #d4e4d4;padding-bottom:10px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;letter-spacing:0.04em;color:#2d5a3d">🌾 Feed</div>
       </div>
       <div id="feed-products-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
       <div class="empty" id="feed-products-empty" style="display:none"><div class="empty-icon">🌾</div>No products yet. Add your usual feed and supplies.</div>
 
       <!-- Supplements section -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em">Supplements</div>
+      </div><!-- end feed section -->
+
+      <!-- Supplements section -->
+      <div style="background:#f4f0f6;border-radius:8px;padding:16px;margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid #d4c8e4;padding-bottom:10px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;letter-spacing:0.04em;color:#5a2d7a">💊 Supplements</div>
       </div>
       <div id="feed-supplements-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
       <div class="empty" id="feed-supplements-empty" style="margin-bottom:24px"><div class="empty-icon">💊</div>No supplements added yet. Use + Add product and select "Supplements" category.</div>
@@ -637,14 +687,20 @@ tr:hover td { background: var(--cream); }
       </div>
 
       <!-- Vet Orders section -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:0.04em">Vet Orders</div>
+      </div><!-- end supplements section -->
+
+      <!-- Vet Orders section -->
+      <div style="background:#f4f0ec;border-radius:8px;padding:16px;margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid #e4d4c4;padding-bottom:10px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;letter-spacing:0.04em;color:#8a4a1a">🩺 Vet Orders</div>
       </div>
       <div class="card" style="margin-bottom:16px">
         <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Add any vet-prescribed medications, treatments or special orders below. These will be included in the SMS to Pato.</div>
         <div id="vet-orders-list"></div>
         <button class="btn btn-sm" onclick="addVetOrderLine()" style="margin-top:8px">+ Add item</button>
       </div>
+
+      </div><!-- end vet orders section -->
 
       <!-- Order history -->
       <div id="feed-history-section" style="margin-top:8px">
