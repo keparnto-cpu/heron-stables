@@ -2918,6 +2918,29 @@ const scheduleData = [
   {day:'Sat 10',time:'11:00 AM',client:'Sheila Sadighi',type:'Lesson',horse:'Mando',status:'Confirmed'},
 ];
 
+const vaccData = [];
+const farrierVisits = [];
+const vetVisits = [];
+const ieaShows = [];
+const ieaRiderList = [];
+const showsData = [];
+const showRiderList = [];
+const calOtherEvents = [];
+const manualAlerts = [];
+const feedOrderHistory = [];
+const vetDocs = [];
+const manualDocs = {};
+const vendors = [];
+const feedOrderHistoryData = [];
+const feedProductsDefault = [
+  {name:'Hay',unit:'bale',price:12,notes:''},
+  {name:'Grain',unit:'bag',price:28,notes:''},
+  {name:'Shavings',unit:'bag',price:8,notes:''},
+  {name:'Supplements',unit:'tub',price:45,notes:''},
+  {name:'Salt blocks',unit:'block',price:6,notes:''}
+];
+const feedProducts = feedProductsDefault.map(function(p){ return Object.assign({}, p); });
+
 // ---- NAVIGATION ----
 function toggleSidebar() {
   var sidebar = document.querySelector('.sidebar');
@@ -5116,7 +5139,7 @@ function populateFarrierHorseSelect() {
 // ==========================================
 // CALENDAR EVENTS
 // ==========================================
-var calOtherEvents = []; // for "Other" type events
+// calOtherEvents declared above
 
 function openCalEventModal(dateStr) {
   // Populate horse/rider selects
