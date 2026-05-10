@@ -618,44 +618,48 @@ function checkAppPassword() {
     </div>
 
     <!-- FEED & SUPPLIES -->
-    <div class="page" id="page-feed">
+        <div class="page" id="page-feed">
       <div class="section-header">
-        <div class="section-title">Feed & Supplies</div>
+        <div class="section-title">Feed &amp; Supplies</div>
         <button class="btn btn-primary btn-sm" onclick="openAddFeedProductModal()">+ Add product</button>
       </div>
 
-
-
-      <!-- Feed section -->
+      <!-- FEED SECTION -->
       <div style="background:#1e3a2f;border-radius:10px;padding:20px;margin-bottom:28px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:10px">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">🌾 Feed</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:10px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">&#127806; Feed</div>
+        </div>
+        <div id="feed-products-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
+        <div class="empty" id="feed-products-empty" style="display:none"><div class="empty-icon">&#127806;</div>No feed products yet.</div>
       </div>
-      <div id="feed-products-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
-      <div class="empty" id="feed-products-empty" style="display:none"><div class="empty-icon">🌾</div>No products yet. Add your usual feed and supplies.</div>
 
-      <!-- Supplements section -->
-      </div><!-- end feed section -->
-
-      <!-- Supplements section -->
+      <!-- SUPPLEMENTS SECTION -->
       <div style="background:#2d1b4e;border-radius:10px;padding:20px;margin-bottom:28px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:10px">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">💊 Supplements</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:10px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">&#128138; Supplements</div>
+        </div>
+        <div id="feed-supplements-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
+        <div class="empty" id="feed-supplements-empty" style="margin-bottom:24px"><div class="empty-icon">&#128138;</div>No supplements added yet.</div>
       </div>
-      <div id="feed-supplements-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
-      <div class="empty" id="feed-supplements-empty" style="margin-bottom:24px"><div class="empty-icon">💊</div>No supplements added yet. Use + Add product and select "Supplements" category.</div>
 
-      </div><!-- end vet orders section -->
+      <!-- VET ORDERS SECTION -->
+      <div style="background:#4a1a1a;border-radius:10px;padding:20px;margin-bottom:28px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:10px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">&#129658; Vet Orders</div>
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px">Add any vet-prescribed medications, treatments or special orders below.</div>
+        <div id="vet-orders-list"></div>
+        <button class="btn btn-sm" onclick="addVetOrderLine()" style="margin-top:8px;background:rgba(255,255,255,0.15);color:white;border-color:rgba(255,255,255,0.3)">+ Add item</button>
+      </div>
 
-      <!-- Other Supplies section -->
+      <!-- OTHER SUPPLIES SECTION -->
       <div style="background:#1a3a4a;border-radius:10px;padding:20px;margin-bottom:28px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:10px">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">🧹 Other Supplies</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">&#129529; Other Supplies</div>
         </div>
-        <!-- Dropdown to add items -->
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
           <select id="other-supply-select" style="flex:1;min-width:180px;padding:8px 12px;border-radius:6px;border:none;font-size:13px;background:rgba(255,255,255,0.9);color:#333;outline:none">
-            <option value="">— Select an item —</option>
+            <option value="">&#8212; Select an item &#8212;</option>
             <option>Toilet paper</option>
             <option>Detergent</option>
             <option>Brushes</option>
@@ -671,14 +675,12 @@ function checkAppPassword() {
           </select>
           <button onclick="addOtherSupplyFromDropdown()" style="padding:8px 14px;border-radius:6px;border:none;background:rgba(255,255,255,0.9);color:#1a3a4a;font-weight:600;cursor:pointer;font-size:13px">+ Add</button>
         </div>
-        <!-- Added items list -->
         <div id="other-supply-added-list" style="margin-bottom:12px"></div>
-        <!-- Free text -->
         <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:12px">
           <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:6px;letter-spacing:0.08em;text-transform:uppercase">Other (anything else)</div>
           <div style="display:flex;gap:8px">
-            <input type="text" id="other-supply-input" placeholder="Type anything else…" 
-              style="flex:1;padding:8px 12px;border-radius:6px;border:none;font-size:13px;background:rgba(255,255,255,0.15);color:white;outline:none;placeholder-color:rgba(255,255,255,0.5)" 
+            <input type="text" id="other-supply-input" placeholder="Type anything else&#8230;"
+              style="flex:1;padding:8px 12px;border-radius:6px;border:none;font-size:13px;background:rgba(255,255,255,0.15);color:white;outline:none"
               onkeydown="if(event.key==='Enter') addOtherSupplyFreeText()">
             <button onclick="addOtherSupplyFreeText()" style="padding:8px 14px;border-radius:6px;border:none;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:13px">+ Add</button>
           </div>
@@ -686,21 +688,21 @@ function checkAppPassword() {
         </div>
       </div>
 
-      <!-- Order summary -->
+      <!-- ORDER SUMMARY -->
       <div id="feed-order-card" style="display:none">
         <div class="card" style="border-left:3px solid var(--gold)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div style="font-family:'Cormorant Garamond',serif;font-size:18px">🛒 Order summary</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px">&#128722; Order summary</div>
             <div style="display:flex;gap:8px">
               <button class="btn btn-sm" onclick="clearFeedOrder()" style="color:var(--red);border-color:var(--red)">Clear</button>
-              <button class="btn btn-primary btn-sm" onclick="sendFeedOrder()">📱 Share with Pato</button>
+              <button class="btn btn-primary btn-sm" onclick="sendFeedOrder()">&#128241; Share with Pato</button>
             </div>
           </div>
           <div id="feed-order-list"></div>
         </div>
       </div>
 
-      <!-- Archive prompt (shows after sharing) -->
+      <!-- ARCHIVE PROMPT -->
       <div id="feed-archive-prompt" style="display:none">
         <div class="card" style="border-left:3px solid var(--green);background:var(--cream)">
           <div style="display:flex;justify-content:space-between;align-items:center">
@@ -710,29 +712,13 @@ function checkAppPassword() {
             </div>
             <div style="display:flex;gap:8px">
               <button class="btn btn-sm" onclick="document.getElementById('feed-archive-prompt').style.display='none';clearFeedOrder()">No thanks</button>
-              <button class="btn btn-primary btn-sm" onclick="archiveFeedOrder()">📦 Archive order</button>
+              <button class="btn btn-primary btn-sm" onclick="archiveFeedOrder()">&#128230; Archive order</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Vet Orders section -->
-      </div><!-- end supplements section -->
-
-      <!-- Vet Orders section -->
-      <div style="background:#4a1a1a;border-radius:10px;padding:20px;margin-bottom:28px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:10px">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">🩺 Vet Orders</div>
-      </div>
-      <div class="card" style="margin-bottom:16px">
-        <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Add any vet-prescribed medications, treatments or special orders below. These will be included in the SMS to Pato.</div>
-        <div id="vet-orders-list"></div>
-        <button class="btn btn-sm" onclick="addVetOrderLine()" style="margin-top:8px">+ Add item</button>
-      </div>
-
-      </div><!-- end vet orders section -->
-
-      <!-- Order history -->
+      <!-- ORDER HISTORY -->
       <div id="feed-history-section" style="margin-top:8px">
         <div id="feed-history-list"></div>
       </div>
@@ -2576,7 +2562,6 @@ function renderAll() {
   renderHorseProfiles();
   renderVendors();
   renderFeedProducts();
-  renderVetOrders();
   renderCalendar();
   renderClients();
   renderBoarders();
@@ -3052,7 +3037,7 @@ function renderHorseProfiles() {
     var txtCol = horseTextColors[idx % horseTextColors.length];
     var ini = h.name.slice(0,2).toUpperCase();
     var photoHTML = h.photo
-      ? '<div style="width:100%;height:220px;overflow:hidden;position:relative;cursor:grab;background:#f0f0f0" id="photo-wrap-' + idx + '" onmousedown="startPhotoDrag(event,' + idx + ')" ontouchstart="startPhotoDrag(event,' + idx + ')"><img src="' + h.photo + '" style="position:absolute;width:100%;height:100%;object-fit:cover;object-position:' + (h.photoX||50) + '% ' + (h.photoY||50) + '%;transition:none" id="photo-img-' + idx + '" draggable="false"><div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.45);color:white;font-size:9px;padding:2px 6px;border-radius:4px;pointer-events:none;letter-spacing:0.05em">drag to reposition</div></div>'
+      ? '<div style="width:100%;height:220px;overflow:hidden;position:relative;cursor:grab;background:#f0f0f0" id="photo-wrap-' + idx + '" onmousedown="startPhotoDrag(event,' + idx + ')" ontouchstart="startPhotoDrag(event,' + idx + ')"><img src="' + h.photo + '" style="position:absolute;width:100%;height:100%;object-fit:cover;object-position:' + (h.photoX||50) + '% ' + (h.photoY||50) + '%;transition:none;transform:scale(' + (h.photoZoom||1) + ')" id="photo-img-' + idx + '" draggable="false"><div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.45);color:white;font-size:9px;padding:2px 6px;border-radius:4px;pointer-events:none;letter-spacing:0.05em">drag · scroll to resize</div></div>'
       : '<div style="width:100%;height:180px;background:' + bgCol + ';display:flex;align-items:center;justify-content:center;font-size:56px;font-family:\'Playfair Display\',serif;font-weight:600;color:' + txtCol + '">' + ini + '</div>';
     var dobStr = h.dob ? new Date(h.dob + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
     var attn = (h.coggins !== 'Current' || (h.vacc && h.vacc !== 'Current'));
@@ -3103,6 +3088,55 @@ function renderHorseProfiles() {
 
 // ── HORSE PHOTO DRAG TO REPOSITION ──
 var _dragState = null;
+
+function initPhotoZoom(wrap, img, idx) {
+  // Mouse wheel zoom
+  wrap.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    var zoom = horses[idx].photoZoom || 1;
+    zoom = Math.min(3, Math.max(0.5, zoom + (e.deltaY < 0 ? 0.1 : -0.1)));
+    horses[idx].photoZoom = zoom;
+    img.style.transform = 'scale(' + zoom + ')';
+    saveToStorage();
+  }, {passive: false});
+
+  // Pinch to zoom on touch
+  var lastDist = 0;
+  wrap.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 2) {
+      lastDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    }
+  }, {passive: true});
+  wrap.addEventListener('touchmove', function(e) {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      var dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      var zoom = horses[idx].photoZoom || 1;
+      zoom = Math.min(3, Math.max(0.5, zoom * (dist / lastDist)));
+      horses[idx].photoZoom = zoom;
+      img.style.transform = 'scale(' + zoom + ')';
+      lastDist = dist;
+    }
+  }, {passive: false});
+  wrap.addEventListener('touchend', function(e) {
+    if (e.touches.length < 2) {
+      saveToStorage();
+      if (horses[idx]._id) {
+        fetch(SUPA_URL + '/rest/v1/horses?id=eq.' + horses[idx]._id, {
+          method: 'PATCH',
+          headers: Object.assign({}, SUPA_HEADERS, {'Prefer':'return=minimal'}),
+          body: JSON.stringify({photoZoom: horses[idx].photoZoom})
+        });
+      }
+    }
+  });
+}
 
 function startPhotoDrag(e, idx) {
   e.preventDefault();
@@ -3427,7 +3461,6 @@ function renderFeedOrderSummary() {
 function clearFeedOrder() {
   feedOrder = {};
   renderFeedProducts();
-  renderVetOrders();
   if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar();
 }
 
@@ -3506,7 +3539,6 @@ function deleteFeedProduct(idx) {
   if (!confirm('Delete ' + p.name + '?')) return;
   feedProducts.splice(idx, 1);
   renderFeedProducts();
-  renderVetOrders();
   saveToStorage();
   toast('Deleted', '#c0392b');
 }
@@ -3536,7 +3568,6 @@ function saveFeedProduct() {
   if (editingFeedIdx >= 0) { feedProducts[editingFeedIdx] = p; toast('✅ '+name+' updated!'); editingFeedIdx=-1; }
   else { feedProducts.push(p); toast('🌾 '+name+' added!'); }
   renderFeedProducts();
-  renderVetOrders();
   if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar(); saveToStorage(); closeModal();
 }
 
@@ -3594,6 +3625,10 @@ var vetOrders = []; // Array of {text: ''}
 function renderVetOrders() {
   var container = document.getElementById('vet-orders-list');
   if (!container) return;
+  // Only render when feed page is showing
+  var feedPage = document.getElementById('page-feed');
+  if (feedPage && feedPage.style.display === 'none') return;
+  if (feedPage && !feedPage.classList.contains('active')) return;
   container.innerHTML = '';
   if (!vetOrders.length) vetOrders.push({text: ''});
   vetOrders.forEach(function(o, i) {
@@ -3764,7 +3799,6 @@ function reorderFeed(i) {
   var o = feedOrderHistory[i]; if (!o) return;
   feedOrder = JSON.parse(JSON.stringify(o.items));
   renderFeedProducts();
-  renderVetOrders();
   toast('🛒 Order loaded — review and share when ready!');
 }
 
