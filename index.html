@@ -347,7 +347,7 @@ tr:hover td { background: var(--cream); }
 function checkAppPassword() {
   var val = document.getElementById('app-passcode').value;
   var err = document.getElementById('app-lock-error');
-  if (val === '405') {
+  if (val === 'bunn') {
     sessionStorage.setItem('hs_unlocked', '1');
     document.getElementById('app-lock').style.display = 'none';
   } else {
@@ -3181,7 +3181,7 @@ function initPhotoZoom(wrap, img, idx) {
         fetch(SUPA_URL + '/rest/v1/horses?id=eq.' + horses[idx]._id, {
           method: 'PATCH',
           headers: Object.assign({}, SUPA_HEADERS, {'Prefer':'return=minimal'}),
-          body: JSON.stringify({photoZoom: horses[idx].photoZoom})
+          body: JSON.stringify({photoX: horses[idx].photoX || 50, photoY: horses[idx].photoY || 50, photoZoom: horses[idx].photoZoom || 1})
         });
       }
     }
@@ -3220,7 +3220,7 @@ function startPhotoDrag(e, idx) {
       fetch(SUPA_URL + '/rest/v1/horses?id=eq.' + horses[idx]._id, {
         method: 'PATCH',
         headers: Object.assign({}, SUPA_HEADERS, {'Prefer':'return=minimal'}),
-        body: JSON.stringify({photoX: horses[idx].photoX, photoY: horses[idx].photoY})
+        body: JSON.stringify({photoX: horses[idx].photoX, photoY: horses[idx].photoY, photoZoom: horses[idx].photoZoom || 1})
       });
     }
   }
