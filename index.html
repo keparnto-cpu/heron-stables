@@ -2492,7 +2492,7 @@ function dbToClient(c) {
   return {name:c.name,roles:c.roles,phone:c.phone,email:c.email,city:c.city,state:c.state,archivedOn:c.archived_on,_id:c.id};
 }
 function horseToDb(h) {
-  return {name:h.name,showname:h.showname||h.name,regname:h.regname||'',owner:h.owner||'',board:h.board||'Full board',breed:h.breed||'',color:h.color||'',sex:h.sex||'',height:h.height||'',dob:h.dob||'',usef:h.usef||'',eia:h.eia||'',fee:parseFloat(h.fee)||2200,coggins:h.coggins||'Current',vacc:h.vacc||'Current',notes:h.notes||'',photo:h.photo||'',archived:false,archived_on:null};
+  return {name:h.name,showname:h.showname||h.name,regname:h.regname||'',owner:h.owner||'',board:h.board||'Full board',breed:h.breed||'',color:h.color||'',sex:h.sex||'',height:h.height||'',dob:h.dob||'',usef:h.usef||'',eia:h.eia||'',microchip:h.microchip||'',fee:parseFloat(h.fee)||2200,coggins:h.coggins||'Current',vacc:h.vacc||'Current',notes:h.notes||'',farrierNotes:h.farrierNotes||'',feedHay:h.feedHay||'',feedGrain:h.feedGrain||'',feedSupplements:h.feedSupplements||'',feedNotes:h.feedNotes||'',meds:h.meds||'',photo:h.photo||'',photoX:h.photoX||50,photoY:h.photoY||50,photoZoom:h.photoZoom||1,archived:false,archived_on:null};
 }
 function clientToDb(c) {
   return {name:c.name,roles:c.roles||'',phone:c.phone||'',email:c.email||'',city:c.city||'',state:c.state||'',archived:false,archived_on:null};
@@ -3944,7 +3944,7 @@ function saveVendor() {
   if(!name){toast('Please enter a name','#c0392b');return;}
   var v={name:name,company:document.getElementById('vn-company').value.trim(),type:document.getElementById('vn-type').value,phone:document.getElementById('vn-phone').value.trim(),email:document.getElementById('vn-email').value.trim(),website:document.getElementById('vn-website').value.trim(),notes:document.getElementById('vn-notes').value.trim()};
   if(editingVendorIdx>=0){v._id=vendors[editingVendorIdx]._id;vendors[editingVendorIdx]=v;toast('✅ '+name+' updated!');editingVendorIdx=-1;}
-  else{vendors.push(v);toast('🏪 '+name+' added!');}
+  else{vendors.push(v);dbSave('vendors',{name:v.name,company:v.company||'',type:v.type,phone:v.phone||'',email:v.email||'',website:v.website||'',notes:v.notes||''}).then(function(r){if(r&&r[0])v._id=r[0].id;});toast('🏪 '+name+' added!');}
   renderVendors();saveToStorage();closeModal();
 }
 function editVendor(i) {
@@ -3963,7 +3963,7 @@ function editVendor(i) {
 function deleteVendor(i) {
   var v=vendors[i];if(!v)return;
   if(!confirm('Delete '+v.name+'?'))return;
-  vendors.splice(i,1);renderVendors();saveToStorage();toast('Deleted','#c0392b');
+  var _vnd=vendors[i];if(_vnd&&_vnd._id)dbDelete('vendors',_vnd._id);vendors.splice(i,1);renderVendors();saveToStorage();toast('Deleted','#c0392b');
 }
 
 // ==========================================
@@ -4919,6 +4919,7 @@ function saveVetVisit() {
     editingVetIdx = -1;
   } else {
     vetVisits.push(v);
+    dbSaveVet(v);
     toast('🩺 Visit logged!');
   }
   renderVetVisits();
@@ -4947,6 +4948,7 @@ function editVetVisit(idx) {
 function deleteVetVisit(idx) {
   var v = vetVisits[idx]; if (!v) return;
   if (!confirm('Delete this vet visit for ' + v.horse + '?')) return;
+  var _vv=vetVisits[idx];if(_vv&&_vv._id)dbDelete('vet_visits',_vv._id);
   vetVisits.splice(idx, 1);
   renderVetVisits();
   saveToStorage();
@@ -5126,6 +5128,7 @@ function saveFarrierVisit() {
     editingFarrierIdx = -1;
   } else {
     farrierVisits.push(v);
+    dbSaveFarrier(v);
     toast('🔨 Visit logged!');
   }
   renderFarrier();
@@ -5154,6 +5157,7 @@ function editFarrierVisit(idx) {
 function deleteFarrierVisit(idx) {
   var v = farrierVisits[idx]; if (!v) return;
   if (!confirm('Delete this farrier visit for ' + v.horse + '?')) return;
+  var _fv=farrierVisits[idx];if(_fv&&_fv._id)dbDelete('farrier_visits',_fv._id);
   farrierVisits.splice(idx, 1);
   renderFarrier();
   saveToStorage();
@@ -6061,6 +6065,7 @@ function saveIeaShow() {
     riders: []
   };
   ieaShows.unshift(show); // newest first
+  dbSaveIeaShow(show);
   populateIeaShowSelect();
   document.getElementById('iea-show-select').value = id;
   loadIeaShow(id);
