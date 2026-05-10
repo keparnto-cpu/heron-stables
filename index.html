@@ -829,7 +829,7 @@ function checkAppPassword() {
             <option value="Caroline Johnston">Caroline Johnston</option>
           </select>
           <button class="btn btn-sm" onclick="emailLessonsReport()" style="background:var(--amber-pale);border-color:var(--amber);color:var(--amber)">📤 Share with Pato</button>
-          <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-lesson')">+ Log lesson</button>
+          <button class="btn btn-primary btn-sm" onclick="populateSelects();openModal('modal-add-lesson')">+ Log lesson</button>
         </div>
       </div>
 
@@ -3021,7 +3021,7 @@ function handleAdd() {
   var id = active.id;
   if (id === 'page-horse-profiles') openModal('modal-add-horse');
   else if (id === 'page-clients') openModal('modal-add-client');
-  else if (id === 'page-lessons') openModal('modal-add-lesson');
+  else if (id === 'page-lessons') { populateSelects(); openModal('modal-add-lesson'); }
   else if (id === 'page-vaccinations') openVaccModal();
   else if (id === 'page-boarding') openModal('modal-add-boarder');
   else if (id === 'page-farrier') openFarrierModal();
