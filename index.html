@@ -624,23 +624,12 @@ function checkAppPassword() {
         <button class="btn btn-primary btn-sm" onclick="openAddFeedProductModal()">+ Add product</button>
       </div>
 
-      <div style="margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <input type="text" id="feed-search" placeholder="🔍 Search products…" oninput="renderFeedProducts()" style="padding:8px 12px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:14px;background:var(--cream);outline:none;min-width:200px">
-        <select id="feed-category-filter" onchange="renderFeedProducts()" style="padding:8px 12px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:14px;background:var(--cream);outline:none">
-          <option value="all">All categories</option>
-          <option value="hay">Hay</option>
-          <option value="grain">Grain & feed</option>
-          <option value="supplement">Supplements</option>
-          <option value="bedding">Bedding</option>
-          <option value="equipment">Equipment</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
+
 
       <!-- Feed section -->
-      <div style="background:#f0f4f0;border-radius:8px;padding:16px;margin-bottom:24px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid #d4e4d4;padding-bottom:10px">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;letter-spacing:0.04em;color:#2d5a3d">🌾 Feed</div>
+      <div style="background:#1e3a2f;border-radius:10px;padding:20px;margin-bottom:28px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:10px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">🌾 Feed</div>
       </div>
       <div id="feed-products-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
       <div class="empty" id="feed-products-empty" style="display:none"><div class="empty-icon">🌾</div>No products yet. Add your usual feed and supplies.</div>
@@ -649,12 +638,53 @@ function checkAppPassword() {
       </div><!-- end feed section -->
 
       <!-- Supplements section -->
-      <div style="background:#f4f0f6;border-radius:8px;padding:16px;margin-bottom:24px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid #d4c8e4;padding-bottom:10px">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;letter-spacing:0.04em;color:#5a2d7a">💊 Supplements</div>
+      <div style="background:#2d1b4e;border-radius:10px;padding:20px;margin-bottom:28px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:10px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">💊 Supplements</div>
       </div>
       <div id="feed-supplements-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px"></div>
       <div class="empty" id="feed-supplements-empty" style="margin-bottom:24px"><div class="empty-icon">💊</div>No supplements added yet. Use + Add product and select "Supplements" category.</div>
+
+      </div><!-- end vet orders section -->
+
+      <!-- Other Supplies section -->
+      <div style="background:#1a3a4a;border-radius:10px;padding:20px;margin-bottom:28px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:10px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">🧹 Other Supplies</div>
+        </div>
+        <!-- Dropdown to add items -->
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <select id="other-supply-select" style="flex:1;min-width:180px;padding:8px 12px;border-radius:6px;border:none;font-size:13px;background:rgba(255,255,255,0.9);color:#333;outline:none">
+            <option value="">— Select an item —</option>
+            <option>Toilet paper</option>
+            <option>Detergent</option>
+            <option>Brushes</option>
+            <option>Multi-surface cleaner</option>
+            <option>Stall plates</option>
+            <option>Leash</option>
+            <option>Rags</option>
+            <option>Rakes</option>
+            <option>Buckets</option>
+            <option>Shampoo</option>
+            <option>Dawn</option>
+            <option>Leather conditioner</option>
+          </select>
+          <button onclick="addOtherSupplyFromDropdown()" style="padding:8px 14px;border-radius:6px;border:none;background:rgba(255,255,255,0.9);color:#1a3a4a;font-weight:600;cursor:pointer;font-size:13px">+ Add</button>
+        </div>
+        <!-- Added items list -->
+        <div id="other-supply-added-list" style="margin-bottom:12px"></div>
+        <!-- Free text -->
+        <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:12px">
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:6px;letter-spacing:0.08em;text-transform:uppercase">Other (anything else)</div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="other-supply-input" placeholder="Type anything else…" 
+              style="flex:1;padding:8px 12px;border-radius:6px;border:none;font-size:13px;background:rgba(255,255,255,0.15);color:white;outline:none;placeholder-color:rgba(255,255,255,0.5)" 
+              onkeydown="if(event.key==='Enter') addOtherSupplyFreeText()">
+            <button onclick="addOtherSupplyFreeText()" style="padding:8px 14px;border-radius:6px;border:none;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:13px">+ Add</button>
+          </div>
+          <div id="other-supply-freetext-list" style="margin-top:8px"></div>
+        </div>
+      </div>
 
       <!-- Order summary -->
       <div id="feed-order-card" style="display:none">
@@ -690,9 +720,9 @@ function checkAppPassword() {
       </div><!-- end supplements section -->
 
       <!-- Vet Orders section -->
-      <div style="background:#f4f0ec;border-radius:8px;padding:16px;margin-bottom:24px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid #e4d4c4;padding-bottom:10px">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;letter-spacing:0.04em;color:#8a4a1a">🩺 Vet Orders</div>
+      <div style="background:#4a1a1a;border-radius:10px;padding:20px;margin-bottom:28px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:10px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.04em;color:white">🩺 Vet Orders</div>
       </div>
       <div class="card" style="margin-bottom:16px">
         <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Add any vet-prescribed medications, treatments or special orders below. These will be included in the SMS to Pato.</div>
@@ -3022,7 +3052,7 @@ function renderHorseProfiles() {
     var txtCol = horseTextColors[idx % horseTextColors.length];
     var ini = h.name.slice(0,2).toUpperCase();
     var photoHTML = h.photo
-      ? '<img src="' + h.photo + '" style="width:100%;height:180px;object-fit:cover;display:block;">'
+      ? '<div style="width:100%;height:220px;overflow:hidden;position:relative;cursor:grab;background:#f0f0f0" id="photo-wrap-' + idx + '" onmousedown="startPhotoDrag(event,' + idx + ')" ontouchstart="startPhotoDrag(event,' + idx + ')"><img src="' + h.photo + '" style="position:absolute;width:100%;height:100%;object-fit:cover;object-position:' + (h.photoX||50) + '% ' + (h.photoY||50) + '%;transition:none" id="photo-img-' + idx + '" draggable="false"><div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.45);color:white;font-size:9px;padding:2px 6px;border-radius:4px;pointer-events:none;letter-spacing:0.05em">drag to reposition</div></div>'
       : '<div style="width:100%;height:180px;background:' + bgCol + ';display:flex;align-items:center;justify-content:center;font-size:56px;font-family:\'Playfair Display\',serif;font-weight:600;color:' + txtCol + '">' + ini + '</div>';
     var dobStr = h.dob ? new Date(h.dob + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
     var attn = (h.coggins !== 'Current' || (h.vacc && h.vacc !== 'Current'));
@@ -3069,6 +3099,52 @@ function renderHorseProfiles() {
         '</div>' +
       '</div></div>';
   }).join('');
+}
+
+// ── HORSE PHOTO DRAG TO REPOSITION ──
+var _dragState = null;
+
+function startPhotoDrag(e, idx) {
+  e.preventDefault();
+  var isTouch = e.type === 'touchstart';
+  var startX = isTouch ? e.touches[0].clientX : e.clientX;
+  var startY = isTouch ? e.touches[0].clientY : e.clientY;
+  var startPosX = horses[idx].photoX !== undefined ? horses[idx].photoX : 50;
+  var startPosY = horses[idx].photoY !== undefined ? horses[idx].photoY : 50;
+  var img = document.getElementById('photo-img-' + idx);
+  if (!img) return;
+
+  function onMove(ev) {
+    var cx = isTouch ? ev.touches[0].clientX : ev.clientX;
+    var cy = isTouch ? ev.touches[0].clientY : ev.clientY;
+    var dx = (cx - startX) * 0.15;
+    var dy = (cy - startY) * 0.15;
+    var newX = Math.max(0, Math.min(100, startPosX - dx));
+    var newY = Math.max(0, Math.min(100, startPosY - dy));
+    img.style.objectPosition = newX + '% ' + newY + '%';
+    horses[idx].photoX = newX;
+    horses[idx].photoY = newY;
+  }
+
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onUp);
+    saveToStorage();
+    if (horses[idx]._id) {
+      fetch(SUPA_URL + '/rest/v1/horses?id=eq.' + horses[idx]._id, {
+        method: 'PATCH',
+        headers: Object.assign({}, SUPA_HEADERS, {'Prefer':'return=minimal'}),
+        body: JSON.stringify({photoX: horses[idx].photoX, photoY: horses[idx].photoY})
+      });
+    }
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+  document.addEventListener('touchmove', onMove, {passive:false});
+  document.addEventListener('touchend', onUp);
 }
 
 function uploadHorsePhoto(idx, input) {
@@ -3324,16 +3400,28 @@ function renderFeedOrderSummary() {
   var card = document.getElementById('feed-order-card');
   var list = document.getElementById('feed-order-list');
   var items = Object.keys(feedOrder).filter(function(k) { return feedOrder[k] > 0; });
+  var otherItems = Object.keys(otherSuppliesOrder||{}).filter(function(k){ return (otherSuppliesOrder||{})[k]>0; });
+  var otherFree = (otherSupplyFreeTexts||[]).filter(function(t){ return t.trim(); });
+  var vetItems2 = (vetOrders||[]).filter(function(o){ return o.text && o.text.trim(); });
   if (!card || !list) return;
-  if (!items.length) { card.style.display = 'none'; return; }
+  if (!items.length && !otherItems.length && !otherFree.length && !vetItems2.length) { card.style.display = 'none'; return; }
   card.style.display = 'block';
-  list.innerHTML = items.map(function(name) {
+  var rows = [];
+  items.forEach(function(name) {
     var p = feedProducts.find(function(p) { return p.name === name; });
     var unit = p ? (p.unit || 'unit') : 'unit';
-    return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px">' +
-      '<span><strong>' + feedOrder[name] + 'x</strong> ' + name + '</span>' +
-      '<span style="color:var(--text-muted)">' + feedOrder[name] + ' ' + unit + (feedOrder[name]>1&&!unit.endsWith('s')?'s':'') + '</span></div>';
-  }).join('');
+    rows.push('<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px"><span><strong>' + feedOrder[name] + 'x</strong> ' + name + '</span><span style="color:var(--text-muted)">' + unit + '</span></div>');
+  });
+  otherItems.forEach(function(name) {
+    rows.push('<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px"><span><strong>' + otherSuppliesOrder[name] + 'x</strong> ' + name + '</span><span style="color:var(--text-muted)">🧹</span></div>');
+  });
+  otherFree.forEach(function(t) {
+    rows.push('<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:14px">• ' + t + '</div>');
+  });
+  vetItems2.forEach(function(o) {
+    rows.push('<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text-muted)">🩺 ' + o.text.trim() + '</div>');
+  });
+  list.innerHTML = rows.join('');
 }
 
 function clearFeedOrder() {
@@ -3346,7 +3434,9 @@ function clearFeedOrder() {
 function sendFeedOrder() {
   var items = Object.keys(feedOrder).filter(function(k) { return feedOrder[k] > 0; });
   var vetItems = vetOrders.filter(function(o){ return o.text.trim(); });
-  if (!items.length && !vetItems.length) { toast('No items or vet orders to send', '#c0392b'); return; }
+  var otherItems2 = Object.keys(otherSuppliesOrder||{}).filter(function(k){ return otherSuppliesOrder[k]>0; });
+  var otherFree2 = (otherSupplyFreeTexts||[]).filter(function(t){ return t.trim(); });
+  if (!items.length && !vetItems.length && !otherItems2.length && !otherFree2.length) { toast('No items selected', '#c0392b'); return; }
   var dateStr = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   var lines = ['🌾 HERON STABLES — FEED ORDER', dateStr, '─────────────────────'];
   items.forEach(function(name) {
@@ -3364,9 +3454,22 @@ function sendFeedOrder() {
     lines.push('💊 VET ORDERS:');
     vetItems.forEach(function(o){ lines.push('• ' + o.text.trim()); });
   }
+  var otherSmsItems = Object.keys(otherSuppliesOrder||{}).filter(function(k){ return otherSuppliesOrder[k]>0; });
+  var otherSmsFreeTxts = (otherSupplyFreeTexts||[]).filter(function(t){ return t.trim(); });
+  if (otherSmsItems.length || otherSmsFreeTxts.length) {
+    lines.push('');
+    lines.push('🧹 OTHER SUPPLIES:');
+    otherSmsItems.forEach(function(name){ lines.push('• ' + otherSuppliesOrder[name] + 'x ' + name); });
+    otherSmsFreeTxts.forEach(function(t){ lines.push('• ' + t); });
+  }
   var msg = lines.join('\n');
   var smsUrl = 'sms:6465098774?body=' + encodeURIComponent(msg);
-  window.location.href = smsUrl;
+  var a = document.createElement('a');
+  a.href = smsUrl;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ document.body.removeChild(a); }, 500);
   // Show archive option after sending
   setTimeout(function() {
     var card = document.getElementById('feed-archive-prompt');
@@ -3554,6 +3657,97 @@ function sendVetOrders() {
   var msg = lines.join('\n');
   window.location.href = 'sms:6465098774?body=' + encodeURIComponent(msg);
   toast('📱 Opening Messages…');
+}
+
+// ── OTHER SUPPLIES ──
+var otherSuppliesOrder = {};
+var otherSupplyFreeTexts = [];
+var otherSuppliesList = ["Toilet paper", "Detergent", "Brushes", "Multi-surface cleaner", "Stall plates", "Leash", "Rags", "Rakes", "Buckets", "Shampoo", "Dawn", "Leather conditioner"];
+
+function addOtherSupplyFromDropdown() {
+  var sel = document.getElementById('other-supply-select');
+  if (!sel || !sel.value) return;
+  var name = sel.value;
+  otherSuppliesOrder[name] = (otherSuppliesOrder[name] || 0) + 1;
+  sel.value = '';
+  renderOtherSupplies();
+  renderFeedOrderSummary();
+}
+
+function renderOtherSupplies() {
+  var container = document.getElementById('other-supply-added-list');
+  if (!container) return;
+  container.innerHTML = '';
+  var items = Object.keys(otherSuppliesOrder).filter(function(k){ return otherSuppliesOrder[k]>0; });
+  items.forEach(function(name) {
+    var qty = otherSuppliesOrder[name] || 0;
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(255,255,255,0.1);border-radius:6px;margin-bottom:6px';
+    var lbl = document.createElement('span');
+    lbl.style.cssText = 'color:white;font-size:13px;flex:1;font-weight:600';
+    lbl.textContent = name;
+    var minus = document.createElement('button');
+    minus.textContent = '−';
+    minus.style.cssText = 'width:24px;height:24px;border-radius:50%;border:1px solid rgba(255,255,255,0.4);background:transparent;color:white;cursor:pointer;font-size:14px';
+    var qtySpan = document.createElement('span');
+    qtySpan.style.cssText = 'color:white;font-weight:700;min-width:20px;text-align:center';
+    qtySpan.textContent = qty;
+    var plus = document.createElement('button');
+    plus.textContent = '+';
+    plus.style.cssText = 'width:24px;height:24px;border-radius:50%;border:none;background:rgba(255,255,255,0.9);color:#1a3a4a;cursor:pointer;font-size:14px;font-weight:700';
+    var del = document.createElement('button');
+    del.textContent = '✕';
+    del.style.cssText = 'background:transparent;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:12px;margin-left:4px';
+    (function(n, qs) {
+      minus.addEventListener('click', function() {
+        if (otherSuppliesOrder[n] > 1) { otherSuppliesOrder[n]--; qs.textContent = otherSuppliesOrder[n]; }
+        else { delete otherSuppliesOrder[n]; renderOtherSupplies(); }
+        renderFeedOrderSummary();
+      });
+      plus.addEventListener('click', function() {
+        otherSuppliesOrder[n] = (otherSuppliesOrder[n] || 0) + 1;
+        qs.textContent = otherSuppliesOrder[n];
+        renderFeedOrderSummary();
+      });
+      del.addEventListener('click', function() { delete otherSuppliesOrder[n]; renderOtherSupplies(); renderFeedOrderSummary(); });
+    })(name, qtySpan);
+    row.appendChild(lbl);
+    row.appendChild(minus);
+    row.appendChild(qtySpan);
+    row.appendChild(plus);
+    row.appendChild(del);
+    container.appendChild(row);
+  });
+  renderOtherFreeTextList();
+}
+
+function addOtherSupplyFreeText() {
+  var input = document.getElementById('other-supply-input');
+  if (!input || !input.value.trim()) return;
+  otherSupplyFreeTexts.push(input.value.trim());
+  input.value = '';
+  renderOtherFreeTextList();
+  renderFeedOrderSummary();
+}
+
+function renderOtherFreeTextList() {
+  var container = document.getElementById('other-supply-freetext-list');
+  if (!container) return;
+  container.innerHTML = '';
+  otherSupplyFreeTexts.forEach(function(t, i) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px';
+    var lbl = document.createElement('span');
+    lbl.style.cssText = 'color:white;font-size:13px;flex:1';
+    lbl.textContent = '• ' + t;
+    var del = document.createElement('button');
+    del.textContent = '✕';
+    del.style.cssText = 'background:transparent;border:none;color:rgba(255,255,255,0.6);cursor:pointer;font-size:12px';
+    (function(idx) { del.addEventListener('click', function() { otherSupplyFreeTexts.splice(idx,1); renderOtherFreeTextList(); renderFeedOrderSummary(); }); })(i);
+    row.appendChild(lbl);
+    row.appendChild(del);
+    container.appendChild(row);
+  });
 }
 
 function addVetOrderLine() {
