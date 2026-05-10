@@ -2066,14 +2066,11 @@ function checkAppPassword() {
             </select>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label>Duration</label>
+        <div class="form-group"><label>Duration</label>
             <select id="cal-lesson-duration" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
               <option>30 min</option><option>45 min</option><option>1 hour</option><option>1.5 hours</option><option>2 hours</option>
             </select>
           </div>
-          <div class="form-group"><label>Fee</label><input type="text" id="cal-lesson-fee" placeholder="e.g. 120"></div>
-        </div>
       </div>
       <div id="cal-fields-vet" style="display:none">
         <div class="form-row">
@@ -2324,23 +2321,12 @@ function loadFromStorage() {
 // ── SUPABASE DB OPERATIONS ──
 async function dbSave(table, data) {
   try {
-    var url = SUPA_URL + '/rest/v1/' + table;
-    var resp = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation,resolution=merge-duplicates'
-      },
-      body: JSON.stringify(data)
-    });
-    if (!resp.ok) {
-      var err = await resp.json();
-      console.warn('DB save error:', table, err);
+    var result = await sb.from(table).upsert(Array.isArray(data) ? data : [data], {onConflict: 'id'});
+    if (result.error) {
+      console.warn('DB save error:', table, result.error);
       return null;
     }
-    return await resp.json();
+    return result.data;
   } catch(e) { console.warn('DB save exception:', table, e); return null; }
 }
 
@@ -2676,7 +2662,18 @@ async function dbSaveHorse(horse) {
   var row = horseToDb(horse);
   if (horse._id) row.id = horse._id;
   else row.id = horse._id = crypto.randomUUID ? crypto.randomUUID() : 'h'+Date.now();
-  await dbSave('horses', row);
+  try {
+    var result = await sb.from('horses').upsert([row], {onConflict: 'id'});
+    if (result.error) {
+      console.error('Horse save error:', result.error);
+      toast('⚠️ Horse save failed: ' + (result.error.message || JSON.stringify(result.error)), '#c0392b');
+    } else {
+      console.log('Horse saved OK:', horse.name);
+    }
+  } catch(e) {
+    console.error('Horse save exception:', e);
+    toast('⚠️ Horse save exception: ' + e.message, '#c0392b');
+  }
   saveToStorage();
 }
 
@@ -5171,7 +5168,7 @@ function saveCalEvent() {
       horse: horse,
       type: document.getElementById('cal-lesson-type').value,
       duration: document.getElementById('cal-lesson-duration').value,
-      fee: document.getElementById('cal-lesson-fee').value || '120',
+      fee: '',
       paid: 'unpaid',
       notes: notes
     };
@@ -5277,18 +5274,18 @@ function getCalEvents() {
   // Lessons
   lessonsData.forEach(function(l) {
     if (!l.date) return;
-    events.push({date: l.date, title: l.rider + ' — ' + l.type, sub: l.horse + ' · ' + l.trainer, color: '#6888BE', type: 'lesson', time: '09:00'});
+    events.push({date: l.date, title: l.rider + ' — ' + l.type, sub: l.horse + ' · ' + l.trainer, color: '#6888BE', type: 'lesson', time: '09:00', _id: l._id});
   });
   // Vet visits
   vetVisits.forEach(function(v) {
     if (!v.date) return;
     var color = v.category === 'Emergency' ? '#b33a2a' : '#2d5a3d';
-    events.push({date: v.date, title: v.horse + ' — ' + v.category, sub: v.vet || '', color: color, type: 'vet', time: '10:00'});
+    events.push({date: v.date, title: v.horse + ' — ' + v.category, sub: v.vet || '', color: color, type: 'vet', time: '10:00', _id: v._id});
   });
   // Farrier
   farrierVisits.forEach(function(v) {
     if (!v.date) return;
-    events.push({date: v.date, title: v.horse + ' — Farrier', sub: v.service || '', color: '#c4830a', type: 'farrier', time: '11:00'});
+    events.push({date: v.date, title: v.horse + ' — Farrier', sub: v.service || '', color: '#c4830a', type: 'farrier', time: '11:00', _id: v._id});
   });
   // IEA Shows
   ieaShows.forEach(function(s) {
@@ -5315,6 +5312,36 @@ function renderCalendar() {
   if (calView === 'month') renderMonthView(container, title, events);
   else if (calView === 'week') renderWeekView(container, title, events);
   else renderDayView(container, title, events);
+}
+
+function deleteCalEvent(btn) {
+  var type = btn.getAttribute('data-type');
+  var id = btn.getAttribute('data-id');
+  var idx = parseInt(btn.getAttribute('data-idx'));
+  if (!confirm('Delete this event?')) return;
+  if (type === 'lesson') {
+    var i = lessonsData.findIndex(function(l){ return l._id === id; });
+    if (i !== -1) { dbDelete('lessons', id); lessonsData.splice(i, 1); }
+    renderLessons();
+  } else if (type === 'vet') {
+    var i = vetVisits.findIndex(function(v){ return v._id === id; });
+    if (i !== -1) { dbDelete('vet_visits', id); vetVisits.splice(i, 1); }
+    renderVetVisits();
+  } else if (type === 'farrier') {
+    var i = farrierVisits.findIndex(function(v){ return v._id === id; });
+    if (i !== -1) { dbDelete('farrier_visits', id); farrierVisits.splice(i, 1); }
+    renderFarrier();
+  } else if (type === 'show') {
+    var i = showsData.findIndex(function(s){ return s._id === id || s.id === id; });
+    if (i !== -1) { dbDelete('shows', id); showsData.splice(i, 1); }
+    populateShowSelect();
+  } else if (type === 'other') {
+    var ev = calOtherEvents[idx];
+    if (ev && ev._id) dbDelete('cal_events', ev._id);
+    calOtherEvents.splice(idx, 1);
+  }
+  saveToStorage(); renderCalendar();
+  toast('Deleted', '#c0392b');
 }
 
 function calClickDay(el) {
@@ -5408,841 +5435,19 @@ function renderDayView(container, title, events) {
     html += '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:14px">No events scheduled for this day.</div>';
   } else {
     dayEvents.forEach(function(e) {
-      html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">' +
-        '<div style="width:4px;border-radius:2px;background:' + e.color + ';align-self:stretch;flex-shrink:0"></div>' +
-        '<div style="flex:1">' +
-          '<div style="font-weight:600;font-size:15px;color:var(--text)">' + e.title + '</div>' +
-          (e.sub ? '<div style="font-size:13px;color:var(--text-muted);margin-top:2px">' + e.sub + '</div>' : '') +
-          '<div style="margin-top:4px"><span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:' + e.color + '">' + e.type + '</span></div>' +
-        '</div></div>';
-    });
-  }
-  html += '</div>';
-  container.innerHTML = html;
-}
-
-// ==========================================
-// SHOW PHOTOS
-// ==========================================
-function switchIeaShowTab(el, show) {
-  document.querySelectorAll('#iea-show-tabs .tab').forEach(function(t){t.classList.remove('active');});
-  el.classList.add('active');
-  document.getElementById('iea-tab-riders').style.display = show === 'iea-tab-riders' ? 'block' : 'none';
-  document.getElementById('iea-tab-photos').style.display = show === 'iea-tab-photos' ? 'block' : 'none';
-  if (show === 'iea-tab-photos') renderShowPhotos('iea');
-}
-
-function uploadShowPhoto(type) {
-  var showId = type === 'iea' ? currentIeaShowId : currentShowId;
-  if (!showId) { toast('Please select a show first', '#c0392b'); return; }
-  var input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.multiple = true;
-  input.onchange = function() {
-    var files = Array.from(input.files);
-    if (!files.length) return;
-    var showArr = type === 'iea' ? ieaShows : showsData;
-    var show = showArr.find(function(s){ return s.id === showId; });
-    if (!show) return;
-    if (!show.photos) show.photos = [];
-    var processed = 0;
-    files.forEach(function(file) {
-      // Try Supabase first, fall back to base64
-      uploadDoc(file, 'show-photos').then(function(url) {
-        if (url) {
-          show.photos.push({url: url, name: file.name, date: new Date().toISOString().slice(0,10)});
-        } else {
-          // Fallback: store as base64
-          var reader = new FileReader();
-          reader.onload = function(e) {
-            show.photos.push({url: e.target.result, name: file.name, date: new Date().toISOString().slice(0,10)});
-            processed++;
-            if (processed === files.length) {
-              if (type === 'iea') { dbSaveIeaShow(show); renderShowPhotos('iea'); }
-              else { dbSaveShow(show); renderShowPhotos('show'); }
-              saveToStorage();
-              toast('📸 ' + files.length + ' photo' + (files.length>1?'s':'') + ' added!');
-            }
-          };
-          reader.readAsDataURL(file);
-          return;
-        }
-        processed++;
-        if (processed === files.length) {
-          if (type === 'iea') { dbSaveIeaShow(show); renderShowPhotos('iea'); }
-          else { dbSaveShow(show); renderShowPhotos('show'); }
-          saveToStorage();
-          toast('📸 ' + files.length + ' photo' + (files.length>1?'s':'') + ' added!');
-        }
-      });
-    });
-  };
-  input.click();
-}
-
-function renderShowPhotos(type) {
-  var showId = type === 'iea' ? currentIeaShowId : currentShowId;
-  var gridId = type === 'iea' ? 'iea-photos-grid' : 'show-photos-grid';
-  var emptyId = type === 'iea' ? 'iea-photos-empty' : 'show-photos-empty';
-  var grid = document.getElementById(gridId);
-  var empty = document.getElementById(emptyId);
-  if (!grid) return;
-  var showArr = type === 'iea' ? ieaShows : showsData;
-  var show = showArr.find(function(s){ return s.id === showId; });
-  var photos = (show && show.photos) ? show.photos : [];
-  if (!photos.length) { grid.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
-  if(empty) empty.style.display = 'none';
-  grid.innerHTML = '';
-  photos.forEach(function(p, i) {
-    var div = document.createElement('div');
-    div.style.cssText = 'position:relative;border-radius:6px;overflow:hidden;aspect-ratio:1;background:var(--cream-dark)';
-    var img = document.createElement('img');
-    img.src = p.url;
-    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
-    img.alt = p.name;
-    var del = document.createElement('button');
-    del.innerHTML = '&#10005;';
-    del.style.cssText = 'position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center';
-    (function(idx, t) {
-      del.addEventListener('click', function() {
-        if (!confirm('Delete this photo?')) return;
-        var sa = t === 'iea' ? ieaShows : showsData;
-        var sid = t === 'iea' ? currentIeaShowId : currentShowId;
-        var sh = sa.find(function(s){ return s.id === sid; });
-        if (sh && sh.photos) { sh.photos.splice(idx, 1); }
-        if (t === 'iea') { dbSaveIeaShow(sh); renderShowPhotos('iea'); }
-        else { dbSaveShow(sh); renderShowPhotos('show'); }
-        toast('Deleted', '#c0392b');
-      });
-    })(i, type);
-    div.appendChild(img);
-    div.appendChild(del);
-    grid.appendChild(div);
-  });
-}
-
-// ==========================================
-// SHOWS
-// ==========================================
-var showsData = [];
-var currentShowId = null;
-var editingShowRiderIdx = -1;
-var editingShowCatIdx = -1;
-var editingShowExpIdx = -1;
-
-// Shared rider list with IEA (reuse ieaRiderList populated later)
-function populateShowSelect() {
-  var sel = document.getElementById('show-select');
-  if (!sel) return;
-  var cur = sel.value;
-  while (sel.options.length > 1) sel.remove(1);
-  showsData.forEach(function(s) {
-    var o = document.createElement('option');
-    o.value = s.id;
-    o.textContent = s.name + (s.date ? ' (' + new Date(s.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + ')' : '');
-    sel.appendChild(o);
-  });
-  if (cur) sel.value = cur;
-}
-
-function populateShowRiderSelect() {
-  var sel = document.getElementById('show-rider-select');
-  if (!sel) return;
-  while (sel.options.length > 2) sel.remove(2);
-  var addNew = sel.options.length > 1 ? sel.options[1] : null;
-  if (addNew) sel.remove(1);
-  // Sort and populate from persistent showRiderList
-  showRiderList.slice().sort().forEach(function(name) {
-    var o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o);
-  });
-  sel.appendChild(addNew);
-}
-
-function populateShowHorseSelect(show) {
-  var sel = document.getElementById('show-rider-horse');
-  if (!sel) return;
-  while (sel.options.length > 1) sel.remove(1);
-  horses.forEach(function(h) {
-    var o = document.createElement('option'); o.value = h.name; o.textContent = h.name; sel.appendChild(o);
-  });
-}
-
-function populateShowClassSelect(show) {
-  var sel = document.getElementById('show-rider-class');
-  if (!sel) return;
-  while (sel.options.length > 1) sel.remove(1);
-  if (show && show.categories) {
-    show.categories.forEach(function(c) {
-      var o = document.createElement('option'); o.value = c.name; o.textContent = c.name + (c.division ? ' — ' + c.division : ''); sel.appendChild(o);
-    });
-  }
-  var custom = document.createElement('option'); custom.value = '__custom__'; custom.textContent = '+ Type custom class…'; sel.appendChild(custom);
-}
-
-function handleShowRiderSelect(val) {
-  document.getElementById('show-rider-new').style.display = val === '__new__' ? 'block' : 'none';
-}
-
-function handleShowClassSelect(val) {
-  var customInput = document.getElementById('show-rider-class-custom');
-  if (!customInput) return;
-  if (val === '__custom__') {
-    customInput.style.display = 'block';
-    customInput.focus();
-  } else {
-    customInput.style.display = 'none';
-    customInput.value = '';
-  }
-}
-
-function loadShow(id) {
-  currentShowId = id;
-  var content = document.getElementById('show-content');
-  var noShow = document.getElementById('show-no-show');
-  var locEl = document.getElementById('show-location');
-  var dateEl = document.getElementById('show-date');
-  var notesEl = document.getElementById('show-notes-inline');
-  if (!id) {
-    if(content) content.style.display = 'none';
-    if(noShow) noShow.style.display = 'block';
-    [locEl,dateEl,notesEl].forEach(function(el){ if(el){el.value='';el.disabled=true;} });
-    return;
-  }
-  var show = showsData.find(function(s){ return s.id===id; });
-  if (!show) return;
-  if(content) content.style.display = 'block';
-  if(noShow) noShow.style.display = 'none';
-  if(locEl){locEl.value=show.location||'';locEl.disabled=false;}
-  if(dateEl){dateEl.value=show.date||'';dateEl.disabled=false;}
-  if(notesEl){notesEl.value=show.notes||'';notesEl.disabled=false;}
-  // Reset to first tab
-  document.querySelectorAll('#show-tabs .tab').forEach(function(t){t.classList.remove('active');});
-  document.querySelector('#show-tabs .tab').classList.add('active');
-  ['show-participants','show-categories','show-expenses'].forEach(function(id,i){ document.getElementById(id).style.display=i===0?'block':'none'; });
-  renderShowRiders(show);
-  renderShowCategories(show);
-  renderShowExpenses(show);
-}
-
-function updateCurrentShow2(field, value) {
-  var show = showsData.find(function(s){ return s.id===currentShowId; });
-  if (!show) return;
-  show[field] = value;
-  if (field==='date'||field==='name') { populateShowSelect(); document.getElementById('show-select').value=currentShowId; }
-  dbSaveShow(show);
-}
-
-function switchShowTab(el, show) {
-  document.querySelectorAll('#show-tabs .tab').forEach(function(t){t.classList.remove('active');});
-  el.classList.add('active');
-  ['show-participants','show-categories','show-expenses','show-photos'].forEach(function(id){
-    var div = document.getElementById(id);
-    if (div) div.style.display = id === show ? 'block' : 'none';
-  });
-  if (show === 'show-photos') {
-    // Force reflow and render
-    var photoDiv = document.getElementById('show-photos');
-    if (photoDiv) photoDiv.style.display = 'block';
-    setTimeout(function() { renderShowPhotos('show'); }, 50);
-  }
-}
-
-// ── SHOWS CRUD ──
-function saveShow() {
-  var name = document.getElementById('show-name-input').value.trim();
-  if (!name) { toast('Please enter a show name','#c0392b'); return; }
-  var id = 'sh'+Date.now();
-  var show = { id:id, name:name, date:document.getElementById('show-date-input').value, location:document.getElementById('show-loc-input').value.trim(), notes:document.getElementById('show-notes-input').value.trim(), riders:[], categories:[], expenses:[] };
-  showsData.unshift(show);
-  populateShowSelect();
-  document.getElementById('show-select').value = id;
-  loadShow(id);
-  closeModal();
-  dbSaveShow(show);
-  toast('🎪 '+name+' added!');
-  ['show-name-input','show-date-input','show-loc-input','show-notes-input'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
-}
-
-function deleteShow() {
-  if (!currentShowId) { toast('Select a show first','#c0392b'); return; }
-  var show = showsData.find(function(s){ return s.id===currentShowId; });
-  if (!show) return;
-  if (!confirm('Delete "'+show.name+'"? This cannot be undone.')) return;
-  var oldShowId = currentShowId;
-  showsData = showsData.filter(function(s){ return s.id!==currentShowId; });
-  currentShowId = null;
-  populateShowSelect();
-  loadShow(null);
-  dbDeleteShow(oldShowId);
-  toast('Show deleted','#c0392b');
-}
-
-// ── PARTICIPANTS ──
-function renderShowRiders(show) {
-  var tbody = document.getElementById('show-riders-table');
-  var empty = document.getElementById('show-riders-empty');
-  if (!tbody) return;
-  if (!show.riders||!show.riders.length) { tbody.innerHTML=''; if(empty) empty.style.display='block'; return; }
-  if(empty) empty.style.display='none';
-  tbody.innerHTML = show.riders.map(function(r,i) {
-    var res = r.result||'–';
-    var resStyle = (res.includes('1st')||res.toLowerCase().includes('champion'))?'color:#b8860b;font-weight:600':'';
-    return '<tr><td><strong>'+r.rider+'</strong></td><td>'+(r.horse||'–')+'</td><td>'+(r.class||'–')+'</td><td>'+(r.division||'–')+'</td><td style="'+resStyle+'">'+res+'</td><td style="font-size:12px;color:var(--text-muted)">'+(r.notes||'–')+'</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-sm" onclick="editShowRider('+i+')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteShowRider('+i+')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td></tr>';
-  }).join('');
-}
-
-function saveShowRider() {
-  var show = showsData.find(function(s){ return s.id===currentShowId; });
-  if (!show) { toast('Please select a show first','#c0392b'); return; }
-  var sel = document.getElementById('show-rider-select').value;
-  var riderName = sel==='__new__' ? document.getElementById('show-rider-new').value.trim() : sel;
-  if (!riderName) { toast('Please select or enter a rider name','#c0392b'); return; }
-  // Persist new name to showRiderList
-  if (sel === '__new__' && riderName && !showRiderList.includes(riderName)) {
-    showRiderList.push(riderName);
-    showRiderList.sort();
-    populateShowRiderSelect();
-  }
-  var classVal = document.getElementById('show-rider-class').value;
-  if (classVal === '__custom__') {
-    classVal = document.getElementById('show-rider-class-custom').value.trim();
-  }
-  var entry = { rider:riderName, horse:document.getElementById('show-rider-horse').value, class:classVal, division:document.getElementById('show-rider-division').value.trim(), result:document.getElementById('show-rider-result').value.trim(), notes:document.getElementById('show-rider-notes').value.trim() };
-  if (editingShowRiderIdx>=0) { show.riders[editingShowRiderIdx]=entry; toast('✅ Rider updated!'); editingShowRiderIdx=-1; }
-  else { show.riders.push(entry); toast('🐴 '+riderName+' added!'); }
-  renderShowRiders(show); closeModal(); dbSaveShow(show); dbSaveRiderList('shows', showRiderList);
-  document.getElementById('modal-add-show-rider').querySelector('.modal-header span').textContent='Add participant';
-  document.getElementById('show-rider-save-btn').textContent='Add rider';
-  ['show-rider-division','show-rider-result','show-rider-notes','show-rider-new'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
-  document.getElementById('show-rider-select').value=''; document.getElementById('show-rider-new').style.display='none';
-  document.getElementById('show-rider-class-custom').style.display='none'; document.getElementById('show-rider-class-custom').value='';
-}
-
-function editShowRider(i) {
-  var show = showsData.find(function(s){ return s.id===currentShowId; });
-  if (!show||!show.riders[i]) return;
-  var r = show.riders[i]; editingShowRiderIdx=i;
-  populateShowRiderSelect(); populateShowHorseSelect(show); populateShowClassSelect(show);
-  var sel=document.getElementById('show-rider-select');
-  var found=Array.from(sel.options).some(function(o){ return o.value===r.rider; });
-  if(found){sel.value=r.rider;document.getElementById('show-rider-new').style.display='none';}
-  else{sel.value='__new__';document.getElementById('show-rider-new').style.display='block';document.getElementById('show-rider-new').value=r.rider;}
-  document.getElementById('show-rider-horse').value=r.horse||'';
-  var classOptions = Array.from(document.getElementById('show-rider-class').options).map(function(o){return o.value;});
-  if (r.class && !classOptions.includes(r.class) && r.class !== '__custom__') {
-    document.getElementById('show-rider-class').value = '__custom__';
-    document.getElementById('show-rider-class-custom').style.display = 'block';
-    document.getElementById('show-rider-class-custom').value = r.class;
-  } else {
-    document.getElementById('show-rider-class').value = r.class || '';
-    document.getElementById('show-rider-class-custom').style.display = 'none';
-    document.getElementById('show-rider-class-custom').value = '';
-  }
-  document.getElementById('show-rider-division').value=r.division||'';
-  document.getElementById('show-rider-result').value=r.result||'';
-  document.getElementById('show-rider-notes').value=r.notes||'';
-  document.getElementById('modal-add-show-rider').querySelector('.modal-header span').textContent='Edit — '+r.rider;
-  document.getElementById('show-rider-save-btn').textContent='Save changes';
-  openModal('modal-add-show-rider');
-}
-
-function deleteShowRider(i) {
-  var show=showsData.find(function(s){return s.id===currentShowId;});
-  if(!show) return;
-  if(!confirm('Remove this rider?')) return;
-  show.riders.splice(i,1); renderShowRiders(show); dbSaveShow(show); toast('Removed','#c0392b');
-}
-
-// ── CATEGORIES ──
-function renderShowCategories(show) {
-  var tbody=document.getElementById('show-categories-table');
-  var empty=document.getElementById('show-categories-empty');
-  if(!tbody) return;
-  if(!show.categories||!show.categories.length){tbody.innerHTML='';if(empty)empty.style.display='block';return;}
-  if(empty) empty.style.display='none';
-  tbody.innerHTML=show.categories.map(function(c,i){
-    return '<tr><td><strong>'+c.name+'</strong></td><td>'+(c.division||'–')+'</td><td style="font-size:12px;color:var(--text-muted)">'+(c.notes||'–')+'</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-sm" onclick="editShowCat('+i+')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteShowCat('+i+')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td></tr>';
-  }).join('');
-}
-
-function saveShowCategory() {
-  var show=showsData.find(function(s){return s.id===currentShowId;});
-  if(!show){toast('Please select a show first','#c0392b');return;}
-  var name=document.getElementById('show-cat-name').value.trim();
-  if(!name){toast('Please enter a class name','#c0392b');return;}
-  var entry={name:name,division:document.getElementById('show-cat-division').value.trim(),notes:document.getElementById('show-cat-notes').value.trim()};
-  if(editingShowCatIdx>=0){show.categories[editingShowCatIdx]=entry;toast('✅ Class updated!');editingShowCatIdx=-1;}
-  else{show.categories.push(entry);toast('📋 Class added!');}
-  renderShowCategories(show); closeModal(); dbSaveShow(show);
-  document.getElementById('modal-add-show-category').querySelector('.modal-header span').textContent='Add class / category';
-  document.getElementById('show-cat-save-btn').textContent='Add class';
-  ['show-cat-name','show-cat-division','show-cat-notes'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-}
-
-function editShowCat(i) {
-  var show=showsData.find(function(s){return s.id===currentShowId;});
-  if(!show||!show.categories[i]) return;
-  var c=show.categories[i]; editingShowCatIdx=i;
-  document.getElementById('show-cat-name').value=c.name||'';
-  document.getElementById('show-cat-division').value=c.division||'';
-  document.getElementById('show-cat-notes').value=c.notes||'';
-  document.getElementById('modal-add-show-category').querySelector('.modal-header span').textContent='Edit class — '+c.name;
-  document.getElementById('show-cat-save-btn').textContent='Save changes';
-  openModal('modal-add-show-category');
-}
-
-function deleteShowCat(i) {
-  var show=showsData.find(function(s){return s.id===currentShowId;});
-  if(!show) return;
-  if(!confirm('Remove this class?')) return;
-  show.categories.splice(i,1); renderShowCategories(show); dbSaveShow(show); toast('Removed','#c0392b');
-}
-
-// ── EXPENSES ──
-function renderShowExpenses(show) {
-  var tbody=document.getElementById('show-expenses-table');
-  var empty=document.getElementById('show-expenses-empty');
-  var totalEl=document.getElementById('show-expenses-total');
-  if(!tbody) return;
-  if(!show.expenses||!show.expenses.length){tbody.innerHTML='';if(empty)empty.style.display='block';if(totalEl)totalEl.style.display='none';return;}
-  if(empty) empty.style.display='none';
-  tbody.innerHTML=show.expenses.map(function(e,i){
-    var amt=parseFloat(e.amount)||0;
-    return '<tr><td><span class="badge badge-gray" style="font-size:10px">'+e.category+'</span></td><td>'+(e.description||'–')+'</td><td style="font-variant-numeric:tabular-nums;font-weight:500">$'+amt.toFixed(2)+'</td><td style="color:var(--text-muted)">'+(e.paidby||'–')+'</td><td style="font-size:12px;color:var(--text-muted)">'+(e.notes||'–')+'</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-sm" onclick="editShowExp('+i+')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteShowExp('+i+')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td></tr>';
-  }).join('');
-  var total=show.expenses.reduce(function(s,e){return s+(parseFloat(e.amount)||0);},0);
-  if(totalEl){totalEl.style.display='block';totalEl.innerHTML='<span style="color:var(--text-muted)">Total expenses:</span> <strong style="font-size:18px">$'+total.toFixed(2)+'</strong>';}
-}
-
-function saveShowExpense() {
-  var show=showsData.find(function(s){return s.id===currentShowId;});
-  if(!show){toast('Please select a show first','#c0392b');return;}
-  var amt=document.getElementById('show-exp-amount').value;
-  if(!amt){toast('Please enter an amount','#c0392b');return;}
-  var entry={category:document.getElementById('show-exp-category').value,description:document.getElementById('show-exp-desc').value.trim(),amount:parseFloat(amt).toFixed(2),paidby:document.getElementById('show-exp-paidby').value.trim(),notes:document.getElementById('show-exp-notes').value.trim()};
-  if(editingShowExpIdx>=0){show.expenses[editingShowExpIdx]=entry;toast('✅ Expense updated!');editingShowExpIdx=-1;}
-  else{show.expenses.push(entry);toast('💰 Expense logged!');}
-  renderShowExpenses(show); closeModal(); dbSaveShow(show);
-  document.getElementById('modal-add-show-expense').querySelector('.modal-header span').textContent='Add expense';
-  document.getElementById('show-exp-save-btn').textContent='Add expense';
-  ['show-exp-desc','show-exp-amount','show-exp-paidby','show-exp-notes'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-}
-
-function editShowExp(i) {
-  var show=showsData.find(function(s){return s.id===currentShowId;});
-  if(!show||!show.expenses[i]) return;
-  var e=show.expenses[i]; editingShowExpIdx=i;
-  document.getElementById('show-exp-category').value=e.category||'Travel';
-  document.getElementById('show-exp-desc').value=e.description||'';
-  document.getElementById('show-exp-amount').value=e.amount||'';
-  document.getElementById('show-exp-paidby').value=e.paidby||'';
-  document.getElementById('show-exp-notes').value=e.notes||'';
-  document.getElementById('modal-add-show-expense').querySelector('.modal-header span').textContent='Edit expense';
-  document.getElementById('show-exp-save-btn').textContent='Save changes';
-  openModal('modal-add-show-expense');
-}
-
-function deleteShowExp(i) {
-  var show=showsData.find(function(s){return s.id===currentShowId;});
-  if(!show) return;
-  if(!confirm('Remove this expense?')) return;
-  show.expenses.splice(i,1); renderShowExpenses(show); dbSaveShow(show); toast('Removed','#c0392b');
-}
-
-// ==========================================
-// IEA SHOWS
-// ==========================================
-var ieaShows = [
-  {id: 's1', name: 'Region 5 IEA Show — Spring 2026', date: '2026-03-15', location: 'Ox Ridge Hunt Club, Darien CT', notes: '', riders: [
-    {rider:'Emma Brown', division:'Novice', horse:'Bay Gelding', class:'Over Fences', result:'2nd', notes:''},
-    {rider:'Hannah Houck', division:'Beginner', horse:'Grey Mare', class:'Flat', result:'1st', notes:'Great first show!'},
-  ]},
-  {id: 's2', name: 'Region 5 IEA Show — Fall 2025', date: '2025-10-18', location: 'Princeton Equestrian Center, NJ', notes: '', riders: [
-    {rider:'Emma Brown', division:'Novice', horse:'Chestnut', class:'Over Fences', result:'4th', notes:''},
-  ]},
-];
-
-// Master list of show participants (persists across shows)
-var showRiderList = [
-  'Emma Brown','Hannah Houck','Henny Lipschutz','Caryn Biehl',
-  'Courtney McCaffrey','Kate Tsirelman','Carolline Schaffer','Mary Trezza',
-  'Annemarie Brennan','Sheila Sadighi','Nancy McCaffrey','Erin Polos',
-  'Kristen Caporaso','Sherri Pyka','Bridget Lang','Alison Roh',
-  'Gala Schireson',
-];
-
-// Master list of IEA-eligible riders (persists across shows)
-var ieaRiderList = [
-  'Emma Brown','Hannah Houck','Henny Lipschutz','Caryn Biehl',
-  'Courtney McCaffrey','Kate Tsirelman','Carolline Schaffer','Mary Trezza',
-  'Annemarie Brennan','Sheila Sadighi','Nancy McCaffrey','Alison Roh',
-];
-
-var currentIeaShowId = null;
-var editingIeaRiderIdx = -1;
-
-function populateIeaShowSelect() {
-  var sel = document.getElementById('iea-show-select');
-  if (!sel) return;
-  var cur = sel.value;
-  while (sel.options.length > 1) sel.remove(1);
-  ieaShows.forEach(function(s) {
-    var o = document.createElement('option');
-    o.value = s.id;
-    o.textContent = s.name + (s.date ? ' (' + new Date(s.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + ')' : '');
-    sel.appendChild(o);
-  });
-  if (cur) sel.value = cur;
-}
-
-function populateIeaRiderSelect() {
-  var sel = document.getElementById('iea-rider-select');
-  if (!sel) return;
-  while (sel.options.length > 2) sel.remove(2); // keep blank + "add new"
-  // move "add new" to end after populating
-  var addNewOpt = sel.options[1];
-  sel.remove(1);
-  ieaRiderList.forEach(function(name) {
-    var o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o);
-  });
-  sel.appendChild(addNewOpt);
-}
-
-function handleIeaRiderSelect(val) {
-  var newInput = document.getElementById('iea-rider-new');
-  if (val === '__new__') {
-    newInput.style.display = 'block';
-    newInput.focus();
-  } else {
-    newInput.style.display = 'none';
-  }
-}
-
-function loadIeaShow(id) {
-  currentIeaShowId = id;
-  var card = document.getElementById('iea-participants-card');
-  var noShow = document.getElementById('iea-no-show');
-  var locEl = document.getElementById('iea-show-location');
-  var dateEl = document.getElementById('iea-show-date');
-  var notesEl = document.getElementById('iea-show-notes-inline');
-  if (!id) {
-    if(card) card.style.display = 'none';
-    if(noShow) noShow.style.display = 'block';
-    if(locEl) { locEl.value = ''; locEl.disabled = true; }
-    if(dateEl) { dateEl.value = ''; dateEl.disabled = true; }
-    if(notesEl) { notesEl.value = ''; notesEl.disabled = true; }
-    return;
-  }
-  var show = ieaShows.find(function(s) { return s.id === id; });
-  if (!show) return;
-  if(card) card.style.display = 'block';
-  if(noShow) noShow.style.display = 'none';
-  if(locEl) { locEl.value = show.location || ''; locEl.disabled = false; }
-  if(dateEl) { dateEl.value = show.date || ''; dateEl.disabled = false; }
-  if(notesEl) { notesEl.value = show.notes || ''; notesEl.disabled = false; }
-  renderIeaRiders(show);
-}
-
-function updateCurrentShow(field, value) {
-  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
-  if (!show) return;
-  show[field] = value;
-  // If date or name changed, refresh the dropdown label
-  if (field === 'date' || field === 'name') {
-    populateIeaShowSelect();
-    document.getElementById('iea-show-select').value = currentIeaShowId;
-  }
-  saveToStorage();
-}
-
-function renderIeaRiders(show) {
-  var tbody = document.getElementById('iea-riders-table');
-  var empty = document.getElementById('iea-riders-empty');
-  if (!tbody) return;
-  if (!show.riders || !show.riders.length) {
-    tbody.innerHTML = '';
-    if(empty) empty.style.display = 'block';
-    return;
-  }
-  if(empty) empty.style.display = 'none';
-  tbody.innerHTML = show.riders.map(function(r, i) {
-    var resultStyle = '';
-    if (r.result && (r.result.includes('1st') || r.result.toLowerCase().includes('champion'))) resultStyle = 'color:#b8860b;font-weight:600';
-    else if (r.result && r.result.includes('2nd')) resultStyle = 'color:var(--text-muted);font-weight:500';
-    return '<tr>' +
-      '<td><strong>' + r.rider + '</strong></td>' +
-      '<td><span class="badge badge-blue" style="font-size:10px">' + (r.division||'–') + '</span></td>' +
-      '<td>' + (r.horse||'–') + '</td>' +
-      '<td>' + (r.class||'–') + '</td>' +
-      '<td style="' + resultStyle + '">' + (r.result||'–') + '</td>' +
-      '<td style="font-size:12px;color:var(--text-muted)">' + (r.notes||'–') + '</td>' +
-      '<td style="text-align:right;white-space:nowrap">' +
-        '<button class="btn btn-sm" onclick="editIeaRider(' + i + ')" style="margin-right:2px">&#9999;</button>' +
-        '<button class="btn btn-sm" onclick="deleteIeaRider(' + i + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button>' +
-      '</td></tr>';
-  }).join('');
-}
-
-function saveIeaShow() {
-  var name = document.getElementById('iea-show-name').value.trim();
-  if (!name) { toast('Please enter a show name', '#c0392b'); return; }
-  var id = 's' + Date.now();
-  var show = {
-    id: id,
-    name: name,
-    date: document.getElementById('iea-show-date-input').value,
-    location: document.getElementById('iea-show-loc').value.trim(),
-    notes: document.getElementById('iea-show-notes').value.trim(),
-    riders: []
-  };
-  ieaShows.unshift(show); // newest first
-  dbSaveIeaShow(show);
-  populateIeaShowSelect();
-  document.getElementById('iea-show-select').value = id;
-  loadIeaShow(id);
-  saveToStorage();
-  closeModal();
-  toast('🏆 ' + name + ' added!');
-  ['iea-show-name','iea-show-loc','iea-show-notes','iea-show-date-input'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value=''; });
-}
-
-function deleteIeaShow() {
-  if (!currentIeaShowId) { toast('Select a show first', '#c0392b'); return; }
-  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
-  if (!show) return;
-  if (!confirm('Delete "' + show.name + '"? This cannot be undone.')) return;
-  ieaShows = ieaShows.filter(function(s) { return s.id !== currentIeaShowId; });
-  currentIeaShowId = null;
-  populateIeaShowSelect();
-  loadIeaShow(null);
-  saveToStorage();
-  toast('Show deleted', '#c0392b');
-}
-
-function saveIeaRider() {
-  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
-  if (!show) { toast('Please select a show first', '#c0392b'); return; }
-  var sel = document.getElementById('iea-rider-select').value;
-  var riderName = sel === '__new__' ? document.getElementById('iea-rider-new').value.trim() : sel;
-  if (!riderName) { toast('Please select or enter a rider name', '#c0392b'); return; }
-  // If new name, add to master list
-  if (sel === '__new__' && riderName && !ieaRiderList.includes(riderName)) {
-    ieaRiderList.push(riderName);
-    ieaRiderList.sort();
-    populateIeaRiderSelect();
-  }
-  var entry = {
-    rider: riderName,
-    division: document.getElementById('iea-rider-division').value,
-    horse: document.getElementById('iea-rider-horse').value.trim(),
-    class: document.getElementById('iea-rider-class').value.trim(),
-    result: document.getElementById('iea-rider-result').value.trim(),
-    notes: document.getElementById('iea-rider-notes').value.trim()
-  };
-  if (editingIeaRiderIdx >= 0) {
-    show.riders[editingIeaRiderIdx] = entry;
-    toast('✅ Rider updated!');
-    editingIeaRiderIdx = -1;
-  } else {
-    show.riders.push(entry);
-    toast('🏇 ' + riderName + ' added to show!');
-  }
-  renderIeaRiders(show);
-  saveToStorage();
-  closeModal();
-  document.getElementById('modal-add-iea-rider').querySelector('.modal-header span').textContent = 'Add participant';
-  document.getElementById('iea-rider-save-btn').textContent = 'Add rider';
-  ['iea-rider-horse','iea-rider-class','iea-rider-result','iea-rider-notes','iea-rider-new'].forEach(function(id) { var el = document.getElementById(id); if(el) el.value=''; });
-  document.getElementById('iea-rider-select').value = '';
-  document.getElementById('iea-rider-new').style.display = 'none';
-}
-
-function editIeaRider(i) {
-  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
-  if (!show || !show.riders[i]) return;
-  var r = show.riders[i];
-  editingIeaRiderIdx = i;
-  populateIeaRiderSelect();
-  var sel = document.getElementById('iea-rider-select');
-  // Check if rider is in list
-  var found = Array.from(sel.options).some(function(o) { return o.value === r.rider; });
-  if (found) { sel.value = r.rider; document.getElementById('iea-rider-new').style.display = 'none'; }
-  else { sel.value = '__new__'; document.getElementById('iea-rider-new').style.display = 'block'; document.getElementById('iea-rider-new').value = r.rider; }
-  document.getElementById('iea-rider-division').value = r.division || 'Novice';
-  document.getElementById('iea-rider-horse').value = r.horse || '';
-  document.getElementById('iea-rider-class').value = r.class || '';
-  document.getElementById('iea-rider-result').value = r.result || '';
-  document.getElementById('iea-rider-notes').value = r.notes || '';
-  document.getElementById('modal-add-iea-rider').querySelector('.modal-header span').textContent = 'Edit — ' + r.rider;
-  document.getElementById('iea-rider-save-btn').textContent = 'Save changes';
-  openModal('modal-add-iea-rider');
-}
-
-function deleteIeaRider(i) {
-  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
-  if (!show) return;
-  var name = show.riders[i] ? show.riders[i].rider : 'this rider';
-  if (!confirm('Remove ' + name + ' from this show?')) return;
-  show.riders.splice(i, 1);
-  renderIeaRiders(show);
-  saveToStorage();
-  toast('Removed', '#c0392b');
-}
-
-// ==========================================
-// LOCATION AUTOCOMPLETE (OpenStreetMap Nominatim — free, no API key)
-// ==========================================
-var locationSearchTimer = null;
-
-// Store suggestions data to avoid quoting issues
-var locationSuggestionsData = {};
-
-function locationSearch(input, suggestionsId) {
-  var q = input.value.trim();
-  var box = document.getElementById(suggestionsId);
-  if (!box) return;
-  if (q.length < 3) { box.style.display = 'none'; return; }
-  clearTimeout(locationSearchTimer);
-  locationSearchTimer = setTimeout(function() {
-    fetch('https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6&q=' + encodeURIComponent(q), {
-      headers: { 'Accept-Language': 'en', 'User-Agent': 'HeronStablesApp/1.0' }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(results) {
-      if (!results.length) { box.style.display = 'none'; return; }
-      locationSuggestionsData[suggestionsId] = results.map(function(r) { return r.display_name; });
-      box.innerHTML = '';
-      results.forEach(function(r, i) {
-        var parts = r.display_name.split(',');
-        var main = parts.slice(0,2).join(',').trim();
-        var addr = parts.slice(2).join(',').trim();
-        var el = document.createElement('div');
-        el.className = 'location-suggestion';
-        el.innerHTML = '<strong>' + main + '</strong>' + (addr ? '<span>' + addr + '</span>' : '');
-        (function(idx, sid) {
-          el.addEventListener('mousedown', function() { pickLocationByIndex(sid, idx); });
-        })(i, suggestionsId);
-        box.appendChild(el);
-      });
-      box.style.display = 'block';
-    })
-    .catch(function() { box.style.display = 'none'; });
-  }, 400);
-}
-
-
-function pickLocationByIndex(suggestionsId, idx) {
-  var value = locationSuggestionsData[suggestionsId] && locationSuggestionsData[suggestionsId][idx];
-  if (!value) return;
-  var box = document.getElementById(suggestionsId);
-  var wrap = box ? box.parentElement : null;
-  var input = wrap ? wrap.querySelector('input') : null;
-  if (input) {
-    input.value = value;
-    var event = new Event('input', {bubbles:true});
-    input.dispatchEvent(event);
-  }
-  if (box) box.style.display = 'none';
-}
-
-function pickLocation(suggestionsId, value) {
-  pickLocationByIndex(suggestionsId, value);
-}
-
-function hideLocationSuggestions(id, delay) {
-  setTimeout(function() {
-    var box = document.getElementById(id);
-    if (box) box.style.display = 'none';
-  }, delay || 200);
-}
-
-// ==========================================
-// PASSWORD GATE (Operations + Documents)
-// ==========================================
-var appUnlocked = false;
-var pendingPwdPage = null;
-var pendingPwdEl = null;
-
-function checkOpsPassword(el, page) {
-  if (appUnlocked) { showPage(page, el); return; }
-  pendingPwdPage = page; pendingPwdEl = el;
-  openPwdModal();
-}
-
-function checkDocsPassword(el) {
-  if (appUnlocked) { showPage('waivers', el); return; }
-  pendingPwdPage = 'waivers'; pendingPwdEl = el;
-  openPwdModal();
-}
-
-function openPwdModal() {
-  document.getElementById('pwd-overlay').style.display = 'flex';
-  document.getElementById('pwd-input').value = '';
-  document.getElementById('pwd-error').style.display = 'none';
-  setTimeout(function() { document.getElementById('pwd-input').focus(); }, 100);
-}
-
-function closePwdModal() {
-  document.getElementById('pwd-overlay').style.display = 'none';
-  pendingPwdPage = null; pendingPwdEl = null;
-}
-
-function submitPassword() {
-  var pwd = document.getElementById('pwd-input').value;
-  if (pwd === 'Kingston') {
-    appUnlocked = true;
-    document.getElementById('pwd-overlay').style.display = 'none';
-    if (pendingPwdPage) showPage(pendingPwdPage, pendingPwdEl);
-    toast('✅ Unlocked');
-    pendingPwdPage = null; pendingPwdEl = null;
-  } else {
-    document.getElementById('pwd-error').style.display = 'block';
-    document.getElementById('pwd-input').value = '';
-    document.getElementById('pwd-input').focus();
-  }
-}
-
-// ==========================================
-// INIT
-// ==========================================
-window.addEventListener('load', function() {
-  // Set date defaults
-  var today = new Date().toISOString().slice(0,10);
-  ['l-date','s-date','v-date'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el && el.type === 'date') el.value = today;
-  });
-
-  // Show loading state
-  showLoadingToast('Connecting to database…');
-
-  // Try Supabase first, fall back to localStorage
-  updateTopbar('page-dashboard');
-  dbLoadAll().then(function(loaded) {
-    // Restore last page after data loads
-    try {
-      var lastPage = sessionStorage.getItem('hs_page');
-      if (lastPage && lastPage !== 'dashboard') {
-        var navEl = document.querySelector('[onclick*="' + lastPage + '"]');
-        if (navEl) navEl.click();
-        else showPage(lastPage, null);
+      var delStyle = 'background:transparent;border:none;color:var(--red);cursor:pointer;font-size:18px;padding:0';
+      var deleteBtn = '';
+      if (e.type === 'lesson' && e._id) {
+        deleteBtn = '<button data-id="' + e._id + '" data-type="lesson" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
+      } else if (e.type === 'vet' && e._id) {
+        deleteBtn = '<button data-id="' + e._id + '" data-type="vet" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
+      } else if (e.type === 'farrier' && e._id) {
+        deleteBtn = '<button data-id="' + e._id + '" data-type="farrier" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
+      } else if (e.type === 'show' && e._id) {
+        deleteBtn = '<button data-id="' + e._id + '" data-type="show" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
+      } else if (e.type === 'other' && e._idx !== undefined) {
+        deleteBtn = '<button data-idx="' + e._idx + '" data-type="other" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
       }
-    } catch(e) {}
-    if (!loaded) {
-      // Fallback to localStorage
-      var hadLocal = loadFromStorage();
-      renderAll();
-      if (hadLocal) toast('⚠ Using offline data (database unavailable)', 'var(--amber)');
-      else toast('Connected — start by adding your horses and clients!');
-    }
-  }).catch(function() {
-    var hadLocal = loadFromStorage();
-    renderAll();
-    if (hadLocal) toast('⚠ Using offline data', 'var(--amber)');
-  });
-});
-
-</script>
-</body>
-</html>
+  // Sync calendar
+  if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar();
+}
