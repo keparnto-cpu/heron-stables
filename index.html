@@ -336,6 +336,7 @@ tr:hover td { background: var(--cream); }
   var session = sessionStorage.getItem('hs_unlocked');
   if (session === '1') {
     document.getElementById('app-lock').style.display = 'none';
+    // initApp will be called by window.onload
   }
   // Auto-focus passcode input
   window.addEventListener('load', function() {
@@ -350,6 +351,7 @@ function checkAppPassword() {
   if (val === 'bunn') {
     sessionStorage.setItem('hs_unlocked', '1');
     document.getElementById('app-lock').style.display = 'none';
+    initApp();
   } else {
     err.style.display = 'block';
     document.getElementById('app-passcode').value = '';
@@ -5465,10 +5467,9 @@ function renderDayView(container, title, events) {
 // ==========================================
 // APP STARTUP
 // ==========================================
-window.addEventListener('load', function() {
+function initApp() {
   updateTopbar('page-dashboard');
   dbLoadAll().then(function(loaded) {
-    // Restore last page after data loads
     try {
       var lastPage = sessionStorage.getItem('hs_page');
       if (lastPage && lastPage !== 'dashboard') {
@@ -5477,11 +5478,20 @@ window.addEventListener('load', function() {
         else showPage(lastPage, null);
       }
     } catch(e) {}
-    if (loaded) {
-      var hadLocal = false;
-      syncUnsavedData && syncUnsavedData();
-    }
   });
+}
+
+window.addEventListener('load', function() {
+  var session = sessionStorage.getItem('hs_unlocked');
+  if (session === '1') {
+    initApp();
+  }
+  // Focus passcode input if lock is showing
+  var lock = document.getElementById('app-lock');
+  if (lock && lock.style.display !== 'none') {
+    var el = document.getElementById('app-passcode');
+    if (el) el.focus();
+  }
 });
 
 
