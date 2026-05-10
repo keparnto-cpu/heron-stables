@@ -5543,6 +5543,19 @@ function populateIeaShowSelect() {
   if (cur) sel.value = cur;
 }
 
+function populateIeaRiderSelect() {
+  var sel = document.getElementById('iea-rider-select');
+  if (!sel) return;
+  var names = clients.map(function(c) { return c.name; }).sort();
+  if (ieaRiderList && ieaRiderList.length) {
+    ieaRiderList.forEach(function(n) { if (!names.includes(n)) names.push(n); });
+    names.sort();
+  }
+  sel.innerHTML = '<option value="">Select rider…</option>' +
+    names.map(function(n) { return '<option value="' + n + '">' + n + '</option>'; }).join('') +
+    '<option value="__new__">+ Add new name…</option>';
+}
+
 function populateShowRiderSelect() {
   var sel = document.getElementById('show-rider-select');
   if (!sel) return;
