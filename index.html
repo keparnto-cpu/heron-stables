@@ -5517,6 +5517,419 @@ window.addEventListener('load', function() {
   }
 });
 
+// ==========================================
+// SHOWS & IEA SHOWS
+// ==========================================
+var currentShowId = null;
+var currentIeaShowId = null;
+var editingShowRiderIdx = -1;
+var editingShowCatIdx = -1;
+var editingShowExpIdx = -1;
+var editingIeaRiderIdx = -1;
+
+// ---- POPULATE SELECTS ----
+function populateShowSelect() {
+  var sel = document.getElementById('show-select');
+  if (!sel) return;
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">— Select a show —</option>' +
+    showsData.map(function(s) { return '<option value="' + s.id + '">' + s.name + (s.date ? ' (' + s.date + ')' : '') + '</option>'; }).join('');
+  if (cur) sel.value = cur;
+}
+
+function populateIeaShowSelect() {
+  var sel = document.getElementById('iea-show-select');
+  if (!sel) return;
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">— Select a show —</option>' +
+    ieaShows.map(function(s) { return '<option value="' + s.id + '">' + s.name + (s.date ? ' (' + s.date + ')' : '') + '</option>'; }).join('');
+  if (cur) sel.value = cur;
+}
+
+function populateShowRiderSelect() {
+  var sel = document.getElementById('show-rider-select');
+  if (!sel) return;
+  var names = clients.map(function(c) { return c.name; }).sort();
+  if (showRiderList && showRiderList.length) {
+    showRiderList.forEach(function(n) { if (!names.includes(n)) names.push(n); });
+    names.sort();
+  }
+  sel.innerHTML = '<option value="">Select rider…</option>' +
+    names.map(function(n) { return '<option value="' + n + '">' + n + '</option>'; }).join('') +
+    '<option value="__new__">+ Add new name…</option>';
+}
+
+function populateShowHorseSelect(show) {
+  var sel = document.getElementById('show-rider-horse');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Select horse…</option>' +
+    horses.map(function(h) { return '<option value="' + h.name + '">' + h.name + '</option>'; }).join('');
+}
+
+function populateShowClassSelect(show) {
+  var sel = document.getElementById('show-rider-class');
+  if (!sel) return;
+  var cats = show && show.categories ? show.categories : [];
+  sel.innerHTML = '<option value="">Select class…</option>' +
+    cats.map(function(c) { return '<option value="' + c.name + '">' + c.name + (c.division ? ' — ' + c.division : '') + '</option>'; }).join('') +
+    '<option value="__custom__">+ Type custom class…</option>';
+}
+
+function handleShowRiderSelect(val) {
+  var inp = document.getElementById('show-rider-new');
+  if (inp) inp.style.display = val === '__new__' ? 'block' : 'none';
+}
+
+function handleShowClassSelect(val) {
+  var inp = document.getElementById('show-rider-class-custom');
+  if (inp) inp.style.display = val === '__custom__' ? 'block' : 'none';
+}
+
+// ---- SAVE SHOW ----
+function saveShow() {
+  var name = document.getElementById('show-name-input').value.trim();
+  if (!name) { toast('Please enter a show name', '#c0392b'); return; }
+  var show = {
+    id: 'sh' + Date.now(),
+    name: name,
+    date: document.getElementById('show-date-input').value,
+    location: document.getElementById('show-loc-input').value.trim(),
+    notes: document.getElementById('show-notes-input').value.trim(),
+    riders: [], categories: [], expenses: []
+  };
+  showsData.unshift(show);
+  dbSaveShow(show);
+  populateShowSelect();
+  closeModal();
+  document.getElementById('show-name-input').value = '';
+  document.getElementById('show-date-input').value = '';
+  document.getElementById('show-loc-input').value = '';
+  document.getElementById('show-notes-input').value = '';
+  toast('🎪 Show added!');
+  loadShow(show.id);
+}
+
+function saveIeaShow() {
+  var name = document.getElementById('iea-show-name').value.trim();
+  if (!name) { toast('Please enter a show name', '#c0392b'); return; }
+  var show = {
+    id: 'iea' + Date.now(),
+    name: name,
+    date: document.getElementById('iea-show-date-input').value,
+    location: document.getElementById('iea-show-loc').value.trim(),
+    notes: document.getElementById('iea-show-notes').value.trim(),
+    riders: []
+  };
+  ieaShows.unshift(show);
+  dbSaveIeaShow(show);
+  populateIeaShowSelect();
+  closeModal();
+  document.getElementById('iea-show-name').value = '';
+  document.getElementById('iea-show-date-input').value = '';
+  document.getElementById('iea-show-loc').value = '';
+  document.getElementById('iea-show-notes').value = '';
+  toast('🏆 IEA show added!');
+  loadIeaShow(show.id);
+}
+
+// ---- LOAD SHOW ----
+function loadShow(id) {
+  currentShowId = id;
+  var show = showsData.find(function(s) { return s.id === id; });
+  var noShow = document.getElementById('show-no-show');
+  var content = document.getElementById('show-content');
+  if (!show) {
+    if (noShow) noShow.style.display = 'block';
+    if (content) content.style.display = 'none';
+    return;
+  }
+  if (noShow) noShow.style.display = 'none';
+  if (content) content.style.display = 'block';
+  var locEl = document.getElementById('show-location');
+  var dateEl = document.getElementById('show-date');
+  var notesEl = document.getElementById('show-notes-inline');
+  if (locEl) { locEl.value = show.location || ''; locEl.disabled = false; }
+  if (dateEl) { dateEl.value = show.date || ''; dateEl.disabled = false; }
+  if (notesEl) { notesEl.value = show.notes || ''; notesEl.disabled = false; }
+  renderShowRiders(show);
+  renderShowCategories(show);
+  renderShowExpenses(show);
+}
+
+function loadIeaShow(id) {
+  currentIeaShowId = id;
+  var show = ieaShows.find(function(s) { return s.id === id; });
+  var card = document.getElementById('iea-participants-card');
+  var noShow = document.getElementById('iea-no-show');
+  if (!show) {
+    if (card) card.style.display = 'none';
+    if (noShow) noShow.style.display = 'block';
+    return;
+  }
+  if (card) card.style.display = 'block';
+  if (noShow) noShow.style.display = 'none';
+  var locEl = document.getElementById('iea-show-location');
+  var dateEl = document.getElementById('iea-show-date');
+  var notesEl = document.getElementById('iea-show-notes-inline');
+  if (locEl) { locEl.value = show.location || ''; locEl.disabled = false; }
+  if (dateEl) { dateEl.value = show.date || ''; dateEl.disabled = false; }
+  if (notesEl) { notesEl.value = show.notes || ''; notesEl.disabled = false; }
+  renderIeaRiders(show);
+}
+
+// ---- UPDATE CURRENT SHOW (inline edits) ----
+function updateCurrentShow(field, val) {
+  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
+  if (!show) return;
+  show[field] = val;
+  dbSaveIeaShow(show);
+}
+
+function updateCurrentShow2(field, val) {
+  var show = showsData.find(function(s) { return s.id === currentShowId; });
+  if (!show) return;
+  show[field] = val;
+  dbSaveShow(show);
+}
+
+// ---- DELETE SHOW ----
+function deleteShow() {
+  if (!currentShowId) { toast('Select a show first', '#c0392b'); return; }
+  if (!confirm('Delete this show and all its data?')) return;
+  var i = showsData.findIndex(function(s) { return s.id === currentShowId; });
+  if (i !== -1) { dbDeleteShow(currentShowId); showsData.splice(i, 1); }
+  currentShowId = null;
+  populateShowSelect();
+  document.getElementById('show-select').value = '';
+  var noShow = document.getElementById('show-no-show');
+  var content = document.getElementById('show-content');
+  if (noShow) noShow.style.display = 'block';
+  if (content) content.style.display = 'none';
+  toast('Show deleted', '#c0392b');
+}
+
+function deleteIeaShow() {
+  if (!currentIeaShowId) { toast('Select a show first', '#c0392b'); return; }
+  if (!confirm('Delete this IEA show and all its data?')) return;
+  var i = ieaShows.findIndex(function(s) { return s.id === currentIeaShowId; });
+  if (i !== -1) { dbDeleteIeaShow(currentIeaShowId); ieaShows.splice(i, 1); }
+  currentIeaShowId = null;
+  populateIeaShowSelect();
+  document.getElementById('iea-show-select').value = '';
+  var card = document.getElementById('iea-participants-card');
+  if (card) card.style.display = 'none';
+  toast('Show deleted', '#c0392b');
+}
+
+// ---- RENDER RIDERS ----
+function renderShowRiders(show) {
+  var tbody = document.getElementById('show-riders-table');
+  var empty = document.getElementById('show-riders-empty');
+  if (!tbody) return;
+  var riders = show.riders || [];
+  if (!riders.length) { tbody.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+  if (empty) empty.style.display = 'none';
+  tbody.innerHTML = riders.map(function(r, i) {
+    return '<tr><td><strong>' + r.rider + '</strong></td><td>' + (r.horse||'–') + '</td><td>' + (r.cls||'–') + '</td><td>' + (r.division||'–') + '</td><td>' + (r.result||'–') + '</td><td style="color:var(--text-muted)">' + (r.notes||'–') + '</td>' +
+      '<td style="text-align:right"><button class="btn btn-sm" onclick="editShowRider(' + i + ')">✎</button> <button class="btn btn-sm" onclick="deleteShowRider(' + i + ')" style="color:var(--red);border-color:var(--red)">✕</button></td></tr>';
+  }).join('');
+}
+
+function renderIeaRiders(show) {
+  var tbody = document.getElementById('iea-riders-table');
+  var empty = document.getElementById('iea-riders-empty');
+  if (!tbody) return;
+  var riders = show.riders || [];
+  if (!riders.length) { tbody.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+  if (empty) empty.style.display = 'none';
+  tbody.innerHTML = riders.map(function(r, i) {
+    return '<tr><td><strong>' + r.rider + '</strong></td><td>' + (r.division||'–') + '</td><td>' + (r.horse||'–') + '</td><td>' + (r.cls||'–') + '</td><td>' + (r.result||'–') + '</td><td style="color:var(--text-muted)">' + (r.notes||'–') + '</td>' +
+      '<td style="text-align:right"><button class="btn btn-sm" onclick="editIeaRider(' + i + ')">✎</button> <button class="btn btn-sm" onclick="deleteIeaRider(' + i + ')" style="color:var(--red);border-color:var(--red)">✕</button></td></tr>';
+  }).join('');
+}
+
+function renderShowCategories(show) {
+  var tbody = document.getElementById('show-categories-table');
+  var empty = document.getElementById('show-categories-empty');
+  if (!tbody) return;
+  var cats = show.categories || [];
+  if (!cats.length) { tbody.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+  if (empty) empty.style.display = 'none';
+  tbody.innerHTML = cats.map(function(c, i) {
+    return '<tr><td><strong>' + c.name + '</strong></td><td>' + (c.division||'–') + '</td><td style="color:var(--text-muted)">' + (c.notes||'–') + '</td>' +
+      '<td style="text-align:right"><button class="btn btn-sm" onclick="deleteShowCategory(' + i + ')" style="color:var(--red);border-color:var(--red)">✕</button></td></tr>';
+  }).join('');
+}
+
+function renderShowExpenses(show) {
+  var tbody = document.getElementById('show-expenses-table');
+  var empty = document.getElementById('show-expenses-empty');
+  var totalEl = document.getElementById('show-expenses-total');
+  if (!tbody) return;
+  var exps = show.expenses || [];
+  if (!exps.length) { tbody.innerHTML = ''; if (empty) empty.style.display = 'block'; if (totalEl) totalEl.style.display = 'none'; return; }
+  if (empty) empty.style.display = 'none';
+  var total = exps.reduce(function(sum, e) { return sum + (parseFloat(e.amount)||0); }, 0);
+  tbody.innerHTML = exps.map(function(e, i) {
+    return '<tr><td>' + e.category + '</td><td>' + (e.desc||'–') + '</td><td>$' + parseFloat(e.amount||0).toFixed(2) + '</td><td>' + (e.paidby||'–') + '</td><td style="color:var(--text-muted)">' + (e.notes||'–') + '</td>' +
+      '<td style="text-align:right"><button class="btn btn-sm" onclick="deleteShowExpense(' + i + ')" style="color:var(--red);border-color:var(--red)">✕</button></td></tr>';
+  }).join('');
+  if (totalEl) { totalEl.style.display = 'block'; totalEl.textContent = 'Total: $' + total.toFixed(2); }
+}
+
+// ---- SAVE RIDER / CATEGORY / EXPENSE ----
+function saveShowRider() {
+  var show = showsData.find(function(s) { return s.id === currentShowId; });
+  if (!show) { toast('Select a show first', '#c0392b'); return; }
+  var riderSel = document.getElementById('show-rider-select').value;
+  var rider = riderSel === '__new__' ? document.getElementById('show-rider-new').value.trim() : riderSel;
+  if (!rider) { toast('Please select or enter a rider', '#c0392b'); return; }
+  var clsSel = document.getElementById('show-rider-class').value;
+  var cls = clsSel === '__custom__' ? document.getElementById('show-rider-class-custom').value.trim() : clsSel;
+  var entry = { rider: rider, horse: document.getElementById('show-rider-horse').value, cls: cls,
+    division: document.getElementById('show-rider-division').value.trim(),
+    result: document.getElementById('show-rider-result').value.trim(),
+    notes: document.getElementById('show-rider-notes').value.trim() };
+  if (editingShowRiderIdx >= 0) { show.riders[editingShowRiderIdx] = entry; editingShowRiderIdx = -1; }
+  else { show.riders.push(entry); }
+  dbSaveShow(show);
+  renderShowRiders(show);
+  closeModal();
+  toast('✅ Rider saved!');
+}
+
+function editShowRider(idx) {
+  var show = showsData.find(function(s) { return s.id === currentShowId; });
+  if (!show) return;
+  var r = show.riders[idx];
+  editingShowRiderIdx = idx;
+  populateShowRiderSelect();
+  populateShowHorseSelect(show);
+  populateShowClassSelect(show);
+  document.getElementById('show-rider-select').value = r.rider;
+  document.getElementById('show-rider-horse').value = r.horse || '';
+  document.getElementById('show-rider-class').value = r.cls || '';
+  document.getElementById('show-rider-division').value = r.division || '';
+  document.getElementById('show-rider-result').value = r.result || '';
+  document.getElementById('show-rider-notes').value = r.notes || '';
+  document.getElementById('show-rider-save-btn').textContent = 'Save changes';
+  openModal('modal-add-show-rider');
+}
+
+function deleteShowRider(idx) {
+  var show = showsData.find(function(s) { return s.id === currentShowId; });
+  if (!show) return;
+  show.riders.splice(idx, 1);
+  dbSaveShow(show);
+  renderShowRiders(show);
+  toast('Rider removed', '#c0392b');
+}
+
+function saveShowCategory() {
+  var show = showsData.find(function(s) { return s.id === currentShowId; });
+  if (!show) { toast('Select a show first', '#c0392b'); return; }
+  var name = document.getElementById('show-cat-name').value.trim();
+  if (!name) { toast('Please enter a class name', '#c0392b'); return; }
+  var cat = { name: name, division: document.getElementById('show-cat-division').value.trim(), notes: document.getElementById('show-cat-notes').value.trim() };
+  show.categories.push(cat);
+  dbSaveShow(show);
+  renderShowCategories(show);
+  closeModal();
+  toast('✅ Class added!');
+}
+
+function deleteShowCategory(idx) {
+  var show = showsData.find(function(s) { return s.id === currentShowId; });
+  if (!show) return;
+  show.categories.splice(idx, 1);
+  dbSaveShow(show);
+  renderShowCategories(show);
+  toast('Class removed', '#c0392b');
+}
+
+function saveShowExpense() {
+  var show = showsData.find(function(s) { return s.id === currentShowId; });
+  if (!show) { toast('Select a show first', '#c0392b'); return; }
+  var amount = parseFloat(document.getElementById('show-exp-amount').value);
+  if (!amount) { toast('Please enter an amount', '#c0392b'); return; }
+  var exp = { category: document.getElementById('show-exp-category').value, desc: document.getElementById('show-exp-desc').value.trim(),
+    amount: amount, paidby: document.getElementById('show-exp-paidby').value.trim(), notes: document.getElementById('show-exp-notes').value.trim() };
+  show.expenses.push(exp);
+  dbSaveShow(show);
+  renderShowExpenses(show);
+  closeModal();
+  toast('✅ Expense added!');
+}
+
+function deleteShowExpense(idx) {
+  var show = showsData.find(function(s) { return s.id === currentShowId; });
+  if (!show) return;
+  show.expenses.splice(idx, 1);
+  dbSaveShow(show);
+  renderShowExpenses(show);
+  toast('Expense removed', '#c0392b');
+}
+
+// ---- IEA RIDERS ----
+function saveIeaRider() {
+  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
+  if (!show) { toast('Select a show first', '#c0392b'); return; }
+  var riderSel = document.getElementById('iea-rider-select') ? document.getElementById('iea-rider-select').value : '';
+  var rider = riderSel === '__new__' ? (document.getElementById('iea-rider-new') ? document.getElementById('iea-rider-new').value.trim() : '') : riderSel;
+  if (!rider) { toast('Please select or enter a rider', '#c0392b'); return; }
+  var entry = { rider: rider,
+    division: document.getElementById('iea-rider-division') ? document.getElementById('iea-rider-division').value.trim() : '',
+    horse: document.getElementById('iea-rider-horse') ? document.getElementById('iea-rider-horse').value.trim() : '',
+    cls: document.getElementById('iea-rider-class') ? document.getElementById('iea-rider-class').value.trim() : '',
+    result: document.getElementById('iea-rider-result') ? document.getElementById('iea-rider-result').value.trim() : '',
+    notes: document.getElementById('iea-rider-notes') ? document.getElementById('iea-rider-notes').value.trim() : '' };
+  if (editingIeaRiderIdx >= 0) { show.riders[editingIeaRiderIdx] = entry; editingIeaRiderIdx = -1; }
+  else { show.riders.push(entry); }
+  dbSaveIeaShow(show);
+  renderIeaRiders(show);
+  closeModal();
+  toast('✅ Rider saved!');
+}
+
+function editIeaRider(idx) {
+  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
+  if (!show) return;
+  var r = show.riders[idx];
+  editingIeaRiderIdx = idx;
+  if (document.getElementById('iea-rider-select')) document.getElementById('iea-rider-select').value = r.rider;
+  if (document.getElementById('iea-rider-division')) document.getElementById('iea-rider-division').value = r.division || '';
+  if (document.getElementById('iea-rider-horse')) document.getElementById('iea-rider-horse').value = r.horse || '';
+  if (document.getElementById('iea-rider-class')) document.getElementById('iea-rider-class').value = r.cls || '';
+  if (document.getElementById('iea-rider-result')) document.getElementById('iea-rider-result').value = r.result || '';
+  if (document.getElementById('iea-rider-notes')) document.getElementById('iea-rider-notes').value = r.notes || '';
+  openModal('modal-add-iea-rider');
+}
+
+function deleteIeaRider(idx) {
+  var show = ieaShows.find(function(s) { return s.id === currentIeaShowId; });
+  if (!show) return;
+  show.riders.splice(idx, 1);
+  dbSaveIeaShow(show);
+  renderIeaRiders(show);
+  toast('Rider removed', '#c0392b');
+}
+
+function switchShowTab(el, show) {
+  document.querySelectorAll('#show-tabs .tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  ['show-participants','show-categories','show-expenses','show-photos'].forEach(function(id) {
+    var el2 = document.getElementById(id); if (el2) el2.style.display = id === show ? 'block' : 'none';
+  });
+}
+
+function switchIeaShowTab(el, show) {
+  document.querySelectorAll('#iea-show-tabs .tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  ['iea-tab-riders','iea-tab-photos'].forEach(function(id) {
+    var el2 = document.getElementById(id); if (el2) el2.style.display = id === show ? 'block' : 'none';
+  });
+}
+
 
 </script>
 </body>
