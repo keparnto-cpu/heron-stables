@@ -2324,17 +2324,36 @@ function loadFromStorage() {
 // ── SUPABASE DB OPERATIONS ──
 async function dbSave(table, data) {
   try {
-    const { error } = await sb.from(table).upsert(data, {onConflict: 'id'});
-    if (error) console.warn('DB save error:', table, error.message);
-  } catch(e) { console.warn('DB save exception:', e); }
+    var url = SUPA_URL + '/rest/v1/' + table;
+    var resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation,resolution=merge-duplicates'
+      },
+      body: JSON.stringify(data)
+    });
+    if (!resp.ok) {
+      var err = await resp.json();
+      console.warn('DB save error:', table, err);
+      return null;
+    }
+    return await resp.json();
+  } catch(e) { console.warn('DB save exception:', table, e); return null; }
 }
 
 async function dbDelete(table, id) {
   try {
-    const { error } = await sb.from(table).delete().eq('id', id);
-    if (error) console.warn('DB delete error:', table, error.message);
-  } catch(e) { console.warn('DB delete exception:', e); }
+    await fetch(SUPA_URL + '/rest/v1/' + table + '?id=eq.' + id, {
+      method: 'DELETE',
+      headers: {'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY}
+    });
+  } catch(e) { console.warn('DB delete exception:', table, e); }
 }
+
+
 
 async function dbLoadAll() {
   try {
