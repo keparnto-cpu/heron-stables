@@ -2914,6 +2914,7 @@ function showPage(id, el) {
   var page = document.getElementById('page-' + id);
   if (page) page.classList.add('active');
   if (el) el.classList.add('active');
+  try { sessionStorage.setItem('hs_page', id); } catch(e) {}
   // Close sidebar on mobile after navigation
   var sidebar = document.querySelector('.sidebar');
   var overlay = document.getElementById('sidebar-overlay');
@@ -6288,6 +6289,15 @@ window.addEventListener('load', function() {
   // Try Supabase first, fall back to localStorage
   updateTopbar('page-dashboard');
   dbLoadAll().then(function(loaded) {
+    // Restore last page after data loads
+    try {
+      var lastPage = sessionStorage.getItem('hs_page');
+      if (lastPage && lastPage !== 'dashboard') {
+        var navEl = document.querySelector('[onclick*="' + lastPage + '"]');
+        if (navEl) navEl.click();
+        else showPage(lastPage, null);
+      }
+    } catch(e) {}
     if (!loaded) {
       // Fallback to localStorage
       var hadLocal = loadFromStorage();
