@@ -2346,7 +2346,7 @@ async function dbLoadAll() {
       if (!r.ok) { var e = await r.json(); return {data:[], error:e}; }
       return {data: await r.json(), error: null};
     }
-    var [hRes,cRes,bRes,lRes,vRes,fRes,vetRes,ieaRes,showRes,riderRes,schedRes,vendRes] = await Promise.all([
+    var [hRes,cRes,bRes,lRes,vRes,fRes,vetRes,ieaRes,showRes,riderRes,schedRes,vendRes,calEvRes,alertRes,fodRes,vdRes,mdRes] = await Promise.all([
       qry('horses','created_at'),
       qry('clients','created_at'),
       qry('boarders','created_at'),
@@ -2359,6 +2359,11 @@ async function dbLoadAll() {
       qry('rider_lists'),
       qry('schedule_data','created_at'),
       qry('vendors','created_at'),
+      qry('cal_events','created_at'),
+      qry('manual_alerts','created_at'),
+      qry('feed_order_history','created_at'),
+      qry('vet_docs','created_at'),
+      qry('manual_docs','created_at'),
     ]);
 
     // Horses
@@ -2367,6 +2372,43 @@ async function dbLoadAll() {
       var archived = hRes.data.filter(function(h) { return h.archived; }).map(dbToHorse);
       horses.splice(0, horses.length, ...active);
       archivedHorses.splice(0, archivedHorses.length, ...archived);
+    }
+
+    // Calendar other events
+    if (calEvRes.data && calEvRes.data.length) {
+      calOtherEvents.splice(0, calOtherEvents.length, ...calEvRes.data.map(function(e) {
+        return {_id: e.id, date: e.date, title: e.title, notes: e.notes||''};
+      }));
+    }
+
+    // Manual alerts
+    if (alertRes.data && alertRes.data.length) {
+      manualAlerts.splice(0, manualAlerts.length, ...alertRes.data.map(function(a) {
+        return {_id: a.id, title: a.title, sub: a.sub||'', badge: a.badge||'Note', color: a.color||'blue'};
+      }));
+    }
+
+    // Feed order history
+    if (fodRes.data && fodRes.data.length) {
+      feedOrderHistory.splice(0, feedOrderHistory.length, ...fodRes.data.map(function(o) {
+        return {_id: o.id, name: o.name, date: o.date, items: o.items||{}, msg: o.msg||''};
+      }));
+    }
+
+    // Vet docs
+    if (vdRes.data && vdRes.data.length) {
+      vetDocs.splice(0, vetDocs.length, ...vdRes.data.map(function(d) {
+        return {_id: d.id, date: d.date, horse: d.horse||'', type: d.type||'', desc: d.description||'', url: d.url||'', filename: d.filename||''};
+      }));
+    }
+
+    // Manual docs
+    if (mdRes.data && mdRes.data.length) {
+      Object.keys(manualDocs).forEach(function(sec) { manualDocs[sec] = []; });
+      mdRes.data.forEach(function(d) {
+        if (!manualDocs[d.section]) manualDocs[d.section] = [];
+        manualDocs[d.section].push({_id: d.id, name: d.name, meta: d.meta||'', url: d.url||'', date: d.date||''});
+      });
     }
 
     // Vendors
@@ -2533,6 +2575,8 @@ function renderAlerts() {
 }
 
 function deleteAlert(i) {
+  var al = manualAlerts[i];
+  if (al && al._id) dbDelete('manual_alerts', al._id);
   manualAlerts.splice(i, 1);
   renderAlerts();
   saveToStorage();
@@ -2543,11 +2587,15 @@ function openAddAlert() { openModal('modal-add-alert'); }
 function saveAlert() {
   var title = document.getElementById('alert-title').value.trim();
   if (!title) { toast('Please enter an alert title', '#c0392b'); return; }
-  manualAlerts.push({
+  var al = {
     title: title,
     sub: document.getElementById('alert-sub').value.trim(),
     badge: document.getElementById('alert-badge').value.trim() || 'Note',
     color: document.getElementById('alert-color').value
+  };
+  manualAlerts.push(al);
+  dbSave('manual_alerts', {title: al.title, sub: al.sub, badge: al.badge, color: al.color}).then(function(res) {
+    if (res && res[0]) al._id = res[0].id;
   });
   renderAlerts();
   saveToStorage();
@@ -3522,11 +3570,15 @@ function archiveFeedOrder() {
   var name = prompt('Name this order:', defaultName);
   if (!name) return;
   if (!feedOrderHistory) feedOrderHistory = [];
-  feedOrderHistory.unshift({
+  var fo = {
     name: name,
     date: window._lastFeedOrder.date,
     items: window._lastFeedOrder.items,
     msg: window._lastFeedOrder.msg
+  };
+  feedOrderHistory.unshift(fo);
+  dbSave('feed_order_history', {name: fo.name, date: fo.date, items: fo.items, msg: fo.msg}).then(function(res) {
+    if (res && res[0]) fo._id = res[0].id;
   });
   saveToStorage();
   // Hide archive prompt and clear order
@@ -3808,6 +3860,8 @@ function reorderFeed(i) {
 
 function deleteFeedOrderHistory(i) {
   if (!confirm('Delete this order record?')) return;
+  var o = feedOrderHistory[i];
+  if (o && o._id) dbDelete('feed_order_history', o._id);
   feedOrderHistory.splice(i, 1);
   saveToStorage();
   renderFeedOrderHistory();
@@ -4390,13 +4444,19 @@ var manualDocs = {waivers: [], leases: [], board: [], other: [], coggins: []};
 
 function addManualDoc(section, url, name, meta) {
   manualDocs[section] = manualDocs[section] || [];
-  manualDocs[section].push({url: url, name: name, date: new Date().toISOString().slice(0,10), meta: meta||''});
+  var doc = {url: url, name: name, date: new Date().toISOString().slice(0,10), meta: meta||''};
+  manualDocs[section].push(doc);
+  dbSave('manual_docs', {section: section, name: name, meta: meta||'', url: url, date: doc.date}).then(function(res) {
+    if (res && res[0]) doc._id = res[0].id;
+  });
   renderManualDocs(section);
   saveToStorage();
 }
 
 function deleteManualDoc(section, i) {
   if (!confirm('Delete this document?')) return;
+  var doc = (manualDocs[section]||[])[i];
+  if (doc && doc._id) dbDelete('manual_docs', doc._id);
   manualDocs[section].splice(i, 1);
   renderManualDocs(section);
   saveToStorage();
@@ -4663,8 +4723,17 @@ function saveVetDoc() {
     url: document.getElementById('vd-url').value.trim(),
     filename: document.getElementById('vd-filename').value.trim()
   };
-  if (editingVetDocIdx >= 0) { vetDocs[editingVetDocIdx] = doc; editingVetDocIdx = -1; toast('✅ Document updated!'); }
-  else { vetDocs.push(doc); toast('📄 Document added!'); }
+  if (editingVetDocIdx >= 0) {
+    if (vetDocs[editingVetDocIdx]._id) dbSave('vet_docs', Object.assign({id: vetDocs[editingVetDocIdx]._id}, {date: doc.date, horse: doc.horse, type: doc.type, description: doc.desc, url: doc.url, filename: doc.filename}));
+    doc._id = vetDocs[editingVetDocIdx]._id;
+    vetDocs[editingVetDocIdx] = doc; editingVetDocIdx = -1; toast('✅ Document updated!');
+  } else {
+    vetDocs.push(doc);
+    dbSave('vet_docs', {date: doc.date, horse: doc.horse, type: doc.type, description: doc.desc, url: doc.url, filename: doc.filename}).then(function(res) {
+      if (res && res[0]) doc._id = res[0].id;
+    });
+    toast('📄 Document added!');
+  }
   renderVetDocs(); saveToStorage(); closeModal();
   ['vd-date','vd-horse','vd-type','vd-desc','vd-url','vd-filename'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
 }
@@ -4683,6 +4752,7 @@ function editVetDoc(i) {
 
 function deleteVetDoc(i) {
   if(!confirm('Delete this document?')) return;
+  var vd = vetDocs[i]; if (vd && vd._id) dbDelete('vet_docs', vd._id);
   vetDocs.splice(i,1); renderVetDocs(); saveToStorage(); toast('Deleted','#c0392b');
 }
 
@@ -5229,7 +5299,11 @@ function saveCalEvent() {
   } else if (type === 'other') {
     var title = document.getElementById('cal-other-title').value.trim();
     if (!title) { toast('Please enter a title', '#c0392b'); return; }
-    calOtherEvents.push({ date: date, title: title, notes: notes });
+    var calEv = { date: date, title: title, notes: notes };
+    calOtherEvents.push(calEv);
+    dbSave('cal_events', {date: date, title: title, notes: notes}).then(function(res) {
+      if (res && res[0]) calEv._id = res[0].id;
+    });
     saveToStorage();
     toast('✅ Event added to calendar!');
   }
