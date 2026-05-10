@@ -2353,24 +2353,25 @@ async function dbLoadAll() {
       if (!r.ok) { var e = await r.json(); return {data:[], error:e}; }
       return {data: await r.json(), error: null};
     }
+    var safe = function(p) { return p.catch(function(e) { console.warn('table fetch error:', e); return {data:[], error:e}; }); };
     var [hRes,cRes,bRes,lRes,vRes,fRes,vetRes,ieaRes,showRes,riderRes,schedRes,vendRes,calEvRes,alertRes,fodRes,vdRes,mdRes] = await Promise.all([
-      qry('horses','created_at'),
-      qry('clients','created_at'),
-      qry('boarders','created_at'),
-      qry('lessons','date'),
-      qry('vacc_data'),
-      qry('farrier_visits','date'),
-      qry('vet_visits','date'),
-      qry('iea_shows','created_at',false),
-      qry('shows','created_at',false),
-      qry('rider_lists'),
-      qry('schedule_data','created_at'),
-      qry('vendors','created_at'),
-      qry('cal_events','created_at'),
-      qry('manual_alerts','created_at'),
-      qry('feed_order_history','created_at'),
-      qry('vet_docs','created_at'),
-      qry('manual_docs','created_at'),
+      safe(qry('horses','created_at')),
+      safe(qry('clients','created_at')),
+      safe(qry('boarders','created_at')),
+      safe(qry('lessons','date')),
+      safe(qry('vacc_data')),
+      safe(qry('farrier_visits','date')),
+      safe(qry('vet_visits','date')),
+      safe(qry('iea_shows','created_at',false)),
+      safe(qry('shows','created_at',false)),
+      safe(qry('rider_lists')),
+      safe(qry('schedule_data','created_at')),
+      safe(qry('vendors','created_at')),
+      safe(qry('cal_events','created_at')),
+      safe(qry('manual_alerts','created_at')),
+      safe(qry('feed_order_history','created_at')),
+      safe(qry('vet_docs','created_at')),
+      safe(qry('manual_docs','created_at')),
     ]);
 
     // Horses
@@ -2488,6 +2489,7 @@ async function dbLoadAll() {
   } catch(e) {
     console.warn('DB load failed:', e);
     hideLoadingToast();
+    renderAll();
     return false;
   }
 }
@@ -2918,29 +2920,6 @@ const scheduleData = [
   {day:'Sat 10',time:'11:00 AM',client:'Sheila Sadighi',type:'Lesson',horse:'Mando',status:'Confirmed'},
 ];
 
-const vaccData = [];
-const farrierVisits = [];
-const vetVisits = [];
-const ieaShows = [];
-const ieaRiderList = [];
-const showsData = [];
-const showRiderList = [];
-const calOtherEvents = [];
-const manualAlerts = [];
-const feedOrderHistory = [];
-const vetDocs = [];
-const manualDocs = {};
-const vendors = [];
-const feedOrderHistoryData = [];
-const feedProductsDefault = [
-  {name:'Hay',unit:'bale',price:12,notes:''},
-  {name:'Grain',unit:'bag',price:28,notes:''},
-  {name:'Shavings',unit:'bag',price:8,notes:''},
-  {name:'Supplements',unit:'tub',price:45,notes:''},
-  {name:'Salt blocks',unit:'block',price:6,notes:''}
-];
-const feedProducts = feedProductsDefault.map(function(p){ return Object.assign({}, p); });
-
 // ---- NAVIGATION ----
 function toggleSidebar() {
   var sidebar = document.querySelector('.sidebar');
@@ -3005,7 +2984,7 @@ function toast(msg, color) {
 
 // ---- HELPERS ----
 function roleColor(roles) {
-  roles = roles || "";
+  roles = roles || '';
   if (roles.includes('horse owner')) return 'av-brown';
   if (roles.includes('staff') || roles.includes('barn manager') || roles.includes('trainer')) return 'av-green';
   if (roles.includes('veterinarian') || roles.includes('farrier')) return 'av-blue';
@@ -3013,10 +2992,10 @@ function roleColor(roles) {
   return 'av-purple';
 }
 function initials(name) {
-  return (name||"").split(' ').filter(Boolean).slice(0,2).map(function(w) { return w[0]; }).join('').toUpperCase().slice(0,2);
+  return (name||'').split(' ').filter(Boolean).slice(0,2).map(function(w) { return w[0]; }).join('').toUpperCase().slice(0,2);
 }
 function roleBadge(roles) {
-  roles = roles || "";
+  roles = roles || '';
   var first = roles.split(',')[0].trim();
   var map = {'horse owner':'badge-brown','rider':'badge-blue','lesson student':'badge-blue','staff':'badge-green','barn manager':'badge-green','bill payer':'badge-gray','parent':'badge-gray','veterinarian':'badge-blue','farrier':'badge-blue','vendor':'badge-amber','lessee':'badge-gray','trainer':'badge-green'};
   var cls = map[first] || 'badge-gray';
@@ -5139,7 +5118,7 @@ function populateFarrierHorseSelect() {
 // ==========================================
 // CALENDAR EVENTS
 // ==========================================
-// calOtherEvents declared above
+var calOtherEvents = []; // for "Other" type events
 
 function openCalEventModal(dateStr) {
   // Populate horse/rider selects
