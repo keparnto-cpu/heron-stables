@@ -5448,6 +5448,19 @@ function renderDayView(container, title, events) {
       } else if (e.type === 'other' && e._idx !== undefined) {
         deleteBtn = '<button data-idx="' + e._idx + '" data-type="other" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
       }
-  // Sync calendar
-  if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar();
+      html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">' +
+        '<div style="width:4px;border-radius:2px;background:' + e.color + ';align-self:stretch;flex-shrink:0"></div>' +
+        '<div style="flex:1">' +
+          '<div style="font-weight:600;font-size:15px;color:var(--text)">' + e.title + '</div>' +
+          (e.sub ? '<div style="font-size:13px;color:var(--text-muted);margin-top:2px">' + e.sub + '</div>' : '') +
+          '<div style="margin-top:4px"><span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:' + e.color + '">' + e.type + '</span></div>' +
+        '</div>' + deleteBtn + '</div>';
+    });
+  }
+  html += '</div>';
+  container.innerHTML = html;
 }
+
+</script>
+</body>
+</html>
