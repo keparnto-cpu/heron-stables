@@ -884,7 +884,7 @@ function checkAppPassword() {
     <div class="page" id="page-iea">
       <div class="section-header">
         <div class="section-title">IEA Shows</div>
-        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-iea-show')">+ Add show</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddIeaShowModal()">+ Add show</button>
       </div>
 
       <!-- IEA Shows table -->
@@ -946,7 +946,7 @@ function checkAppPassword() {
     <div class="page" id="page-shows">
       <div class="section-header">
         <div class="section-title">Shows</div>
-        <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-show')">+ Add show</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddShowModal()">+ Add show</button>
       </div>
 
       <!-- Shows table -->
@@ -975,6 +975,8 @@ function checkAppPassword() {
           <div class="tab" onclick="switchShowTab(this,'show-categories')">Classes & Categories</div>
           <div class="tab" onclick="switchShowTab(this,'show-expenses')">Expenses</div>
         </div>
+
+        <!-- PARTICIPANTS TAB -->
         <div id="show-participants">
           <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -1024,6 +1026,18 @@ function checkAppPassword() {
             </div>
             <div class="empty" id="show-expenses-empty" style="display:none"><div class="empty-icon">💰</div>No expenses logged yet.</div>
             <div id="show-expenses-total" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);text-align:right;font-size:14px;font-family:'Cormorant Garamond',serif;letter-spacing:0.04em"></div>
+          </div>
+        </div>
+
+        <!-- PHOTOS TAB -->
+        <div id="show-photos" style="display:none">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-family:serif;font-size:17px">Show photos</div>
+              <button class="btn btn-primary btn-sm" onclick="uploadShowPhoto('show')">&#128247; Upload photo</button>
+            </div>
+            <div id="show-photos-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:8px"></div>
+            <div id="show-photos-empty" style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">No photos yet. Click Upload photo to add some!</div>
           </div>
         </div>
 
@@ -1270,10 +1284,10 @@ function checkAppPassword() {
         <div class="section-title">Coggins / EIA records</div>
       </div>
       <div class="card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Click "Add link" next to any horse to paste a Google Drive link to their Coggins document.</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Click "🔗 Link" in the Document column to paste a Google Drive link to each horse's Coggins certificate.</div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Horse</th><th>EIA #</th><th>Test date</th><th>Status</th><th>Document link</th><th style="text-align:right">Actions</th></tr></thead>
+            <thead><tr><th>Horse</th><th>EIA #</th><th>Test date</th><th>Status</th><th>Document link</th><th style="text-align:right">Edit / Delete</th></tr></thead>
             <tbody id="coggins-main-table"></tbody>
           </table>
         </div>
@@ -1548,7 +1562,7 @@ function checkAppPassword() {
   </div>
 
   <!-- ADD SHOW -->
-  <div class="modal-box" id="modal-add-show" style="display:none">
+  <div class="modal-box" id="modal-add-show" style="display:none;max-width:560px">
     <div class="modal-header"><span>Add show</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
     <div class="modal-body">
       <div class="form-group"><label>Show name *</label><input type="text" id="show-name-input" placeholder="e.g. HITS Ocala Spring Circuit"></div>
@@ -1560,6 +1574,10 @@ function checkAppPassword() {
             <div id="show-loc-suggestions" class="location-suggestions" style="display:none"></div>
           </div>
         </div>
+      </div>
+      <div class="form-group">
+        <label>Participants <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(select all going)</span></label>
+        <div id="show-participants-checkboxes" style="display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:4px;background:var(--cream);max-height:180px;overflow-y:auto"></div>
       </div>
       <div class="form-group"><label>Notes <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(optional)</span></label><input type="text" id="show-notes-input" placeholder="Any notes…"></div>
     </div>
@@ -1739,7 +1757,7 @@ function checkAppPassword() {
   </div>
 
   <!-- ADD IEA SHOW -->
-  <div class="modal-box" id="modal-add-iea-show" style="display:none">
+  <div class="modal-box" id="modal-add-iea-show" style="display:none;max-width:560px">
     <div class="modal-header"><span>Add IEA show</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
     <div class="modal-body">
       <div class="form-group"><label>Show name *</label><input type="text" id="iea-show-name" placeholder="e.g. Region 5 IEA Horse Show"></div>
@@ -1751,6 +1769,10 @@ function checkAppPassword() {
             <div id="iea-loc-suggestions" class="location-suggestions" style="display:none"></div>
           </div>
         </div>
+      </div>
+      <div class="form-group">
+        <label>Participants <span style="font-weight:300;text-transform:none;letter-spacing:0;color:var(--text-light)">(select all going)</span></label>
+        <div id="iea-participants-checkboxes" style="display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:4px;background:var(--cream);max-height:180px;overflow-y:auto"></div>
       </div>
       <div class="form-group"><label>Notes</label><input type="text" id="iea-show-notes" placeholder="Any notes…"></div>
     </div>
@@ -2074,12 +2096,12 @@ function checkAppPassword() {
 
 </div><!-- end modal overlay -->
 
-<!-- ADD DOCUMENT LINK MODAL -->
-<div id="modal-add-doc-link" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1500;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--white);border-radius:4px;border:1px solid var(--border);width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+<!-- ADD DOCUMENT LINK MODAL (outside main overlay so it stacks on top) -->
+<div id="modal-doc-link-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--white);border-radius:4px;border:1px solid var(--border);width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)">
       <span style="font-family:'Cormorant Garamond',serif;font-size:18px;letter-spacing:0.04em">Add document link</span>
-      <span style="cursor:pointer;font-size:18px;color:var(--text-muted)" onclick="closeDocLinkModal()">✕</span>
+      <span style="cursor:pointer;font-size:18px;color:var(--text-muted);line-height:1" onclick="closeDocLinkModal()">✕</span>
     </div>
     <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
       <div class="form-group">
@@ -2087,8 +2109,8 @@ function checkAppPassword() {
         <input type="text" id="dl-name" placeholder="e.g. Erin Polos Lease 2025" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
       </div>
       <div class="form-group">
-        <label>Google Drive / document link *</label>
-        <input type="text" id="dl-url" placeholder="https://drive.google.com/..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+        <label>Google Drive / document URL *</label>
+        <input type="text" id="dl-url" placeholder="https://drive.google.com/…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
       </div>
       <div id="dl-client-row" class="form-group">
         <label>Client name <span style="font-weight:300;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-muted)">(optional)</span></label>
@@ -5312,7 +5334,7 @@ function saveCalEvent() {
       notes: notes
     };
     farrierVisits.push(visit);
-    dbSaveFarrier(visit).then && dbSaveFarrier(visit);
+    dbSaveFarrier(visit);
     renderFarrier();
     toast('✅ Farrier appointment added to calendar and Farrier!');
 
@@ -5379,31 +5401,28 @@ function getCalEvents() {
   // Lessons
   lessonsData.forEach(function(l) {
     if (!l.date) return;
-    var evId = l._id || l.id || '';
-    events.push({date: l.date, title: l.rider + ' — ' + l.type, sub: l.horse + ' · ' + l.trainer, color: '#6888BE', type: 'lesson', time: '09:00', _id: evId});
+    events.push({date: l.date, title: l.rider + ' — ' + l.type, sub: l.horse + ' · ' + l.trainer, color: '#6888BE', type: 'lesson', time: '09:00', _id: l._id || l.id || ''});
   });
   // Vet visits
   vetVisits.forEach(function(v) {
     if (!v.date) return;
     var color = v.category === 'Emergency' ? '#b33a2a' : '#2d5a3d';
-    var evId = v._id || v.id || '';
-    events.push({date: v.date, title: v.horse + ' — ' + v.category, sub: v.vet || '', color: color, type: 'vet', time: '10:00', _id: evId});
+    events.push({date: v.date, title: v.horse + ' — ' + v.category, sub: v.vet || '', color: color, type: 'vet', time: '10:00', _id: v._id || v.id || ''});
   });
   // Farrier
   farrierVisits.forEach(function(v) {
     if (!v.date) return;
-    var evId = v._id || v.id || '';
-    events.push({date: v.date, title: v.horse + ' — Farrier', sub: v.service || '', color: '#c4830a', type: 'farrier', time: '11:00', _id: evId});
+    events.push({date: v.date, title: v.horse + ' — Farrier', sub: v.service || '', color: '#c4830a', type: 'farrier', time: '11:00', _id: v._id || v.id || ''});
   });
   // IEA Shows
   ieaShows.forEach(function(s) {
     if (!s.date) return;
-    events.push({date: s.date, title: 'IEA: ' + s.name, sub: s.location || '', color: '#c9a96e', type: 'show', time: '08:00'});
+    events.push({date: s.date, title: 'IEA: ' + s.name, sub: s.location || '', color: '#c9a96e', type: 'iea_show', time: '08:00', _id: s.id || ''});
   });
   // Shows
   showsData.forEach(function(s) {
     if (!s.date) return;
-    events.push({date: s.date, title: 'Show: ' + s.name, sub: s.location || '', color: '#c9a96e', type: 'show', time: '08:00'});
+    events.push({date: s.date, title: 'Show: ' + s.name, sub: s.location || '', color: '#c9a96e', type: 'show', time: '08:00', _id: s._id || s.id || ''});
   });
   // Other events
   calOtherEvents.forEach(function(e) {
@@ -5428,37 +5447,23 @@ function deleteCalEvent(btn) {
   var idx = parseInt(btn.getAttribute('data-idx'));
   if (!confirm('Delete this event?')) return;
   if (type === 'lesson') {
-    var i = lessonsData.findIndex(function(l){ return l._id === id || l.id === id || String(l._id) === String(id); });
-    if (i !== -1) {
-      var dbId = lessonsData[i]._id || lessonsData[i].id;
-      if (dbId) dbDelete('lessons', dbId);
-      lessonsData.splice(i, 1);
-    }
+    var i = lessonsData.findIndex(function(l){ return (l._id && l._id === id) || (l.id && l.id === id); });
+    if (i !== -1) { var dbId = lessonsData[i]._id || lessonsData[i].id; if(dbId) dbDelete('lessons', dbId); lessonsData.splice(i, 1); }
     renderLessons();
   } else if (type === 'vet') {
-    var i = vetVisits.findIndex(function(v){ return v._id === id || v.id === id || String(v._id) === String(id); });
-    if (i !== -1) {
-      var dbId = vetVisits[i]._id || vetVisits[i].id;
-      if (dbId) dbDelete('vet_visits', dbId);
-      vetVisits.splice(i, 1);
-    }
+    var i = vetVisits.findIndex(function(v){ return (v._id && v._id === id) || (v.id && v.id === id); });
+    if (i !== -1) { var dbId = vetVisits[i]._id || vetVisits[i].id; if(dbId) dbDelete('vet_visits', dbId); vetVisits.splice(i, 1); }
     renderVetVisits();
   } else if (type === 'farrier') {
-    var i = farrierVisits.findIndex(function(v){ return v._id === id || v.id === id || String(v._id) === String(id); });
-    if (i !== -1) {
-      var dbId = farrierVisits[i]._id || farrierVisits[i].id;
-      if (dbId) dbDelete('farrier_visits', dbId);
-      farrierVisits.splice(i, 1);
-    }
+    var i = farrierVisits.findIndex(function(v){ return (v._id && v._id === id) || (v.id && v.id === id); });
+    if (i !== -1) { var dbId = farrierVisits[i]._id || farrierVisits[i].id; if(dbId) dbDelete('farrier_visits', dbId); farrierVisits.splice(i, 1); }
     renderFarrier();
   } else if (type === 'show') {
-    var i = showsData.findIndex(function(s){ return s._id === id || s.id === id || String(s._id) === String(id); });
-    if (i !== -1) {
-      var dbId = showsData[i]._id || showsData[i].id;
-      if (dbId) dbDelete('shows', dbId);
-      showsData.splice(i, 1);
-      renderShowsTable();
-    }
+    var i = showsData.findIndex(function(s){ return (s._id && s._id === id) || (s.id && s.id === id); });
+    if (i !== -1) { var dbId = showsData[i]._id || showsData[i].id; if(dbId) dbDelete('shows', dbId); showsData.splice(i, 1); renderShowsTable(); }
+  } else if (type === 'iea_show') {
+    var i = ieaShows.findIndex(function(s){ return s.id === id; });
+    if (i !== -1) { dbDeleteIeaShow(ieaShows[i].id); ieaShows.splice(i, 1); renderIeaShowsTable(); }
   } else if (type === 'other') {
     if (!isNaN(idx) && calOtherEvents[idx]) {
       var ev = calOtherEvents[idx];
@@ -5571,6 +5576,8 @@ function renderDayView(container, title, events) {
         deleteBtn = '<button data-id="' + (e._id||'') + '" data-type="farrier" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
       } else if (e.type === 'show') {
         deleteBtn = '<button data-id="' + (e._id||'') + '" data-type="show" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
+      } else if (e.type === 'iea_show') {
+        deleteBtn = '<button data-id="' + (e._id||'') + '" data-type="iea_show" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
       } else if (e.type === 'other') {
         deleteBtn = '<button data-idx="' + (e._idx !== undefined ? e._idx : '') + '" data-type="other" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
       }
@@ -5579,7 +5586,7 @@ function renderDayView(container, title, events) {
         '<div style="flex:1">' +
           '<div style="font-weight:600;font-size:15px;color:var(--text)">' + e.title + '</div>' +
           (e.sub ? '<div style="font-size:13px;color:var(--text-muted);margin-top:2px">' + e.sub + '</div>' : '') +
-          '<div style="margin-top:4px"><span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:' + e.color + '">' + e.type + '</span></div>' +
+          '<div style="margin-top:4px"><span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:' + e.color + '">' + (e.type === 'iea_show' ? 'IEA Show' : e.type) + '</span></div>' +
         '</div>' + deleteBtn + '</div>';
     });
   }
@@ -5712,16 +5719,32 @@ function handleShowClassSelect(val) {
 }
 
 // ---- SAVE SHOW ----
+function openAddShowModal() {
+  var wrap = document.getElementById('show-participants-checkboxes');
+  if (wrap) {
+    var names = clients.filter(function(c){ return c.roles && (c.roles.includes('rider')||c.roles.includes('lesson student')); }).map(function(c){ return c.name; });
+    if (showRiderList && showRiderList.length) showRiderList.forEach(function(n){ if(!names.includes(n)) names.push(n); });
+    names.sort();
+    wrap.innerHTML = names.map(function(n){
+      var id = 'shp-'+n.replace(/\W/g,'_');
+      return '<label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer;white-space:nowrap"><input type="checkbox" value="'+n+'" id="'+id+'" style="accent-color:var(--green)"> '+n+'</label>';
+    }).join('');
+  }
+  openModal('modal-add-show');
+}
+
 function saveShow() {
   var name = document.getElementById('show-name-input').value.trim();
   if (!name) { toast('Please enter a show name', '#c0392b'); return; }
+  var checked = [];
+  document.querySelectorAll('#show-participants-checkboxes input[type="checkbox"]:checked').forEach(function(cb){ checked.push({rider:cb.value,horse:'',cls:'',division:'',result:'',notes:''}); });
   var show = {
     id: crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);}),
     name: name,
     date: document.getElementById('show-date-input').value,
     location: document.getElementById('show-loc-input').value.trim(),
     notes: document.getElementById('show-notes-input').value.trim(),
-    riders: [], categories: [], expenses: []
+    riders: checked, categories: [], expenses: []
   };
   showsData.unshift(show);
   dbSaveShow(show);
@@ -5735,16 +5758,32 @@ function saveShow() {
   loadShow(show.id);
 }
 
+function openAddIeaShowModal() {
+  var wrap = document.getElementById('iea-participants-checkboxes');
+  if (wrap) {
+    var names = clients.filter(function(c){ return c.roles && (c.roles.includes('rider')||c.roles.includes('lesson student')); }).map(function(c){ return c.name; });
+    if (ieaRiderList && ieaRiderList.length) ieaRiderList.forEach(function(n){ if(!names.includes(n)) names.push(n); });
+    names.sort();
+    wrap.innerHTML = names.map(function(n){
+      var id = 'ieap-'+n.replace(/\W/g,'_');
+      return '<label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer;white-space:nowrap"><input type="checkbox" value="'+n+'" id="'+id+'" style="accent-color:var(--green)"> '+n+'</label>';
+    }).join('');
+  }
+  openModal('modal-add-iea-show');
+}
+
 function saveIeaShow() {
   var name = document.getElementById('iea-show-name').value.trim();
   if (!name) { toast('Please enter a show name', '#c0392b'); return; }
+  var checked = [];
+  document.querySelectorAll('#iea-participants-checkboxes input[type="checkbox"]:checked').forEach(function(cb){ checked.push({rider:cb.value,division:'',horse:'',cls:'',result:'',notes:''}); });
   var show = {
     id: crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);}),
     name: name,
     date: document.getElementById('iea-show-date-input').value,
     location: document.getElementById('iea-show-loc').value.trim(),
     notes: document.getElementById('iea-show-notes').value.trim(),
-    riders: []
+    riders: checked
   };
   ieaShows.unshift(show);
   dbSaveIeaShow(show);
@@ -6050,7 +6089,7 @@ function deleteIeaRider(idx) {
 function switchShowTab(el, show) {
   document.querySelectorAll('#show-tabs .tab').forEach(function(t) { t.classList.remove('active'); });
   el.classList.add('active');
-  ['show-participants','show-categories','show-expenses'].forEach(function(id) {
+  ['show-participants','show-categories','show-expenses','show-photos'].forEach(function(id) {
     var el2 = document.getElementById(id); if (el2) el2.style.display = id === show ? 'block' : 'none';
   });
 }
@@ -6504,17 +6543,18 @@ var cogginsData = {
 function renderCogginsMain() {
   var tbody = document.getElementById('coggins-main-table');
   if (!tbody) return;
-  // Merge horses array with cogginsData
   var activeNames = horses.map(function(h){ return h.name; });
   var allNames = activeNames.slice();
   Object.keys(cogginsData).forEach(function(n){ if (!allNames.includes(n)) allNames.push(n); });
   tbody.innerHTML = allNames.map(function(horseName) {
     var rec = cogginsData[horseName] || {};
     var statusBadge = rec.status === 'Current' ? 'badge-green' : rec.status === 'Renew' ? 'badge-red' : rec.status === 'Check' ? 'badge-amber' : 'badge-gray';
-    var docCell = rec.url
-      ? '<a href="' + rec.url + '" target="_blank" style="color:var(--primary);font-size:12px">' + (rec.docName||'View ↗') + '</a>'
-      : '<span style="color:var(--text-muted);font-size:12px">No link</span>';
     var safe = horseName.replace(/'/g, '&#39;');
+    // Document link cell: show link + a 🔗 button to set/change it
+    var docCell = rec.url
+      ? '<a href="' + rec.url + '" target="_blank" style="color:var(--primary);font-size:12px;margin-right:6px">' + (rec.docName||'View ↗') + '</a>' +
+        '<button class="btn btn-sm" onclick="addCogginsLink(this.dataset.h)" data-h="' + safe + '" style="font-size:10px;padding:2px 6px">🔗 Change</button>'
+      : '<button class="btn btn-sm" onclick="addCogginsLink(this.dataset.h)" data-h="' + safe + '" style="color:var(--primary);border-color:var(--primary)">🔗 Add link</button>';
     return '<tr>' +
       '<td><strong>' + horseName + '</strong></td>' +
       '<td style="font-size:12px;color:var(--text-muted)">' + (rec.eia||'–') + '</td>' +
@@ -6522,8 +6562,7 @@ function renderCogginsMain() {
       '<td>' + (rec.status ? '<span class="badge ' + statusBadge + '">' + rec.status + '</span>' : '–') + '</td>' +
       '<td>' + docCell + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
-        '<button class="btn btn-sm" onclick="editCogginsEntry(this.dataset.h)" data-h="' + safe + '" style="margin-right:2px">✎ Edit</button>' +
-        '<button class="btn btn-sm" onclick="addCogginsLink(this.dataset.h)" data-h="' + safe + '" style="margin-right:2px;color:var(--primary);border-color:var(--primary)">🔗 Link</button>' +
+        '<button class="btn btn-sm" onclick="editCogginsEntry(this.dataset.h)" data-h="' + safe + '" style="margin-right:4px">✎</button>' +
         '<button class="btn btn-sm" onclick="deleteCogginsEntry(this.dataset.h)" data-h="' + safe + '" style="color:var(--red);border-color:var(--red)">✕</button>' +
       '</td></tr>';
   }).join('');
@@ -6571,35 +6610,29 @@ function addDocLink(section) {
   document.getElementById('dl-name').value = '';
   document.getElementById('dl-url').value = '';
   document.getElementById('dl-client').value = '';
-  document.getElementById('dl-horse').value = '';
-  // Show/hide client and horse fields based on section
+  if (document.getElementById('dl-horse')) document.getElementById('dl-horse').value = '';
   var clientRow = document.getElementById('dl-client-row');
   var horseRow = document.getElementById('dl-horse-row');
-  if (section === 'other') { if(clientRow) clientRow.style.display = 'none'; } 
-  else { if(clientRow) clientRow.style.display = 'block'; }
-  if (section === 'leases' || section === 'board') { if(horseRow) horseRow.style.display = 'block'; }
-  else { if(horseRow) horseRow.style.display = 'none'; }
-  var modal = document.getElementById('modal-add-doc-link');
-  if (modal) modal.style.display = 'flex';
+  if (clientRow) clientRow.style.display = section === 'other' ? 'none' : 'block';
+  if (horseRow) horseRow.style.display = (section === 'leases' || section === 'board') ? 'block' : 'none';
+  document.getElementById('modal-doc-link-overlay').style.display = 'flex';
 }
 
 function closeDocLinkModal() {
-  var modal = document.getElementById('modal-add-doc-link');
-  if (modal) modal.style.display = 'none';
+  document.getElementById('modal-doc-link-overlay').style.display = 'none';
 }
 
 function saveDocLink() {
   var name = document.getElementById('dl-name').value.trim();
   var url = document.getElementById('dl-url').value.trim();
-  if (!name || !url) { toast('Please enter a name and link', '#c0392b'); return; }
-  var client = document.getElementById('dl-client').value.trim();
-  var horse = document.getElementById('dl-horse').value.trim();
-  var section = _docLinkSection;
+  if (!name || !url) { toast('Please enter a name and URL', '#c0392b'); return; }
+  var client = document.getElementById('dl-client') ? document.getElementById('dl-client').value.trim() : '';
+  var horse = document.getElementById('dl-horse') ? document.getElementById('dl-horse').value.trim() : '';
   var entry = {name: name, url: url, client: client, horse: horse, date: new Date().toISOString().slice(0,10), status: 'On file'};
-  if (!docLinks[section]) docLinks[section] = [];
-  docLinks[section].push(entry);
+  if (!docLinks[_docLinkSection]) docLinks[_docLinkSection] = [];
+  docLinks[_docLinkSection].push(entry);
   saveToStorage();
-  renderDocLinks(section);
+  renderDocLinks(_docLinkSection);
   closeDocLinkModal();
   toast('🔗 Document link added!');
 }
