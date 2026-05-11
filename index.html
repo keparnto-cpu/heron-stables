@@ -895,7 +895,7 @@ function checkAppPassword() {
       </div>
       <div class="table-wrap" style="margin-bottom:20px">
         <table>
-          <thead><tr><th>Show</th><th>Date</th><th>Participants</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+          <thead><tr><th>Show</th><th>Date</th><th>Participants</th><th>Results 🏆</th><th style="text-align:right">Actions</th></tr></thead>
           <tbody id="iea-shows-list-body"></tbody>
         </table>
       </div>
@@ -1194,22 +1194,11 @@ function checkAppPassword() {
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div style="font-size:13px;color:var(--text-muted)">EIA / Coggins records. Annual renewal required.</div>
-            <button class="btn btn-primary btn-sm" onclick="openFileUpload(null,'coggins',function(url,name){ addCogginsDoc(url,name); })">+ Upload record</button>
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Horse</th><th>Test date</th><th>Result</th><th>Valid until</th><th>Status</th><th>Document</th><th style="text-align:right">Actions</th></tr></thead>
-              <tbody id="coggins-uploaded-docs"></tbody>
-              <tbody>
-                <tr><td><strong>Stanley (A Happy Medium)</strong></td><td>EIA21459861</td><td>2021</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current (May 2025)</span></td></tr>
-                <tr><td><strong>Diplo</strong></td><td>EIA22491692</td><td>2022</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-                <tr><td><strong>Destiny</strong></td><td>EIA23095032</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-                <tr><td><strong>Kingston</strong></td><td>EIA23095198</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-                <tr><td><strong>Valencio</strong></td><td>EIA23095292</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-red">Renew now</span></td></tr>
-                <tr><td><strong>Coco</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-                <tr><td><strong>Milton</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-amber">Check</span></td></tr>
-                <tr><td><strong>Q</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-              </tbody>
+              <thead><tr><th>Horse</th><th>Test date</th><th>EIA #</th><th>Status</th><th>Document</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody id="coggins-table-body"></tbody>
             </table>
           </div>
           <div style="margin-top:12px;font-size:12px;color:var(--text-muted)">Contact Dr. Nicole Jochec at Running Equine (908) 832-5484 to schedule testing.</div>
@@ -2622,6 +2611,7 @@ function renderAll() {
   populateShowSelect();
   renderShowsTable();
   renderIeaShowsTable();
+  renderCogginsTable();
   populateFarrierHorseSelect();
   populateVetHorseSelects();
   saveToStorage();
@@ -3101,8 +3091,8 @@ function renderHorseProfiles() {
     var pY = h.photoY !== undefined ? h.photoY : 50;
     var pZ = h.photoZoom !== undefined ? h.photoZoom : 1;
     var photoHTML = h.photo
-      ? '<div class="horse-photo-container" data-idx="' + idx + '" style="width:100%;height:220px;overflow:hidden;background:#f0f0f0;position:relative;cursor:grab" title="Drag to reposition">' +
-          '<img src="' + h.photo + '" style="width:' + (100*pZ) + '%;height:' + (100*pZ) + '%;object-fit:cover;position:absolute;left:' + pX + '%;top:' + pY + '%;transform:translate(-' + pX + '%,-' + pY + '%)" draggable="false">' +
+      ? '<div class="horse-photo-container" data-idx="' + idx + '" style="width:100%;height:220px;overflow:hidden;background:#f0f0f0;position:relative;cursor:grab;user-select:none" title="Drag to reposition">' +
+          '<div style="width:100%;height:100%;background:url(' + JSON.stringify(h.photo) + ') ' + pX + '% ' + pY + '% / ' + Math.round(100*pZ) + '% auto no-repeat" class="horse-photo-bg" data-idx="' + idx + '"></div>' +
           '<div style="position:absolute;bottom:6px;right:6px;display:flex;gap:4px">' +
             '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',-0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer" title="Zoom out">−</button>' +
             '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer" title="Zoom in">+</button>' +
@@ -3164,8 +3154,13 @@ function zoomHorsePhoto(idx, delta) {
   var h = horses[idx];
   if (!h) return;
   h.photoZoom = Math.max(0.5, Math.min(3, (h.photoZoom||1) + delta));
+  // Update live without re-rendering
+  var containers = document.querySelectorAll('.horse-photo-container[data-idx="' + idx + '"]');
+  containers.forEach(function(c) {
+    var bg = c.querySelector('.horse-photo-bg');
+    if (bg) bg.style.backgroundSize = Math.round(100*h.photoZoom) + '% auto';
+  });
   saveHorsePhotoPosition(idx);
-  renderHorseProfiles();
 }
 
 function saveHorsePhotoPosition(idx) {
@@ -3196,14 +3191,11 @@ document.addEventListener('mousemove', function(e) {
   var dy = (e.clientY - _dragState.startY) / _dragState.container.offsetHeight * 100;
   h.photoX = Math.max(0, Math.min(100, _dragState.origX - dx));
   h.photoY = Math.max(0, Math.min(100, _dragState.origY - dy));
-  var img = _dragState.container.querySelector('img');
-  if (img) {
+  var bg = _dragState.container.querySelector('.horse-photo-bg');
+  if (bg) {
     var z = h.photoZoom || 1;
-    img.style.width = (100*z) + '%';
-    img.style.height = (100*z) + '%';
-    img.style.left = h.photoX + '%';
-    img.style.top = h.photoY + '%';
-    img.style.transform = 'translate(-' + h.photoX + '%,-' + h.photoY + '%)';
+    bg.style.backgroundPosition = h.photoX + '% ' + h.photoY + '%';
+    bg.style.backgroundSize = Math.round(100*z) + '% auto';
   }
 });
 
@@ -3234,12 +3226,9 @@ document.addEventListener('touchmove', function(e) {
   var dy = (touch.clientY - _dragState.startY) / _dragState.container.offsetHeight * 100;
   h.photoX = Math.max(0, Math.min(100, _dragState.origX - dx));
   h.photoY = Math.max(0, Math.min(100, _dragState.origY - dy));
-  var img = _dragState.container.querySelector('img');
-  if (img) {
-    var z = h.photoZoom || 1;
-    img.style.left = h.photoX + '%';
-    img.style.top = h.photoY + '%';
-    img.style.transform = 'translate(-' + h.photoX + '%,-' + h.photoY + '%)';
+  var bg = _dragState.container.querySelector('.horse-photo-bg');
+  if (bg) {
+    bg.style.backgroundPosition = h.photoX + '% ' + h.photoY + '%';
   }
   e.preventDefault();
 }, {passive:false});
@@ -4425,10 +4414,10 @@ function emailLessonsReport() {
   setTimeout(function() {
     var preview = document.getElementById('share-preview');
     var body = preview ? preview.textContent : 'See lesson report.';
-    var smsUrl = 'sms:6465098774?body=' + encodeURIComponent(body);
-    window.location.href = smsUrl;
+    var subject = 'Heron Stables — Lesson Report';
+    window.location.href = 'mailto:info@heronstables.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
     closeModal();
-    toast('📱 Opening Messages…');
+    toast('📧 Opening email…');
   }, 300);
 }
 
@@ -5195,7 +5184,9 @@ function switchFarrierTab(el, show) {
 function populateFarrierHorseSelect() {
   var sel = document.getElementById('fv-horse');
   if (!sel) return;
-  while (sel.options.length > 1) sel.remove(1);
+  while (sel.options.length > 0) sel.remove(0);
+  var allOpt = document.createElement('option'); allOpt.value = ''; allOpt.textContent = 'Select horse…'; sel.appendChild(allOpt);
+  var starOpt = document.createElement('option'); starOpt.value = 'All horses'; starOpt.textContent = '⭐ All horses'; sel.appendChild(starOpt);
   horses.forEach(function(h) {
     var o = document.createElement('option'); o.value = h.name; o.textContent = h.name; sel.appendChild(o);
   });
@@ -6081,7 +6072,7 @@ var showHistoryVisible = false;
 function toggleShowHistory() {
   showHistoryVisible = !showHistoryVisible;
   var btn = document.getElementById('shows-toggle-history');
-  if (btn) btn.textContent = showHistoryVisible ? '📦 Hide History' : '📦 Show History';
+  if (btn) btn.textContent = showHistoryVisible ? '🙈 Hide History' : '📦 Show History';
   renderShowsTable();
 }
 
@@ -6108,16 +6099,25 @@ function renderShowsTable() {
   if (noShow) noShow.style.display = 'none';
 
   tbody.innerHTML = visible.map(function(s) {
-    var participants = (s.riders || []).map(function(r) { return r.rider; }).join(', ') || '–';
+    var riderNames = (s.riders || []).map(function(r) { return r.rider; });
+    var participants = riderNames.join(', ') || '–';
     var dateStr = s.date ? new Date(s.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
     var isArchived = s.archived;
     var rowStyle = isArchived ? 'opacity:0.55;' : '';
     var archiveBadge = isArchived ? '<span class="badge badge-gray" style="margin-left:6px;font-size:10px">Archived</span>' : '';
+    // Results: dropdown of participants + text field
+    var riderOpts = '<option value="">Select rider…</option>' + riderNames.map(function(n){ return '<option value="' + n + '">' + n + '</option>'; }).join('');
+    var resultsHtml = riderNames.length
+      ? '<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">' +
+          '<select onchange="openResultEntry(\'' + s.id + '\',this.value,this)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:2px;background:var(--cream);color:var(--text)">' + riderOpts + '</select>' +
+          '<div id="res-' + s.id + '" style="font-size:11px;color:var(--text-muted)">' + (s.results ? Object.keys(s.results).map(function(r){ return r + ': ' + s.results[r]; }).join(', ') : '') + '</div>' +
+        '</div>'
+      : '<span style="font-size:11px;color:var(--text-muted)">Add riders first</span>';
     return '<tr style="' + rowStyle + '">' +
       '<td><strong style="cursor:pointer;color:var(--primary)" onclick="loadShowDetail(\'' + s.id + '\')">' + s.name + '</strong>' + archiveBadge + '</td>' +
-      '<td>' + dateStr + '</td>' +
-      '<td style="font-size:12px;color:var(--text-muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + participants + '">' + participants + '</td>' +
-      '<td style="font-size:12px;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (s.notes||'–') + '</td>' +
+      '<td style="white-space:nowrap">' + dateStr + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + participants + '">' + participants + '</td>' +
+      '<td style="min-width:180px">' + resultsHtml + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
         '<button class="btn btn-sm" onclick="editShowInline(\'' + s.id + '\')" style="margin-right:2px">✎</button>' +
         (isArchived
@@ -6342,6 +6342,98 @@ function deleteIeaShowById(id) {
 
 // Override deleteIeaShow to use new function
 function deleteIeaShow() { if (currentIeaShowId) deleteIeaShowById(currentIeaShowId); }
+
+function openResultEntry(showId, rider, selectEl) {
+  if (!rider) return;
+  var result = prompt('Enter result for ' + rider + ':', (showsData.find(function(s){return s.id===showId;}) && showsData.find(function(s){return s.id===showId;}).results && showsData.find(function(s){return s.id===showId;}).results[rider]) || '');
+  if (result === null) { selectEl.value = ''; return; }
+  var show = showsData.find(function(s){ return s.id === showId; });
+  if (!show) return;
+  if (!show.results) show.results = {};
+  if (result.trim()) show.results[rider] = result.trim();
+  else delete show.results[rider];
+  dbSaveShow(show);
+  renderShowsTable();
+  selectEl.value = '';
+  toast('✅ Result saved!');
+}
+
+// ==========================================
+// COGGINS — per horse
+// ==========================================
+if (!window.cogginsRecords) window.cogginsRecords = {};
+
+function renderCogginsTable() {
+  var tbody = document.getElementById('coggins-table-body');
+  if (!tbody) return;
+  var activeHorses = horses.map(function(h) { return h.name; });
+  // Merge hardcoded + uploaded records
+  var hardcoded = {
+    'Stanley (A Happy Medium)': {eia:'EIA21459861', date:'2021', status:'Current'},
+    'Diplo': {eia:'EIA22491692', date:'2022', status:'Current'},
+    'Destiny': {eia:'EIA23095032', date:'2023', status:'Current'},
+    'Kingston': {eia:'EIA23095198', date:'2023', status:'Current'},
+    'Valencio': {eia:'EIA23095292', date:'2023', status:'Renew'},
+    'Coco': {eia:'On file', date:'2024', status:'Current'},
+    'Milton': {eia:'On file', date:'2024', status:'Check'},
+    'Q': {eia:'On file', date:'2024', status:'Current'},
+  };
+  var recs = window.cogginsRecords || {};
+  // Show all horses — either from DB or horses array
+  var horseList = activeHorses.length ? activeHorses : Object.keys(hardcoded);
+  tbody.innerHTML = horseList.map(function(horseName) {
+    var rec = recs[horseName] || hardcoded[horseName] || {};
+    var statusBadge = rec.status === 'Current' ? 'badge-green' : rec.status === 'Renew' ? 'badge-red' : rec.status === 'Check' ? 'badge-amber' : 'badge-gray';
+    var docLink = rec.url ? '<a href="' + rec.url + '" target="_blank" style="color:var(--primary);text-decoration:none;font-size:12px">' + (rec.docName||'View ↗') + '</a>' : '–';
+    var safeHorse = horseName.replace(/'/g,"\'");
+    return '<tr>' +
+      '<td><strong>' + horseName + '</strong></td>' +
+      '<td style="font-size:12px;color:var(--text-muted)">' + (rec.date||'–') + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted)">' + (rec.eia||'–') + '</td>' +
+      '<td>' + (rec.status ? '<span class="badge ' + statusBadge + '">' + rec.status + '</span>' : '–') + '</td>' +
+      '<td>' + docLink + '</td>' +
+      '<td style="text-align:right;white-space:nowrap">' +
+        '<button class="btn btn-sm" onclick="addCogginsForHorse(\'' + safeHorse + '\')" style="margin-right:2px">+ Add</button>' +
+        '<button class="btn btn-sm" onclick="editCogginsForHorse(\'' + safeHorse + '\')" style="margin-right:2px">✎</button>' +
+        '<button class="btn btn-sm" onclick="archiveCogginsForHorse(\'' + safeHorse + '\')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)">📦</button>' +
+        '<button class="btn btn-sm" onclick="deleteCogginsForHorse(\'' + safeHorse + '\')" style="color:var(--red);border-color:var(--red)">✕</button>' +
+      '</td></tr>';
+  }).join('');
+}
+
+function addCogginsForHorse(horseName) {
+  var rec = (window.cogginsRecords && window.cogginsRecords[horseName]) || {};
+  var date = prompt('Test date (e.g. 2025-03-15):', rec.date || '');
+  if (date === null) return;
+  var eia = prompt('EIA/Coggins # (or "On file"):', rec.eia || '');
+  if (eia === null) return;
+  var url = prompt('Google Drive link (paste URL, or leave blank):', rec.url || '');
+  var status = prompt('Status (Current / Renew / Check):', rec.status || 'Current');
+  if (!window.cogginsRecords) window.cogginsRecords = {};
+  window.cogginsRecords[horseName] = {date: date.trim(), eia: eia.trim(), url: (url||'').trim(), docName: eia.trim()||'View ↗', status: status||'Current'};
+  saveToStorage();
+  renderCogginsTable();
+  toast('✅ Coggins record saved!');
+}
+
+function editCogginsForHorse(horseName) { addCogginsForHorse(horseName); }
+
+function archiveCogginsForHorse(horseName) {
+  if (!window.cogginsRecords) return;
+  if (!confirm('Archive coggins record for ' + horseName + '?')) return;
+  if (window.cogginsRecords[horseName]) window.cogginsRecords[horseName].archived = true;
+  saveToStorage();
+  renderCogginsTable();
+  toast('📦 Archived');
+}
+
+function deleteCogginsForHorse(horseName) {
+  if (!confirm('Delete coggins record for ' + horseName + '? This cannot be undone.')) return;
+  if (window.cogginsRecords) delete window.cogginsRecords[horseName];
+  saveToStorage();
+  renderCogginsTable();
+  toast('Deleted', '#c0392b');
+}
 
 function locationSearch(input, suggestionsId) {
   // Location autocomplete — no-op stub (can be enhanced later)
