@@ -6473,7 +6473,7 @@ function renderCogginsMain() {
     var docCell = rec.url
       ? '<a href="' + rec.url + '" target="_blank" style="color:var(--primary);font-size:12px">' + (rec.docName||'View ↗') + '</a>'
       : '<span style="color:var(--text-muted);font-size:12px">No link</span>';
-    var safe = horseName.replace(/\/g,'\\').replace(/'/g,"\'");
+    var safe = horseName.replace(/'/g, '&#39;');
     return '<tr>' +
       '<td><strong>' + horseName + '</strong></td>' +
       '<td style="font-size:12px;color:var(--text-muted)">' + (rec.eia||'–') + '</td>' +
@@ -6481,9 +6481,9 @@ function renderCogginsMain() {
       '<td>' + (rec.status ? '<span class="badge ' + statusBadge + '">' + rec.status + '</span>' : '–') + '</td>' +
       '<td>' + docCell + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
-        '<button class="btn btn-sm" onclick="editCogginsEntry(\'' + safe + '\')" style="margin-right:2px">✎ Edit</button>' +
-        '<button class="btn btn-sm" onclick="addCogginsLink(\'' + safe + '\')" style="margin-right:2px;color:var(--primary);border-color:var(--primary)">🔗 Link</button>' +
-        '<button class="btn btn-sm" onclick="deleteCogginsEntry(\'' + safe + '\')" style="color:var(--red);border-color:var(--red)">✕</button>' +
+        '<button class="btn btn-sm" onclick="editCogginsEntry(this.dataset.h)" data-h="' + safe + '" style="margin-right:2px">✎ Edit</button>' +
+        '<button class="btn btn-sm" onclick="addCogginsLink(this.dataset.h)" data-h="' + safe + '" style="margin-right:2px;color:var(--primary);border-color:var(--primary)">🔗 Link</button>' +
+        '<button class="btn btn-sm" onclick="deleteCogginsEntry(this.dataset.h)" data-h="' + safe + '" style="color:var(--red);border-color:var(--red)">✕</button>' +
       '</td></tr>';
   }).join('');
 }
