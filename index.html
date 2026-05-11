@@ -909,7 +909,6 @@ function checkAppPassword() {
         </div>
         <div class="tabs" id="iea-show-tabs">
           <div class="tab active" onclick="switchIeaShowTab(this,'iea-tab-riders')">Participants</div>
-          <div class="tab" onclick="switchIeaShowTab(this,'iea-tab-photos')">Photos</div>
         </div>
 
         <div id="iea-tab-riders">
@@ -975,7 +974,6 @@ function checkAppPassword() {
           <div class="tab active" onclick="switchShowTab(this,'show-participants')">Participants</div>
           <div class="tab" onclick="switchShowTab(this,'show-categories')">Classes & Categories</div>
           <div class="tab" onclick="switchShowTab(this,'show-expenses')">Expenses</div>
-          <div class="tab" onclick="switchShowTab(this,'show-photos')">Photos</div>
         </div>
 
         <!-- PARTICIPANTS TAB -->
@@ -1220,8 +1218,9 @@ function checkAppPassword() {
 
       <div id="docs-waivers">
         <div class="card">
+          <div style="text-align:right;margin-bottom:10px"><button class="btn btn-primary btn-sm" onclick="addDocLink('waivers')">+ Add document link</button></div>
           <table>
-            <thead><tr><th>Client</th><th>Document</th><th>Date on file</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Client</th><th>Document</th><th>Date on file</th><th>Status</th><th>Link</th><th style="text-align:right">Actions</th></tr></thead>
             <tbody id="manual-docs-waivers"></tbody>
             <tbody>
               <tr><td>Alexandra Kutovoy</td><td>Heron Stables Waiver</td><td>2025-01-28</td><td><span class="badge badge-green">Signed</span></td><td></td></tr>
@@ -1241,9 +1240,9 @@ function checkAppPassword() {
 
       <div id="docs-leases" style="display:none">
         <div class="card">
-          <div style="margin-bottom:12px;font-size:13px;color:var(--text-muted)">Lease agreements on file.</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:13px;color:var(--text-muted)">Lease agreements on file.</div><button class="btn btn-primary btn-sm" onclick="addDocLink('leases')">+ Add document link</button></div>
           <table>
-            <thead><tr><th>Client</th><th>Horse</th><th>Document</th><th>Date</th><th>Status</th></tr></thead>
+            <thead><tr><th>Client</th><th>Horse</th><th>Document</th><th>Date</th><th>Status</th><th>Link</th><th style="text-align:right">Actions</th></tr></thead>
             <tbody id="manual-docs-leases"></tbody>
             <tbody></tbody>
           </table>
@@ -1253,9 +1252,9 @@ function checkAppPassword() {
 
       <div id="docs-board" style="display:none">
         <div class="card">
-          <div style="margin-bottom:12px;font-size:13px;color:var(--text-muted)">Click any document to open it.</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:13px;color:var(--text-muted)">Click any document to open it.</div><button class="btn btn-primary btn-sm" onclick="addDocLink('board')">+ Add document link</button></div>
           <table>
-            <thead><tr><th>Client</th><th>Horse</th><th>Agreement</th><th>Date</th><th>Status</th></tr></thead>
+            <thead><tr><th>Client</th><th>Horse</th><th>Agreement</th><th>Date</th><th>Status</th><th>Link</th><th style="text-align:right">Actions</th></tr></thead>
             <tbody id="manual-docs-board"></tbody>
             <tbody>
               <tr><td>Alex Charles</td><td>Stanley</td><td>Board agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
@@ -1268,8 +1267,9 @@ function checkAppPassword() {
 
       <div id="docs-other" style="display:none">
         <div class="card">
+          <div style="text-align:right;margin-bottom:10px"><button class="btn btn-primary btn-sm" onclick="addDocLink('other')">+ Add document link</button></div>
           <table>
-            <thead><tr><th>Document</th><th>Notes</th><th>Date</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Document</th><th>Notes</th><th>Date</th><th>Link</th><th style="text-align:right">Actions</th></tr></thead>
             <tbody id="manual-docs-other"></tbody>
             <tbody></tbody>
           </table>
@@ -1282,25 +1282,18 @@ function checkAppPassword() {
     <div class="page" id="page-coggins">
       <div class="section-header">
         <div class="section-title">Coggins / EIA records</div>
-        <button class="btn btn-primary btn-sm" onclick="openFileUpload(null,'coggins',function(url,name){ addCogginsDoc(url,name); })">+ Upload record</button>
       </div>
       <div class="card">
-        <table>
-          <thead><tr><th>Horse</th><th>EIA / Accession #</th><th>Test date</th><th>Result</th><th>Valid until</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Stanley (A Happy Medium)</strong></td><td>EIA21459861</td><td>2021</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current (May 2025)</span></td></tr>
-            <tr><td><strong>Diplo</strong></td><td>EIA22491692</td><td>2022</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-            <tr><td><strong>Destiny</strong></td><td>EIA23095032</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-            <tr><td><strong>Kingston</strong></td><td>EIA23095198</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-            <tr><td><strong>Valencio</strong></td><td>EIA23095292</td><td>2023</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-red">Renew now</span></td></tr>
-            <tr><td><strong>Coco</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-            <tr><td><strong>Milton</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-amber">Check</span></td></tr>
-            <tr><td><strong>Q</strong></td><td>On file</td><td>2024</td><td>Negative</td><td>Annual renewal</td><td><span class="badge badge-green">Current</span></td></tr>
-          </tbody>
-        </table>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Click "Add link" next to any horse to paste a Google Drive link to their Coggins document.</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Horse</th><th>EIA #</th><th>Test date</th><th>Status</th><th>Document link</th><th style="text-align:right">Actions</th></tr></thead>
+            <tbody id="coggins-main-table"></tbody>
+          </table>
+        </div>
       </div>
       <div style="margin-top:12px;font-size:12px;color:var(--text-muted);padding:0 4px">
-        All EIA (Coggins) tests must be renewed annually. Contact Dr. Nicole Jochec at Running Equine (908) 832-5484 to schedule testing.
+        Contact Dr. Nicole Jochec at Running Equine (908) 832-5484 to schedule testing.
       </div>
     </div>
 
@@ -2609,7 +2602,8 @@ function renderAll() {
   populateShowSelect();
   renderShowsTable();
   renderIeaShowsTable();
-  renderCogginsTable();
+  renderCogginsMain();
+  renderAllDocLinks();
   populateFarrierHorseSelect();
   populateVetHorseSelects();
   saveToStorage();
@@ -5081,6 +5075,7 @@ function renderFarrierTable(status) {
       '<td style="font-size:12px;color:var(--text-muted)">' + (v.notes||'–') + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' + actionBtn +
         '<button class="btn btn-sm" onclick="editFarrierVisit(' + idx + ')" style="margin-right:2px">&#9999;</button>' +
+        '<button class="btn btn-sm" onclick="archiveFarrierVisit(' + idx + ')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)">&#128230;</button>' +
         '<button class="btn btn-sm" onclick="deleteFarrierVisit(' + idx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button>' +
       '</td></tr>';
   }).join('');
@@ -5409,25 +5404,26 @@ function deleteCalEvent(btn) {
   var idx = parseInt(btn.getAttribute('data-idx'));
   if (!confirm('Delete this event?')) return;
   if (type === 'lesson') {
-    var i = lessonsData.findIndex(function(l){ return l._id === id; });
-    if (i !== -1) { dbDelete('lessons', id); lessonsData.splice(i, 1); }
+    var i = lessonsData.findIndex(function(l){ return l._id === id || l.id === id; });
+    if (i !== -1) { if(id) dbDelete('lessons', id); lessonsData.splice(i, 1); }
     renderLessons();
   } else if (type === 'vet') {
-    var i = vetVisits.findIndex(function(v){ return v._id === id; });
-    if (i !== -1) { dbDelete('vet_visits', id); vetVisits.splice(i, 1); }
+    var i = vetVisits.findIndex(function(v){ return v._id === id || v.id === id; });
+    if (i !== -1) { if(id) dbDelete('vet_visits', id); vetVisits.splice(i, 1); }
     renderVetVisits();
   } else if (type === 'farrier') {
-    var i = farrierVisits.findIndex(function(v){ return v._id === id; });
-    if (i !== -1) { dbDelete('farrier_visits', id); farrierVisits.splice(i, 1); }
+    var i = farrierVisits.findIndex(function(v){ return v._id === id || v.id === id; });
+    if (i !== -1) { if(id) dbDelete('farrier_visits', id); farrierVisits.splice(i, 1); }
     renderFarrier();
   } else if (type === 'show') {
     var i = showsData.findIndex(function(s){ return s._id === id || s.id === id; });
-    if (i !== -1) { dbDelete('shows', id); showsData.splice(i, 1); }
-    populateShowSelect();
+    if (i !== -1) { if(id) dbDelete('shows', id); showsData.splice(i, 1); renderShowsTable(); }
   } else if (type === 'other') {
-    var ev = calOtherEvents[idx];
-    if (ev && ev._id) dbDelete('cal_events', ev._id);
-    calOtherEvents.splice(idx, 1);
+    if (!isNaN(idx) && calOtherEvents[idx]) {
+      var ev = calOtherEvents[idx];
+      if (ev._id) dbDelete('cal_events', ev._id);
+      calOtherEvents.splice(idx, 1);
+    }
   }
   saveToStorage(); renderCalendar();
   toast('Deleted', '#c0392b');
@@ -6436,6 +6432,140 @@ function deleteCogginsForHorse(horseName) {
   saveToStorage();
   renderCogginsTable();
   toast('Deleted', '#c0392b');
+}
+
+// ==========================================
+// ARCHIVE FARRIER VISIT
+// ==========================================
+function archiveFarrierVisit(idx) {
+  var v = farrierVisits[idx];
+  if (!v || !confirm('Archive this farrier visit for ' + v.horse + '?')) return;
+  v.status = 'archived';
+  dbSaveFarrier(v);
+  renderFarrier();
+  toast('📦 Visit archived');
+}
+
+// ==========================================
+// COGGINS MAIN TABLE (standalone page)
+// ==========================================
+var cogginsData = {
+  'Stanley (A Happy Medium)': {eia:'EIA21459861', date:'2021', status:'Current', url:'', docName:''},
+  'Diplo':    {eia:'EIA22491692', date:'2022', status:'Current', url:'', docName:''},
+  'Destiny':  {eia:'EIA23095032', date:'2023', status:'Current', url:'', docName:''},
+  'Kingston': {eia:'EIA23095198', date:'2023', status:'Current', url:'', docName:''},
+  'Valencio': {eia:'EIA23095292', date:'2023', status:'Renew',   url:'', docName:''},
+  'Coco':     {eia:'On file',     date:'2024', status:'Current', url:'', docName:''},
+  'Milton':   {eia:'On file',     date:'2024', status:'Check',   url:'', docName:''},
+  'Q':        {eia:'On file',     date:'2024', status:'Current', url:'', docName:''},
+};
+
+function renderCogginsMain() {
+  var tbody = document.getElementById('coggins-main-table');
+  if (!tbody) return;
+  // Merge horses array with cogginsData
+  var activeNames = horses.map(function(h){ return h.name; });
+  var allNames = activeNames.slice();
+  Object.keys(cogginsData).forEach(function(n){ if (!allNames.includes(n)) allNames.push(n); });
+  tbody.innerHTML = allNames.map(function(horseName) {
+    var rec = cogginsData[horseName] || {};
+    var statusBadge = rec.status === 'Current' ? 'badge-green' : rec.status === 'Renew' ? 'badge-red' : rec.status === 'Check' ? 'badge-amber' : 'badge-gray';
+    var docCell = rec.url
+      ? '<a href="' + rec.url + '" target="_blank" style="color:var(--primary);font-size:12px">' + (rec.docName||'View ↗') + '</a>'
+      : '<span style="color:var(--text-muted);font-size:12px">No link</span>';
+    var safe = horseName.replace(/\/g,'\\').replace(/'/g,"\'");
+    return '<tr>' +
+      '<td><strong>' + horseName + '</strong></td>' +
+      '<td style="font-size:12px;color:var(--text-muted)">' + (rec.eia||'–') + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted)">' + (rec.date||'–') + '</td>' +
+      '<td>' + (rec.status ? '<span class="badge ' + statusBadge + '">' + rec.status + '</span>' : '–') + '</td>' +
+      '<td>' + docCell + '</td>' +
+      '<td style="text-align:right;white-space:nowrap">' +
+        '<button class="btn btn-sm" onclick="editCogginsEntry(\'' + safe + '\')" style="margin-right:2px">✎ Edit</button>' +
+        '<button class="btn btn-sm" onclick="addCogginsLink(\'' + safe + '\')" style="margin-right:2px;color:var(--primary);border-color:var(--primary)">🔗 Link</button>' +
+        '<button class="btn btn-sm" onclick="deleteCogginsEntry(\'' + safe + '\')" style="color:var(--red);border-color:var(--red)">✕</button>' +
+      '</td></tr>';
+  }).join('');
+}
+
+function editCogginsEntry(horseName) {
+  var rec = cogginsData[horseName] || {};
+  var eia = prompt('EIA/Coggins # (or "On file"):', rec.eia || '');
+  if (eia === null) return;
+  var date = prompt('Test date (e.g. 2025-03):', rec.date || '');
+  if (date === null) return;
+  var status = prompt('Status — Current / Renew / Check:', rec.status || 'Current');
+  if (status === null) return;
+  cogginsData[horseName] = Object.assign(rec, {eia: eia.trim(), date: date.trim(), status: status.trim()});
+  saveToStorage(); renderCogginsMain();
+  toast('✅ Coggins record updated!');
+}
+
+function addCogginsLink(horseName) {
+  var rec = cogginsData[horseName] || {};
+  var url = prompt('Paste Google Drive link for ' + horseName + ':', rec.url || '');
+  if (url === null) return;
+  var name = prompt('Label for the link:', rec.docName || horseName + ' Coggins');
+  if (name === null) return;
+  cogginsData[horseName] = Object.assign(rec, {url: url.trim(), docName: name.trim()});
+  saveToStorage(); renderCogginsMain();
+  toast('🔗 Link saved!');
+}
+
+function deleteCogginsEntry(horseName) {
+  if (!confirm('Remove coggins record for ' + horseName + '?')) return;
+  delete cogginsData[horseName];
+  saveToStorage(); renderCogginsMain();
+  toast('Removed', '#c0392b');
+}
+
+// ==========================================
+// DOCUMENT LINKS
+// ==========================================
+var docLinks = {waivers:[], leases:[], board:[], other:[]};
+
+function addDocLink(section) {
+  var name = prompt('Document name:');
+  if (!name) return;
+  var url = prompt('Paste Google Drive link:');
+  if (!url) return;
+  var client = section !== 'other' ? prompt('Client name (optional):') || '' : '';
+  var horse = (section === 'leases' || section === 'board') ? prompt('Horse (optional):') || '' : '';
+  var entry = {name: name.trim(), url: url.trim(), client: client.trim(), horse: horse.trim(), date: new Date().toISOString().slice(0,10), status: 'On file'};
+  if (!docLinks[section]) docLinks[section] = [];
+  docLinks[section].push(entry);
+  saveToStorage();
+  renderDocLinks(section);
+  toast('🔗 Document link added!');
+}
+
+function deleteDocLink(section, idx) {
+  if (!confirm('Remove this document link?')) return;
+  docLinks[section].splice(idx, 1);
+  saveToStorage();
+  renderDocLinks(section);
+  toast('Removed', '#c0392b');
+}
+
+function renderDocLinks(section) {
+  var tbody = document.getElementById('manual-docs-' + section);
+  if (!tbody) return;
+  var links = docLinks[section] || [];
+  tbody.innerHTML = links.map(function(d, i) {
+    return '<tr style="background:var(--gold-pale)">' +
+      (section !== 'other' ? '<td>' + (d.client||'–') + '</td>' : '') +
+      (section === 'leases' || section === 'board' ? '<td>' + (d.horse||'–') + '</td>' : '') +
+      '<td><strong>' + d.name + '</strong></td>' +
+      '<td style="font-size:12px;color:var(--text-muted)">' + d.date + '</td>' +
+      '<td><span class="badge badge-blue">' + d.status + '</span></td>' +
+      '<td><a href="' + d.url + '" target="_blank" style="color:var(--primary);font-size:12px">Open ↗</a></td>' +
+      '<td style="text-align:right"><button class="btn btn-sm" onclick="deleteDocLink(\'' + section + '\',' + i + ')" style="color:var(--red);border-color:var(--red)">✕</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function renderAllDocLinks() {
+  ['waivers','leases','board','other'].forEach(renderDocLinks);
 }
 
 function locationSearch(input, suggestionsId) {
