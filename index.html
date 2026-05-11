@@ -765,13 +765,13 @@ function checkAppPassword() {
       </div>
       <div class="tabs">
         <div class="tab active" onclick="switchBoardTab(this,'board-active')">Active boarders</div>
-        <div class="tab" onclick="switchBoardTab(this,'board-training')">Training program</div>
+        <!-- Training program tab hidden per request -->
         <div class="tab" onclick="switchBoardTab(this,'board-agreements')">Agreements</div>
       </div>
       <div id="board-active">
         <div class="card">
           <table>
-            <thead><tr><th>Horse</th><th>Owner / Contact</th><th>Type</th><th>Since</th><th>Monthly fee</th><th>Agreement</th><th style="text-align:right">Actions</th></tr></thead>
+            <thead><tr><th>Horse</th><th>Owner / Contact</th><th>Type</th><th style="text-align:right">Actions</th></tr></thead>
             <tbody id="boarders-table"></tbody>
           </table>
           <div class="empty" id="boarders-empty" style="display:none"><div class="empty-icon">🏠</div>No active boarders.</div>
@@ -794,9 +794,9 @@ function checkAppPassword() {
       <div id="board-agreements" style="display:none">
         <div class="card">
           <table>
-            <thead><tr><th>Client</th><th>Horse</th><th>Agreement type</th><th>Date</th><th>Status</th></tr></thead>
+            <thead><tr><th>Client</th><th>Horse</th><th>Agreement type</th><th>Date</th><th>Status</th><th>Document</th><th style="text-align:right">Actions</th></tr></thead>
             <tbody>
-              <tr><td>Bridget Lang</td><td>–</td><td>Boarding agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Bridget Lang</td><td>–</td><td>Boarding agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td><td>–</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-sm" style="margin-right:2px">✎</button><button class="btn btn-sm" style="color:var(--red);border-color:var(--red)">✕</button></td></tr>
               <tr><td>Bobbi Healey</td><td>Mando</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
               <tr><td>Carolline Schaffer</td><td>–</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
               <tr><td>Erin Polos</td><td>–</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
@@ -804,7 +804,7 @@ function checkAppPassword() {
               <tr><td>ia Oehm</td><td>Captain Union Jack</td><td>Board + training</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
               <tr><td>Kristen Caporaso</td><td>–</td><td>Board + training (Heron Stables)</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
               <tr><td>Melissa Girnius</td><td>Gigi</td><td>Board + training</td><td>Oct 2025</td><td><span class="badge badge-green">Signed</span></td></tr>
-              <tr><td>Sherri Pyka</td><td>–</td><td>Boarding agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td></tr>
+              <tr><td>Sherri Pyka</td><td>–</td><td>Boarding agreement</td><td>2024</td><td><span class="badge badge-green">Signed</span></td><td>–</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-sm" style="margin-right:2px">✎</button><button class="btn btn-sm" style="color:var(--red);border-color:var(--red)">✕</button></td></tr>
             </tbody>
           </table>
         </div>
@@ -962,41 +962,27 @@ function checkAppPassword() {
         <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-show')">+ Add show</button>
       </div>
 
-      <!-- Show selector row -->
-      <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap">
-        <div style="display:flex;flex-direction:column;gap:4px;flex:2;min-width:240px">
-          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Select show</label>
-          <div style="display:flex;gap:6px">
-            <select id="show-select" onchange="loadShow(this.value)" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
-              <option value="">— Select a show —</option>
-            </select>
-            <button class="btn btn-sm" onclick="deleteShow()" style="color:var(--red);border-color:var(--red);white-space:nowrap">&#10005; Delete</button>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px">
-          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Location <span style="color:var(--gold);font-size:9px">(editable)</span></label>
-          <div class="location-wrap">
-            <input type="text" id="show-location" placeholder="Type barn or venue name…" autocomplete="off" oninput="updateCurrentShow2('location',this.value);locationSearch(this,'show-loc-inline-suggestions')" onblur="hideLocationSuggestions('show-loc-inline-suggestions',300)" disabled style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif;width:100%">
-            <div id="show-loc-inline-suggestions" class="location-suggestions" style="display:none"></div>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;min-width:140px">
-          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Date <span style="color:var(--gold);font-size:9px">(editable)</span></label>
-          <input type="date" id="show-date" onchange="updateCurrentShow2('date',this.value)" disabled style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif">
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px">
-          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Notes <span style="color:var(--gold);font-size:9px">(editable)</span></label>
-          <input type="text" id="show-notes-inline" placeholder="Any notes…" oninput="updateCurrentShow2('notes',this.value)" disabled style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif">
-        </div>
+      <!-- Shows table -->
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn btn-sm" id="shows-toggle-history" onclick="toggleShowHistory()" style="color:var(--text-muted);border-color:var(--border)">📦 Show History</button>
       </div>
-
-      <div id="show-no-show" style="text-align:center;padding:48px;color:var(--text-muted);font-size:13px">
+      <div class="table-wrap" style="margin-bottom:20px">
+        <table id="shows-list-table">
+          <thead><tr><th>Show</th><th>Date</th><th>Participants</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+          <tbody id="shows-list-body"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="show-no-show" style="display:none;text-align:center;padding:48px;color:var(--text-muted);font-size:13px">
         <div style="font-size:32px;margin-bottom:8px">🎪</div>
-        Select a show above or add a new one to get started.
+        No shows yet. Add one to get started.
       </div>
 
-      <!-- Show content tabs -->
+      <!-- Show detail panel -->
       <div id="show-content" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;letter-spacing:0.04em" id="show-detail-title">Show Detail</div>
+          <button class="btn btn-sm" onclick="document.getElementById('show-content').style.display='none'">✕ Close</button>
+        </div>
         <div class="tabs" id="show-tabs">
           <div class="tab active" onclick="switchShowTab(this,'show-participants')">Participants</div>
           <div class="tab" onclick="switchShowTab(this,'show-categories')">Classes & Categories</div>
@@ -1524,10 +1510,14 @@ function checkAppPassword() {
               <option value="Half lesson - $60">Half lesson - $60</option>
               <option value="custom">Custom / other…</option>
             </select>
-            <input type="text" id="l-fee" placeholder="or type any amount / note" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none" value="$120">
+            <input type="text" id="l-fee" placeholder="or type any amount / note" oninput="calcLessonSplits()" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none" value="$120">
           </div>
         </div>
         <div class="form-group"><label>Paid?</label><select id="l-paid"><option value="unpaid">Unpaid</option><option value="paid">Paid</option><option value="pending">Pending</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Alex split</label><input type="text" id="l-alex-split" placeholder="Auto" readonly style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:#f5f5f5;color:var(--text);outline:none;width:100%"></div>
+        <div class="form-group"><label>Barn split</label><input type="text" id="l-barn-split" placeholder="Auto" readonly style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:#f5f5f5;color:var(--text);outline:none;width:100%"></div>
       </div>
       <div class="form-group"><label>Notes / observations</label><textarea id="l-notes" rows="2" placeholder="e.g. Good progress on lead changes…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;background:var(--cream);color:var(--text)"></textarea></div>
     </div>
@@ -2095,7 +2085,7 @@ function checkAppPassword() {
       <div id="cal-fields-farrier" style="display:none">
         <div class="form-row">
           <div class="form-group"><label>Horse</label>
-            <select id="cal-farrier-horse" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none"><option value="">Select horse…</option></select>
+            <select id="cal-farrier-horse" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none"><option value="">Select horse…</option><option value="All horses">⭐ All horses</option></select>
           </div>
           <div class="form-group"><label>Service</label>
             <select id="cal-farrier-service" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
@@ -2640,6 +2630,7 @@ function renderAll() {
   populateIeaShowSelect();
   populateIeaRiderSelect();
   populateShowSelect();
+  renderShowsTable();
   populateFarrierHorseSelect();
   populateVetHorseSelects();
   saveToStorage();
@@ -3945,8 +3936,8 @@ function renderClients() {
     var globalIdx = clients.indexOf(c);
     return '<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar ' + roleColor(c.roles) + '" style="width:28px;height:28px;font-size:11px">' + initials(c.name) + '</div><strong>' + c.name + '</strong></div></td>' +
       '<td>' + roleBadge(c.roles) + '</td>' +
-      '<td style="color:var(--text-muted)">' + (c.phone||'–') + '</td>' +
-      '<td style="color:var(--text-muted);font-size:12px">' + (c.email||'–') + '</td>' +
+      '<td style="color:var(--text-muted)">' + (c.phone ? '<a href="tel:' + c.phone.replace(/\D/g,"") + '" style="color:inherit;text-decoration:none">' + c.phone + '</a>' : '–') + '</td>' +
+      '<td style="color:var(--text-muted);font-size:12px">' + (c.email ? '<a href="mailto:' + c.email + '" style="color:inherit;text-decoration:none">' + c.email + '</a>' : '–') + '</td>' +
       '<td style="color:var(--text-muted)">' + (c.city ? c.city + (c.state ? ', ' + c.state : '') : '–') + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
         '<button class="btn btn-sm" onclick="editClient(' + globalIdx + ')" style="margin-right:2px">&#9999; Edit</button>' +
@@ -4043,9 +4034,6 @@ function renderBoarders() {
     var typeCls = b.type.includes('Training') ? 'badge-blue' : 'badge-gray';
     return '<tr><td><strong>' + b.horse + '</strong></td><td>' + (b.owner||'–') + '</td>' +
       '<td><span class="badge ' + typeCls + '">' + b.type + '</span></td>' +
-      '<td>' + (b.since||'–') + '</td>' +
-      '<td>$' + Number(b.fee).toLocaleString() + '</td>' +
-      '<td><span class="badge ' + agCls + '">' + b.agreement + '</span></td>' +
       '<td style="text-align:right;white-space:nowrap">' +
         '<button class="btn btn-sm" onclick="editBoarder(' + i + ')" style="margin-right:2px">&#9999;</button>' +
         '<button class="btn btn-sm" onclick="archiveBoarder(' + i + ')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)">&#128230;</button>' +
@@ -4235,12 +4223,9 @@ function renderLessons() {
     var paidClass = l.paid === 'paid' ? 'badge-green' : l.paid === 'pending' ? 'badge-amber' : l.paid === 'followup' ? 'badge-blue' : 'badge-red';
     var paidLabel = l.paid === 'paid' ? 'Paid' : l.paid === 'pending' ? 'Pending' : l.paid === 'followup' ? 'Follow up' : 'Unpaid';
     var row = document.createElement('tr');
-    row.innerHTML = '<td>' + dateStr + '</td><td><strong>' + l.rider + '</strong></td><td>' + l.horse + '</td><td><span class="badge badge-blue" style="font-size:10px">' + l.type + '</span></td><td>' + l.duration + '</td><td style="color:var(--text-muted)">' + l.trainer + '</td><td>$' + l.fee + '</td><td><span class="badge ' + paidClass + '">' + paidLabel + '</span></td><td style="color:var(--text-muted);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.notes||'–') + '</td><td style="white-space:nowrap"><button class="btn btn-sm" title="Add to calendar" style="margin-right:2px">&#128197;</button><button class="btn btn-sm" onclick="editLesson(' + globalIdx + ')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteLesson(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td>';
-    // Attach calendar button event safely
-    var calBtn = row.querySelector('button[title="Add to calendar"]');
-    (function(lesson) {
-      calBtn.addEventListener('click', function() { addLessonToCalendar(lesson); });
-    })(l);
+    var alexSplit = l.alexSplit || '';
+    var barnSplit = l.barnSplit || '';
+    row.innerHTML = '<td>' + dateStr + '</td><td><strong>' + l.rider + '</strong></td><td>' + l.horse + '</td><td><span class="badge badge-blue" style="font-size:10px">' + l.type + '</span></td><td>' + l.duration + '</td><td style="color:var(--text-muted)">' + l.trainer + '</td><td>$' + l.fee + '</td>' + (alexSplit ? '<td style="font-size:12px;color:var(--text-muted)">' + alexSplit + '</td><td style="font-size:12px;color:var(--text-muted)">' + barnSplit + '</td>' : '<td colspan="2" style="font-size:12px;color:var(--text-muted)">–</td>') + '<td><span class="badge ' + paidClass + '">' + paidLabel + '</span></td><td style="color:var(--text-muted);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.notes||'–') + '</td><td style="white-space:nowrap"><button class="btn btn-sm" title="Add to app calendar" onclick="addLessonToAppCalendar(' + JSON.stringify(l).replace(/"/g,'&quot;') + ')" style="margin-right:2px">&#128197;</button><button class="btn btn-sm" onclick="editLesson(' + globalIdx + ')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteLesson(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td>';
     tbody.appendChild(row);
   });
   var total = list.length;
@@ -4292,6 +4277,7 @@ function editLesson(globalIdx) {
   document.getElementById('l-type').value = l.type;
   document.getElementById('l-duration').value = l.duration;
   document.getElementById('l-fee').value = l.fee;
+  setTimeout(calcLessonSplits, 50);
   var sel = document.getElementById('l-fee-select');
   var opts = Array.from(sel.options).map(function(o){return o.value;});
   sel.value = opts.includes(l.fee) ? l.fee : 'custom';
@@ -5610,6 +5596,7 @@ function saveShow() {
   showsData.unshift(show);
   dbSaveShow(show);
   populateShowSelect();
+  renderShowsTable();
   closeModal();
   document.getElementById('show-name-input').value = '';
   document.getElementById('show-date-input').value = '';
@@ -5944,6 +5931,181 @@ function switchIeaShowTab(el, show) {
   ['iea-tab-riders','iea-tab-photos'].forEach(function(id) {
     var el2 = document.getElementById(id); if (el2) el2.style.display = id === show ? 'block' : 'none';
   });
+}
+
+// ==========================================
+// LESSON SPLITS
+// ==========================================
+function calcLessonSplits() {
+  var feeStr = document.getElementById('l-fee') ? document.getElementById('l-fee').value : '';
+  var num = parseFloat(feeStr.replace(/[^0-9.]/g,''));
+  var alexEl = document.getElementById('l-alex-split');
+  var barnEl = document.getElementById('l-barn-split');
+  if (!alexEl || !barnEl) return;
+  if (!isNaN(num) && num > 0) {
+    var half = (num / 2).toFixed(2);
+    alexEl.value = '$' + half;
+    barnEl.value = '$' + half;
+  } else {
+    alexEl.value = '';
+    barnEl.value = '';
+  }
+}
+
+function applyFeePresetWithSplit(val) {
+  if (typeof applyFeePreset === 'function') applyFeePreset(val);
+  setTimeout(calcLessonSplits, 50);
+}
+
+// ==========================================
+// LESSON → APP CALENDAR
+// ==========================================
+function addLessonToAppCalendar(lesson) {
+  if (typeof lesson === 'string') { try { lesson = JSON.parse(lesson); } catch(e) { return; } }
+  // Build a cal event and add it, then navigate to calendar
+  var ev = {
+    id: crypto.randomUUID ? crypto.randomUUID() : 'ev'+Date.now(),
+    type: 'lesson',
+    date: lesson.date,
+    title: lesson.type + ' — ' + lesson.rider,
+    desc: 'Horse: ' + lesson.horse + ' | Trainer: ' + lesson.trainer + ' | Duration: ' + lesson.duration + ' | Fee: $' + lesson.fee,
+    color: 'lesson'
+  };
+  calOtherEvents.push(ev);
+  dbSave('cal_events', ev);
+  showPage('cal');
+  setTimeout(function() { renderCalendar && renderCalendar(); }, 100);
+  toast('📅 Added to app calendar!');
+}
+
+// ==========================================
+// SHOWS: table-based rendering
+// ==========================================
+var showHistoryVisible = false;
+
+function toggleShowHistory() {
+  showHistoryVisible = !showHistoryVisible;
+  var btn = document.getElementById('shows-toggle-history');
+  if (btn) btn.textContent = showHistoryVisible ? '📦 Hide History' : '📦 Show History';
+  renderShowsTable();
+}
+
+function renderShowsTable() {
+  var tbody = document.getElementById('shows-list-body');
+  var noShow = document.getElementById('show-no-show');
+  if (!tbody) return;
+
+  var list = showsData.slice().sort(function(a, b) {
+    if (!a.date) return 1;
+    if (!b.date) return -1;
+    return a.date.localeCompare(b.date);
+  });
+
+  var active = list.filter(function(s) { return !s.archived; });
+  var archived = list.filter(function(s) { return s.archived; });
+  var visible = showHistoryVisible ? active.concat(archived) : active;
+
+  if (!visible.length) {
+    tbody.innerHTML = '';
+    if (noShow) noShow.style.display = 'block';
+    return;
+  }
+  if (noShow) noShow.style.display = 'none';
+
+  tbody.innerHTML = visible.map(function(s) {
+    var participants = (s.riders || []).map(function(r) { return r.rider; }).join(', ') || '–';
+    var dateStr = s.date ? new Date(s.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
+    var isArchived = s.archived;
+    var rowStyle = isArchived ? 'opacity:0.55;' : '';
+    var archiveBadge = isArchived ? '<span class="badge badge-gray" style="margin-left:6px;font-size:10px">Archived</span>' : '';
+    return '<tr style="' + rowStyle + '">' +
+      '<td><strong style="cursor:pointer;color:var(--primary)" onclick="loadShowDetail('' + s.id + '')">' + s.name + '</strong>' + archiveBadge + '</td>' +
+      '<td>' + dateStr + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + participants + '">' + participants + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (s.notes||'–') + '</td>' +
+      '<td style="text-align:right;white-space:nowrap">' +
+        '<button class="btn btn-sm" onclick="editShowInline('' + s.id + '')" style="margin-right:2px">✎</button>' +
+        (isArchived
+          ? '<button class="btn btn-sm" onclick="unarchiveShow('' + s.id + '')" style="margin-right:2px;color:var(--green-badge);border-color:var(--green-badge)">↩ Restore</button>'
+          : '<button class="btn btn-sm" onclick="archiveShow('' + s.id + '')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)">📦</button>') +
+        '<button class="btn btn-sm" onclick="deleteShowById('' + s.id + '')" style="color:var(--red);border-color:var(--red)">✕</button>' +
+      '</td></tr>';
+  }).join('');
+}
+
+function loadShowDetail(id) {
+  currentShowId = id;
+  var show = showsData.find(function(s) { return s.id === id; });
+  var content = document.getElementById('show-content');
+  if (!show || !content) return;
+  content.style.display = 'block';
+  content.scrollIntoView({behavior:'smooth', block:'start'});
+  var locEl = document.getElementById('show-location');
+  var dateEl = document.getElementById('show-date');
+  var notesEl = document.getElementById('show-notes-inline');
+  if (locEl) { locEl.value = show.location || ''; locEl.disabled = false; }
+  if (dateEl) { dateEl.value = show.date || ''; dateEl.disabled = false; }
+  if (notesEl) { notesEl.value = show.notes || ''; notesEl.disabled = false; }
+  var title = document.getElementById('show-detail-title');
+  if (title) title.textContent = show.name;
+  renderShowRiders(show);
+  renderShowCategories(show);
+  renderShowExpenses(show);
+}
+
+function editShowInline(id) {
+  var show = showsData.find(function(s) { return s.id === id; });
+  if (!show) return;
+  var name = prompt('Show name:', show.name);
+  if (name === null) return;
+  show.name = name.trim() || show.name;
+  var date = prompt('Date (YYYY-MM-DD):', show.date || '');
+  if (date !== null) show.date = date.trim();
+  var notes = prompt('Notes:', show.notes || '');
+  if (notes !== null) show.notes = notes.trim();
+  dbSaveShow(show);
+  renderShowsTable();
+  toast('✅ Show updated!');
+}
+
+function archiveShow(id) {
+  var show = showsData.find(function(s) { return s.id === id; });
+  if (!show) return;
+  if (!confirm('Archive "' + show.name + '"? It will appear in Show History.')) return;
+  show.archived = true;
+  dbSaveShow(show);
+  renderShowsTable();
+  toast('📦 Show archived');
+}
+
+function unarchiveShow(id) {
+  var show = showsData.find(function(s) { return s.id === id; });
+  if (!show) return;
+  show.archived = false;
+  dbSaveShow(show);
+  renderShowsTable();
+  toast('↩ Show restored');
+}
+
+function deleteShowById(id) {
+  var show = showsData.find(function(s) { return s.id === id; });
+  if (!show || !confirm('Permanently delete "' + show.name + '"?')) return;
+  showsData = showsData.filter(function(s) { return s.id !== id; });
+  dbDeleteShow(id);
+  renderShowsTable();
+  var content = document.getElementById('show-content');
+  if (currentShowId === id) { currentShowId = null; if(content) content.style.display = 'none'; }
+  toast('Show deleted', '#c0392b');
+}
+
+// Override old deleteShow to use new one
+function deleteShow() { if (currentShowId) deleteShowById(currentShowId); }
+
+// Override renderAll's populateShowSelect to also render table
+var _origPopulateShowSelect = typeof populateShowSelect === 'function' ? populateShowSelect : null;
+function populateShowSelect() {
+  if (_origPopulateShowSelect) _origPopulateShowSelect();
+  renderShowsTable();
 }
 
 function locationSearch(input, suggestionsId) {
