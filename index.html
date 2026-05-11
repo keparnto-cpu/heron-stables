@@ -2455,7 +2455,7 @@ async function dbLoadAll() {
 }
 
 function dbToHorse(h) {
-  return {name:h.name,showname:h.showname,regname:h.regname,owner:h.owner,board:h.board,breed:h.breed,color:h.color,sex:h.sex,height:h.height,dob:h.dob,usef:h.usef,eia:h.eia,fee:h.fee,coggins:h.coggins,vacc:h.vacc,notes:h.notes,photo:h.photo,archivedOn:h.archived_on,_id:h.id};
+  return {name:h.name,showname:h.showname,regname:h.regname,owner:h.owner,board:h.board,breed:h.breed,color:h.color,sex:h.sex,height:h.height,dob:h.dob,usef:h.usef,eia:h.eia,fee:h.fee,coggins:h.coggins,vacc:h.vacc,notes:h.notes,photo:h.photo||'',photoX:h.photoX||50,photoY:h.photoY||50,photoZoom:h.photoZoom||1,farrierNotes:h.farrierNotes||'',feedHay:h.feedHay||'',feedGrain:h.feedGrain||'',feedSupplements:h.feedSupplements||'',feedNotes:h.feedNotes||'',meds:h.meds||'',archivedOn:h.archived_on,_id:h.id};
 }
 function dbToClient(c) {
   return {name:c.name||'',roles:c.roles||'',phone:c.phone||'',email:c.email||'',city:c.city||'',state:c.state||'',archivedOn:c.archived_on,_id:c.id};
@@ -5045,8 +5045,7 @@ function renderFarrierTable(status) {
   var list = farrierVisits
     .filter(function(v) {
       if (v.status !== status) return false;
-      // Only filter by active horses if the visit is NOT an "All horses" entry
-      if (v.horse !== 'All horses' && !activeHorseNames.includes(v.horse)) return false;
+      if (!activeHorseNames.includes(v.horse)) return false;
       if (horseFilter !== 'all' && v.horse !== horseFilter) return false;
       return true;
     })
