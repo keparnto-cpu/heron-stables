@@ -975,8 +975,6 @@ function checkAppPassword() {
           <div class="tab" onclick="switchShowTab(this,'show-categories')">Classes & Categories</div>
           <div class="tab" onclick="switchShowTab(this,'show-expenses')">Expenses</div>
         </div>
-
-        <!-- PARTICIPANTS TAB -->
         <div id="show-participants">
           <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -1026,18 +1024,6 @@ function checkAppPassword() {
             </div>
             <div class="empty" id="show-expenses-empty" style="display:none"><div class="empty-icon">💰</div>No expenses logged yet.</div>
             <div id="show-expenses-total" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);text-align:right;font-size:14px;font-family:'Cormorant Garamond',serif;letter-spacing:0.04em"></div>
-          </div>
-        </div>
-
-        <!-- PHOTOS TAB -->
-        <div id="show-photos" style="display:none">
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-              <div style="font-family:serif;font-size:17px">Show photos</div>
-              <button class="btn btn-primary btn-sm" onclick="uploadShowPhoto('show')">&#128247; Upload photo</button>
-            </div>
-            <div id="show-photos-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:8px"></div>
-            <div id="show-photos-empty" style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px">No photos yet. Click Upload photo to add some!</div>
           </div>
         </div>
 
@@ -2088,6 +2074,38 @@ function checkAppPassword() {
 
 </div><!-- end modal overlay -->
 
+<!-- ADD DOCUMENT LINK MODAL -->
+<div id="modal-add-doc-link" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--white);border-radius:4px;border:1px solid var(--border);width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)">
+      <span style="font-family:'Cormorant Garamond',serif;font-size:18px;letter-spacing:0.04em">Add document link</span>
+      <span style="cursor:pointer;font-size:18px;color:var(--text-muted)" onclick="closeDocLinkModal()">✕</span>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div class="form-group">
+        <label>Document name *</label>
+        <input type="text" id="dl-name" placeholder="e.g. Erin Polos Lease 2025" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+      </div>
+      <div class="form-group">
+        <label>Google Drive / document link *</label>
+        <input type="text" id="dl-url" placeholder="https://drive.google.com/..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+      </div>
+      <div id="dl-client-row" class="form-group">
+        <label>Client name <span style="font-weight:300;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-muted)">(optional)</span></label>
+        <input type="text" id="dl-client" placeholder="e.g. Erin Polos" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+      </div>
+      <div id="dl-horse-row" class="form-group" style="display:none">
+        <label>Horse <span style="font-weight:300;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-muted)">(optional)</span></label>
+        <input type="text" id="dl-horse" placeholder="e.g. Stanley" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--border)">
+      <button class="btn" onclick="closeDocLinkModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDocLink()">Add link</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:2000;box-shadow:0 4px 16px rgba(0,0,0,0.15)"></div>
 
 <script>
@@ -2455,7 +2473,7 @@ async function dbLoadAll() {
 }
 
 function dbToHorse(h) {
-  return {name:h.name,showname:h.showname,regname:h.regname,owner:h.owner,board:h.board,breed:h.breed,color:h.color,sex:h.sex,height:h.height,dob:h.dob,usef:h.usef,eia:h.eia,fee:h.fee,coggins:h.coggins,vacc:h.vacc,notes:h.notes,photo:h.photo,archivedOn:h.archived_on,_id:h.id};
+  return {name:h.name,showname:h.showname,regname:h.regname,owner:h.owner,board:h.board,breed:h.breed,color:h.color,sex:h.sex,height:h.height,dob:h.dob,usef:h.usef,eia:h.eia,fee:h.fee,coggins:h.coggins,vacc:h.vacc,notes:h.notes,photo:h.photo||'',photoX:h.photoX||50,photoY:h.photoY||50,photoZoom:h.photoZoom||1,farrierNotes:h.farrierNotes||'',feedHay:h.feedHay||'',feedGrain:h.feedGrain||'',feedSupplements:h.feedSupplements||'',feedNotes:h.feedNotes||'',meds:h.meds||'',archivedOn:h.archived_on,_id:h.id};
 }
 function dbToClient(c) {
   return {name:c.name||'',roles:c.roles||'',phone:c.phone||'',email:c.email||'',city:c.city||'',state:c.state||'',archivedOn:c.archived_on,_id:c.id};
@@ -5138,11 +5156,14 @@ function saveFarrierVisit() {
   };
   if (editingFarrierIdx >= 0) {
     farrierVisits[editingFarrierIdx] = v;
+    dbSaveFarrier(v);
     toast('✅ Visit updated!');
     editingFarrierIdx = -1;
   } else {
     farrierVisits.push(v);
-    dbSaveFarrier(v);
+    dbSaveFarrier(v).then(function(res) {
+      if (res && res[0] && res[0].id) v._id = res[0].id;
+    });
     toast('🔨 Visit logged!');
   }
   renderFarrier();
@@ -5291,7 +5312,7 @@ function saveCalEvent() {
       notes: notes
     };
     farrierVisits.push(visit);
-    dbSaveFarrier(visit);
+    dbSaveFarrier(visit).then && dbSaveFarrier(visit);
     renderFarrier();
     toast('✅ Farrier appointment added to calendar and Farrier!');
 
@@ -5358,18 +5379,21 @@ function getCalEvents() {
   // Lessons
   lessonsData.forEach(function(l) {
     if (!l.date) return;
-    events.push({date: l.date, title: l.rider + ' — ' + l.type, sub: l.horse + ' · ' + l.trainer, color: '#6888BE', type: 'lesson', time: '09:00', _id: l._id});
+    var evId = l._id || l.id || '';
+    events.push({date: l.date, title: l.rider + ' — ' + l.type, sub: l.horse + ' · ' + l.trainer, color: '#6888BE', type: 'lesson', time: '09:00', _id: evId});
   });
   // Vet visits
   vetVisits.forEach(function(v) {
     if (!v.date) return;
     var color = v.category === 'Emergency' ? '#b33a2a' : '#2d5a3d';
-    events.push({date: v.date, title: v.horse + ' — ' + v.category, sub: v.vet || '', color: color, type: 'vet', time: '10:00', _id: v._id});
+    var evId = v._id || v.id || '';
+    events.push({date: v.date, title: v.horse + ' — ' + v.category, sub: v.vet || '', color: color, type: 'vet', time: '10:00', _id: evId});
   });
   // Farrier
   farrierVisits.forEach(function(v) {
     if (!v.date) return;
-    events.push({date: v.date, title: v.horse + ' — Farrier', sub: v.service || '', color: '#c4830a', type: 'farrier', time: '11:00', _id: v._id});
+    var evId = v._id || v.id || '';
+    events.push({date: v.date, title: v.horse + ' — Farrier', sub: v.service || '', color: '#c4830a', type: 'farrier', time: '11:00', _id: evId});
   });
   // IEA Shows
   ieaShows.forEach(function(s) {
@@ -5404,20 +5428,37 @@ function deleteCalEvent(btn) {
   var idx = parseInt(btn.getAttribute('data-idx'));
   if (!confirm('Delete this event?')) return;
   if (type === 'lesson') {
-    var i = lessonsData.findIndex(function(l){ return l._id === id || l.id === id; });
-    if (i !== -1) { if(id) dbDelete('lessons', id); lessonsData.splice(i, 1); }
+    var i = lessonsData.findIndex(function(l){ return l._id === id || l.id === id || String(l._id) === String(id); });
+    if (i !== -1) {
+      var dbId = lessonsData[i]._id || lessonsData[i].id;
+      if (dbId) dbDelete('lessons', dbId);
+      lessonsData.splice(i, 1);
+    }
     renderLessons();
   } else if (type === 'vet') {
-    var i = vetVisits.findIndex(function(v){ return v._id === id || v.id === id; });
-    if (i !== -1) { if(id) dbDelete('vet_visits', id); vetVisits.splice(i, 1); }
+    var i = vetVisits.findIndex(function(v){ return v._id === id || v.id === id || String(v._id) === String(id); });
+    if (i !== -1) {
+      var dbId = vetVisits[i]._id || vetVisits[i].id;
+      if (dbId) dbDelete('vet_visits', dbId);
+      vetVisits.splice(i, 1);
+    }
     renderVetVisits();
   } else if (type === 'farrier') {
-    var i = farrierVisits.findIndex(function(v){ return v._id === id || v.id === id; });
-    if (i !== -1) { if(id) dbDelete('farrier_visits', id); farrierVisits.splice(i, 1); }
+    var i = farrierVisits.findIndex(function(v){ return v._id === id || v.id === id || String(v._id) === String(id); });
+    if (i !== -1) {
+      var dbId = farrierVisits[i]._id || farrierVisits[i].id;
+      if (dbId) dbDelete('farrier_visits', dbId);
+      farrierVisits.splice(i, 1);
+    }
     renderFarrier();
   } else if (type === 'show') {
-    var i = showsData.findIndex(function(s){ return s._id === id || s.id === id; });
-    if (i !== -1) { if(id) dbDelete('shows', id); showsData.splice(i, 1); renderShowsTable(); }
+    var i = showsData.findIndex(function(s){ return s._id === id || s.id === id || String(s._id) === String(id); });
+    if (i !== -1) {
+      var dbId = showsData[i]._id || showsData[i].id;
+      if (dbId) dbDelete('shows', dbId);
+      showsData.splice(i, 1);
+      renderShowsTable();
+    }
   } else if (type === 'other') {
     if (!isNaN(idx) && calOtherEvents[idx]) {
       var ev = calOtherEvents[idx];
@@ -6009,7 +6050,7 @@ function deleteIeaRider(idx) {
 function switchShowTab(el, show) {
   document.querySelectorAll('#show-tabs .tab').forEach(function(t) { t.classList.remove('active'); });
   el.classList.add('active');
-  ['show-participants','show-categories','show-expenses','show-photos'].forEach(function(id) {
+  ['show-participants','show-categories','show-expenses'].forEach(function(id) {
     var el2 = document.getElementById(id); if (el2) el2.style.display = id === show ? 'block' : 'none';
   });
 }
@@ -6523,19 +6564,43 @@ function deleteCogginsEntry(horseName) {
 // DOCUMENT LINKS
 // ==========================================
 var docLinks = {waivers:[], leases:[], board:[], other:[]};
+var _docLinkSection = '';
 
 function addDocLink(section) {
-  var name = prompt('Document name:');
-  if (!name) return;
-  var url = prompt('Paste Google Drive link:');
-  if (!url) return;
-  var client = section !== 'other' ? prompt('Client name (optional):') || '' : '';
-  var horse = (section === 'leases' || section === 'board') ? prompt('Horse (optional):') || '' : '';
-  var entry = {name: name.trim(), url: url.trim(), client: client.trim(), horse: horse.trim(), date: new Date().toISOString().slice(0,10), status: 'On file'};
+  _docLinkSection = section;
+  document.getElementById('dl-name').value = '';
+  document.getElementById('dl-url').value = '';
+  document.getElementById('dl-client').value = '';
+  document.getElementById('dl-horse').value = '';
+  // Show/hide client and horse fields based on section
+  var clientRow = document.getElementById('dl-client-row');
+  var horseRow = document.getElementById('dl-horse-row');
+  if (section === 'other') { if(clientRow) clientRow.style.display = 'none'; } 
+  else { if(clientRow) clientRow.style.display = 'block'; }
+  if (section === 'leases' || section === 'board') { if(horseRow) horseRow.style.display = 'block'; }
+  else { if(horseRow) horseRow.style.display = 'none'; }
+  var modal = document.getElementById('modal-add-doc-link');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeDocLinkModal() {
+  var modal = document.getElementById('modal-add-doc-link');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveDocLink() {
+  var name = document.getElementById('dl-name').value.trim();
+  var url = document.getElementById('dl-url').value.trim();
+  if (!name || !url) { toast('Please enter a name and link', '#c0392b'); return; }
+  var client = document.getElementById('dl-client').value.trim();
+  var horse = document.getElementById('dl-horse').value.trim();
+  var section = _docLinkSection;
+  var entry = {name: name, url: url, client: client, horse: horse, date: new Date().toISOString().slice(0,10), status: 'On file'};
   if (!docLinks[section]) docLinks[section] = [];
   docLinks[section].push(entry);
   saveToStorage();
   renderDocLinks(section);
+  closeDocLinkModal();
   toast('🔗 Document link added!');
 }
 
