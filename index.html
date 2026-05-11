@@ -765,8 +765,6 @@ function checkAppPassword() {
       </div>
       <div class="tabs">
         <div class="tab active" onclick="switchBoardTab(this,'board-active')">Active boarders</div>
-        <!-- Training program tab hidden per request -->
-        <div class="tab" onclick="switchBoardTab(this,'board-agreements')">Agreements</div>
       </div>
       <div id="board-active">
         <div class="card">
@@ -958,7 +956,7 @@ function checkAppPassword() {
       </div>
       <div class="table-wrap" style="margin-bottom:20px">
         <table id="shows-list-table">
-          <thead><tr><th>Show</th><th>Date</th><th>Participants</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+          <thead><tr><th>Show</th><th>Date</th><th>Participants</th><th>Results 🏆</th><th style="text-align:right">Actions</th></tr></thead>
           <tbody id="shows-list-body"></tbody>
         </table>
       </div>
@@ -2782,9 +2780,13 @@ async function dbDeleteIeaShow(id) {
 }
 
 async function dbSaveShow(show) {
-  var row = {name:show.name,date:show.date||'',location:show.location||'',notes:show.notes||'',riders:show.riders||[],categories:show.categories||[],expenses:show.expenses||[]};
-  if (show.id && show.id.length === 36 && show.id.indexOf('-') !== -1) row.id = show.id;
-  else show.id = row.id = crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);});
+  var row = {name:show.name,date:show.date||'',location:show.location||'',notes:show.notes||'',riders:show.riders||[],categories:show.categories||[],expenses:show.expenses||[],archived:show.archived||false,results:show.results||{}};
+  var existingId = show._id || show.id;
+  if (existingId && existingId.length === 36 && existingId.indexOf('-') !== -1) {
+    row.id = existingId; show._id = existingId; show.id = existingId;
+  } else {
+    row.id = show._id = show.id = crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);});
+  }
   await dbSave('shows', row);
   saveToStorage();
 }
@@ -2935,7 +2937,7 @@ function showPage(id, el) {
   if (id === 'archive') renderArchive();
   if (id === 'boarding') renderBoarders();
   if (id === 'iea') { populateIeaShowSelect(); populateIeaRiderSelect(); }
-  if (id === 'shows') { populateShowSelect(); populateShowRiderSelect(); }
+  if (id === 'shows') { showHistoryVisible = false; var btn = document.getElementById('shows-toggle-history'); if(btn) btn.textContent = '📦 Show History'; populateShowSelect(); populateShowRiderSelect(); renderShowsTable(); }
   if (id === 'farrier') { populateFarrierHorseSelect(); renderFarrier(); }
   if (id === 'vet') { populateVetHorseSelects(); renderVetVisits(); }
 }
@@ -3174,13 +3176,18 @@ function saveHorsePhotoPosition(idx) {
 }
 
 document.addEventListener('mousedown', function(e) {
+  if (e.target.tagName === 'BUTTON') return; // don't drag when clicking zoom buttons
   var container = e.target.closest ? e.target.closest('.horse-photo-container') : null;
   if (!container) return;
   var idx = parseInt(container.getAttribute('data-idx'));
+  if (isNaN(idx) || !horses[idx]) return;
   _dragState = { idx: idx, startX: e.clientX, startY: e.clientY,
-    origX: horses[idx].photoX||50, origY: horses[idx].photoY||50, container: container };
+    origX: horses[idx].photoX !== undefined ? horses[idx].photoX : 50,
+    origY: horses[idx].photoY !== undefined ? horses[idx].photoY : 50,
+    container: container };
   container.style.cursor = 'grabbing';
   e.preventDefault();
+  e.stopPropagation();
 });
 
 document.addEventListener('mousemove', function(e) {
@@ -4304,7 +4311,7 @@ function renderLessons() {
     var row = document.createElement('tr');
     var alexSplit = l.alexSplit || '';
     var barnSplit = l.barnSplit || '';
-    row.innerHTML = '<td>' + dateStr + '</td><td><strong>' + l.rider + '</strong></td><td>' + l.horse + '</td><td><span class="badge badge-blue" style="font-size:10px">' + l.type + '</span></td><td>' + l.duration + '</td><td style="color:var(--text-muted)">' + l.trainer + '</td><td>$' + l.fee + '</td>' + (alexSplit ? '<td style="font-size:12px;color:var(--text-muted)">' + alexSplit + '</td><td style="font-size:12px;color:var(--text-muted)">' + barnSplit + '</td>' : '<td colspan="2" style="font-size:12px;color:var(--text-muted)">–</td>') + '<td><span class="badge ' + paidClass + '">' + paidLabel + '</span></td><td style="color:var(--text-muted);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.notes||'–') + '</td><td style="white-space:nowrap"><button class="btn btn-sm" title="Add to app calendar" onclick="addLessonToAppCalendar(' + JSON.stringify(l).replace(/"/g,'&quot;') + ')" style="margin-right:2px">&#128197;</button><button class="btn btn-sm" onclick="editLesson(' + globalIdx + ')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteLesson(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td>';
+    row.innerHTML = '<td>' + dateStr + '</td><td><strong>' + l.rider + '</strong></td><td>' + l.horse + '</td><td><span class="badge badge-blue" style="font-size:10px">' + l.type + '</span></td><td>' + l.duration + '</td><td style="color:var(--text-muted)">' + l.trainer + '</td><td>$' + l.fee + '</td>' + (alexSplit ? '<td style="font-size:12px;color:var(--text-muted)">' + alexSplit + '</td><td style="font-size:12px;color:var(--text-muted)">' + barnSplit + '</td>' : '<td colspan="2" style="font-size:12px;color:var(--text-muted)">–</td>') + '<td><span class="badge ' + paidClass + '">' + paidLabel + '</span></td><td style="color:var(--text-muted);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.notes||'–') + '</td><td style="white-space:nowrap"><button class="btn btn-sm" title="Add to app calendar" onclick="addLessonToAppCalendar(' + globalIdx + ')" style="margin-right:2px">&#128197;</button><button class="btn btn-sm" onclick="editLesson(' + globalIdx + ')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteLesson(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td>';
     tbody.appendChild(row);
   });
   var total = list.length;
@@ -4396,7 +4403,9 @@ function saveLesson() {
     date: date, trainer: document.getElementById('l-trainer').value, rider: rider, horse: horse,
     type: document.getElementById('l-type').value, duration: document.getElementById('l-duration').value,
     fee: document.getElementById('l-fee').value.trim() || '$120',
-    paid: document.getElementById('l-paid').value, notes: document.getElementById('l-notes').value
+    paid: document.getElementById('l-paid').value, notes: document.getElementById('l-notes').value,
+    alexSplit: document.getElementById('l-alex-split') ? document.getElementById('l-alex-split').value : '',
+    barnSplit: document.getElementById('l-barn-split') ? document.getElementById('l-barn-split').value : ''
   };
   if (editingLessonIdx >= 0) { lessonsData[editingLessonIdx] = l; toast('✅ Lesson updated!'); editingLessonIdx = -1; }
   else { lessonsData.push(l); document.getElementById('lesson-month-filter').value = date.slice(0,7); toast('🎓 Lesson logged!'); }
@@ -5679,7 +5688,6 @@ function saveShow() {
   };
   showsData.unshift(show);
   dbSaveShow(show);
-  populateShowSelect();
   renderShowsTable();
   closeModal();
   document.getElementById('show-name-input').value = '';
@@ -6196,12 +6204,7 @@ function deleteShowById(id) {
 // Override old deleteShow to use new one
 function deleteShow() { if (currentShowId) deleteShowById(currentShowId); }
 
-// Override renderAll's populateShowSelect to also render table
-var _origPopulateShowSelect = typeof populateShowSelect === 'function' ? populateShowSelect : null;
-function populateShowSelect() {
-  if (_origPopulateShowSelect) _origPopulateShowSelect();
-  renderShowsTable();
-}
+// populateShowSelect already defined above — renderShowsTable called explicitly
 
 // ==========================================
 // ARCHIVE VET VISIT
