@@ -5960,8 +5960,9 @@ function applyFeePresetWithSplit(val) {
 // ==========================================
 // LESSON → APP CALENDAR
 // ==========================================
-function addLessonToAppCalendar(lesson) {
-  if (typeof lesson === 'string') { try { lesson = JSON.parse(lesson); } catch(e) { return; } }
+function addLessonToAppCalendar(idx) {
+  var lesson = lessonsData[idx];
+  if (!lesson) return;
   // Build a cal event and add it, then navigate to calendar
   var ev = {
     id: crypto.randomUUID ? crypto.randomUUID() : 'ev'+Date.now(),
@@ -6019,16 +6020,16 @@ function renderShowsTable() {
     var rowStyle = isArchived ? 'opacity:0.55;' : '';
     var archiveBadge = isArchived ? '<span class="badge badge-gray" style="margin-left:6px;font-size:10px">Archived</span>' : '';
     return '<tr style="' + rowStyle + '">' +
-      '<td><strong style="cursor:pointer;color:var(--primary)" onclick="loadShowDetail('' + s.id + '')">' + s.name + '</strong>' + archiveBadge + '</td>' +
+      '<td><strong style="cursor:pointer;color:var(--primary)" onclick="loadShowDetail(\'' + s.id + '\')">' + s.name + '</strong>' + archiveBadge + '</td>' +
       '<td>' + dateStr + '</td>' +
       '<td style="font-size:12px;color:var(--text-muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + participants + '">' + participants + '</td>' +
       '<td style="font-size:12px;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (s.notes||'–') + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
-        '<button class="btn btn-sm" onclick="editShowInline('' + s.id + '')" style="margin-right:2px">✎</button>' +
+        '<button class="btn btn-sm" onclick="editShowInline(\'' + s.id + '\')" style="margin-right:2px">✎</button>' +
         (isArchived
-          ? '<button class="btn btn-sm" onclick="unarchiveShow('' + s.id + '')" style="margin-right:2px;color:var(--green-badge);border-color:var(--green-badge)">↩ Restore</button>'
-          : '<button class="btn btn-sm" onclick="archiveShow('' + s.id + '')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)">📦</button>') +
-        '<button class="btn btn-sm" onclick="deleteShowById('' + s.id + '')" style="color:var(--red);border-color:var(--red)">✕</button>' +
+          ? '<button class="btn btn-sm" onclick="unarchiveShow(\'' + s.id + '\')" style="margin-right:2px;color:var(--green-badge);border-color:var(--green-badge)">↩ Restore</button>'
+          : '<button class="btn btn-sm" onclick="archiveShow(\'' + s.id + '\')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)">📦</button>') +
+        '<button class="btn btn-sm" onclick="deleteShowById(\'' + s.id + '\')" style="color:var(--red);border-color:var(--red)">✕</button>' +
       '</td></tr>';
   }).join('');
 }
