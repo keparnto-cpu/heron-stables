@@ -889,36 +889,26 @@ function checkAppPassword() {
         <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-iea-show')">+ Add show</button>
       </div>
 
-      <!-- Show selector row -->
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
-        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:220px">
-          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Select show</label>
-          <div style="display:flex;gap:6px">
-            <select id="iea-show-select" onchange="loadIeaShow(this.value)" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none">
-              <option value="">— Select a show —</option>
-            </select>
-            <button class="btn btn-sm" onclick="deleteIeaShow()" style="color:var(--red);border-color:var(--red);white-space:nowrap">&#10005; Delete show</button>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:180px">
-          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Location <span style="color:var(--gold);font-size:9px;letter-spacing:0.08em">(editable)</span></label>
-          <div class="location-wrap">
-            <input type="text" id="iea-show-location" placeholder="Type barn or venue name…" autocomplete="off" oninput="updateCurrentShow('location',this.value);locationSearch(this,'iea-loc-inline-suggestions')" onblur="hideLocationSuggestions('iea-loc-inline-suggestions',300)" style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif;width:100%" disabled>
-            <div id="iea-loc-inline-suggestions" class="location-suggestions" style="display:none"></div>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px">
-          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Date <span style="color:var(--gold);font-size:9px;letter-spacing:0.08em">(editable)</span></label>
-          <input type="date" id="iea-show-date" onchange="updateCurrentShow('date', this.value)" style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif" disabled>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px">
-          <label style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Notes <span style="color:var(--gold);font-size:9px;letter-spacing:0.08em">(editable)</span></label>
-          <input type="text" id="iea-show-notes-inline" placeholder="Any notes…" oninput="updateCurrentShow('notes', this.value)" style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-size:13px;background:var(--cream);color:var(--text);outline:none;font-family:'Jost',sans-serif" disabled>
-        </div>
+      <!-- IEA Shows table -->
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn btn-sm" id="iea-toggle-history" onclick="toggleIeaHistory()" style="color:var(--text-muted);border-color:var(--border)">📦 Show History</button>
+      </div>
+      <div class="table-wrap" style="margin-bottom:20px">
+        <table>
+          <thead><tr><th>Show</th><th>Date</th><th>Participants</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+          <tbody id="iea-shows-list-body"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="iea-no-show-list" style="display:none;text-align:center;padding:48px;color:var(--text-muted);font-size:13px">
+        <div style="font-size:32px;margin-bottom:8px">🏆</div>No IEA shows yet. Add one above.
       </div>
 
-      <!-- IEA Show tabs -->
+      <!-- IEA Show detail panel -->
       <div id="iea-participants-card" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;letter-spacing:0.04em" id="iea-detail-title">IEA Show Detail</div>
+          <button class="btn btn-sm" onclick="document.getElementById('iea-participants-card').style.display='none'">✕ Close</button>
+        </div>
         <div class="tabs" id="iea-show-tabs">
           <div class="tab active" onclick="switchIeaShowTab(this,'iea-tab-riders')">Participants</div>
           <div class="tab" onclick="switchIeaShowTab(this,'iea-tab-photos')">Photos</div>
@@ -999,7 +989,7 @@ function checkAppPassword() {
             </div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Rider</th><th>Horse</th><th>Class / Category</th><th>Division</th><th>Result</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+                <thead><tr><th>Rider</th><th>Horse</th><th>Class</th><th>Division</th><th>Result 🏆</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
                 <tbody id="show-riders-table"></tbody>
               </table>
             </div>
@@ -2631,6 +2621,7 @@ function renderAll() {
   populateIeaRiderSelect();
   populateShowSelect();
   renderShowsTable();
+  renderIeaShowsTable();
   populateFarrierHorseSelect();
   populateVetHorseSelects();
   saveToStorage();
@@ -3106,8 +3097,17 @@ function renderHorseProfiles() {
     var bgCol = horseBgColors[idx % horseBgColors.length];
     var txtCol = horseTextColors[idx % horseTextColors.length];
     var ini = h.name.slice(0,2).toUpperCase();
+    var pX = h.photoX !== undefined ? h.photoX : 50;
+    var pY = h.photoY !== undefined ? h.photoY : 50;
+    var pZ = h.photoZoom !== undefined ? h.photoZoom : 1;
     var photoHTML = h.photo
-      ? '<div style="width:100%;height:220px;overflow:hidden;background:#f0f0f0"><img src="' + h.photo + '" style="width:100%;height:100%;object-fit:cover" draggable="false"></div>'
+      ? '<div class="horse-photo-container" data-idx="' + idx + '" style="width:100%;height:220px;overflow:hidden;background:#f0f0f0;position:relative;cursor:grab" title="Drag to reposition">' +
+          '<img src="' + h.photo + '" style="width:' + (100*pZ) + '%;height:' + (100*pZ) + '%;object-fit:cover;position:absolute;left:' + pX + '%;top:' + pY + '%;transform:translate(-' + pX + '%,-' + pY + '%)" draggable="false">' +
+          '<div style="position:absolute;bottom:6px;right:6px;display:flex;gap:4px">' +
+            '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',-0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer" title="Zoom out">−</button>' +
+            '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer" title="Zoom in">+</button>' +
+          '</div>' +
+        '</div>'
       : '<div style="width:100%;height:180px;background:' + bgCol + ';display:flex;align-items:center;justify-content:center;font-size:56px;font-family:\'Playfair Display\',serif;font-weight:600;color:' + txtCol + '">' + ini + '</div>';
     var dobStr = h.dob ? new Date(h.dob + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
     var attn = (h.coggins !== 'Current' || (h.vacc && h.vacc !== 'Current'));
@@ -3159,6 +3159,96 @@ function renderHorseProfiles() {
 
 // ── HORSE PHOTO DRAG TO REPOSITION ──
 var _dragState = null;
+
+function zoomHorsePhoto(idx, delta) {
+  var h = horses[idx];
+  if (!h) return;
+  h.photoZoom = Math.max(0.5, Math.min(3, (h.photoZoom||1) + delta));
+  saveHorsePhotoPosition(idx);
+  renderHorseProfiles();
+}
+
+function saveHorsePhotoPosition(idx) {
+  var h = horses[idx];
+  if (!h || !h._id) return;
+  fetch(SUPA_URL + '/rest/v1/horses?id=eq.' + h._id, {
+    method: 'PATCH',
+    headers: Object.assign({}, SUPA_HEADERS, {'Prefer':'return=minimal'}),
+    body: JSON.stringify({photoX: h.photoX, photoY: h.photoY, photoZoom: h.photoZoom})
+  });
+}
+
+document.addEventListener('mousedown', function(e) {
+  var container = e.target.closest ? e.target.closest('.horse-photo-container') : null;
+  if (!container) return;
+  var idx = parseInt(container.getAttribute('data-idx'));
+  _dragState = { idx: idx, startX: e.clientX, startY: e.clientY,
+    origX: horses[idx].photoX||50, origY: horses[idx].photoY||50, container: container };
+  container.style.cursor = 'grabbing';
+  e.preventDefault();
+});
+
+document.addEventListener('mousemove', function(e) {
+  if (!_dragState) return;
+  var h = horses[_dragState.idx];
+  if (!h) return;
+  var dx = (e.clientX - _dragState.startX) / _dragState.container.offsetWidth * 100;
+  var dy = (e.clientY - _dragState.startY) / _dragState.container.offsetHeight * 100;
+  h.photoX = Math.max(0, Math.min(100, _dragState.origX - dx));
+  h.photoY = Math.max(0, Math.min(100, _dragState.origY - dy));
+  var img = _dragState.container.querySelector('img');
+  if (img) {
+    var z = h.photoZoom || 1;
+    img.style.width = (100*z) + '%';
+    img.style.height = (100*z) + '%';
+    img.style.left = h.photoX + '%';
+    img.style.top = h.photoY + '%';
+    img.style.transform = 'translate(-' + h.photoX + '%,-' + h.photoY + '%)';
+  }
+});
+
+document.addEventListener('mouseup', function(e) {
+  if (!_dragState) return;
+  saveHorsePhotoPosition(_dragState.idx);
+  _dragState.container.style.cursor = 'grab';
+  _dragState = null;
+});
+
+// Touch support for mobile
+document.addEventListener('touchstart', function(e) {
+  var container = e.target.closest ? e.target.closest('.horse-photo-container') : null;
+  if (!container) return;
+  var idx = parseInt(container.getAttribute('data-idx'));
+  var touch = e.touches[0];
+  _dragState = { idx: idx, startX: touch.clientX, startY: touch.clientY,
+    origX: horses[idx].photoX||50, origY: horses[idx].photoY||50, container: container };
+  e.preventDefault();
+}, {passive:false});
+
+document.addEventListener('touchmove', function(e) {
+  if (!_dragState) return;
+  var h = horses[_dragState.idx];
+  if (!h) return;
+  var touch = e.touches[0];
+  var dx = (touch.clientX - _dragState.startX) / _dragState.container.offsetWidth * 100;
+  var dy = (touch.clientY - _dragState.startY) / _dragState.container.offsetHeight * 100;
+  h.photoX = Math.max(0, Math.min(100, _dragState.origX - dx));
+  h.photoY = Math.max(0, Math.min(100, _dragState.origY - dy));
+  var img = _dragState.container.querySelector('img');
+  if (img) {
+    var z = h.photoZoom || 1;
+    img.style.left = h.photoX + '%';
+    img.style.top = h.photoY + '%';
+    img.style.transform = 'translate(-' + h.photoX + '%,-' + h.photoY + '%)';
+  }
+  e.preventDefault();
+}, {passive:false});
+
+document.addEventListener('touchend', function(e) {
+  if (!_dragState) return;
+  saveHorsePhotoPosition(_dragState.idx);
+  _dragState = null;
+});
 
 
 
@@ -4331,16 +4421,14 @@ function saveLesson() {
 }
 
 function emailLessonsReport() {
-  // Build the report text first
   exportLessons();
-  // Then open email after a short delay so the modal content is ready
   setTimeout(function() {
     var preview = document.getElementById('share-preview');
-    var body = preview ? preview.textContent : 'See lesson report attached.';
-    var subject = 'Heron Stables — Lesson Report';
-    var mailto = 'mailto:info@heronstables.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-    window.location.href = mailto;
+    var body = preview ? preview.textContent : 'See lesson report.';
+    var smsUrl = 'sms:6465098774?body=' + encodeURIComponent(body);
+    window.location.href = smsUrl;
     closeModal();
+    toast('📱 Opening Messages…');
   }, 300);
 }
 
@@ -4354,8 +4442,11 @@ function exportLessons() {
   var monthLabel = new Date(month + '-15').toLocaleDateString('en-US',{month:'long',year:'numeric'});
   var revenue = list.reduce(function(s,l) { var f = parseFloat(String(l.fee).replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
   var unpaid = list.filter(function(l) { return l.paid !== 'paid'; }).reduce(function(s,l) { var f = parseFloat(String(l.fee).replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
-  var rows = list.map(function(l) { var d = new Date(l.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}); return '  ' + d.padEnd(8) + ' | ' + l.rider.padEnd(22) + ' | ' + l.horse.padEnd(14) + ' | ' + l.type.padEnd(16) + ' | ' + String(l.fee).padStart(5) + ' | ' + l.paid; }).join('\n');
-  var report = 'HERON STABLES — LESSON REPORT\n' + monthLabel + ' | Trainer: ' + (trainer === 'all' ? 'All' : trainer) + '\n' + '─'.repeat(82) + '\n  Date     | Rider                  | Horse          | Type             | Fee  | Status\n' + '─'.repeat(82) + '\n' + rows + '\n' + '─'.repeat(82) + '\n\n  Total lessons : ' + list.length + '\n  Total revenue : $' + revenue.toLocaleString() + '\n  Still unpaid  : $' + unpaid.toLocaleString() + '\n\nGenerated by Heron Stables Management Portal';
+  var alexTotal = list.reduce(function(s,l) { var f = parseFloat(String(l.alexSplit||'').replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
+  var barnTotal = list.reduce(function(s,l) { var f = parseFloat(String(l.barnSplit||'').replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
+  var rows = list.map(function(l) { var d = new Date(l.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}); var alex = l.alexSplit ? ' (A:' + l.alexSplit + ' B:' + l.barnSplit + ')' : ''; return '  ' + d.padEnd(8) + ' | ' + l.rider.padEnd(22) + ' | ' + l.horse.padEnd(14) + ' | ' + l.type.padEnd(16) + ' | ' + String(l.fee).padStart(5) + alex + ' | ' + l.paid; }).join('\n');
+  var splitSummary = alexTotal > 0 ? '\n  Alex split    : $' + alexTotal.toLocaleString() + '\n  Barn split    : $' + barnTotal.toLocaleString() : '';
+  var report = 'HERON STABLES — LESSON REPORT\n' + monthLabel + ' | Trainer: ' + (trainer === 'all' ? 'All' : trainer) + '\n' + '─'.repeat(82) + '\n  Date     | Rider                  | Horse          | Type             | Fee  | Status\n' + '─'.repeat(82) + '\n' + rows + '\n' + '─'.repeat(82) + '\n\n  Total lessons : ' + list.length + '\n  Total revenue : $' + revenue.toLocaleString() + splitSummary + '\n  Still unpaid  : $' + unpaid.toLocaleString() + '\n\nGenerated by Heron Stables Management Portal';
   document.getElementById('share-preview').textContent = report;
   openModal('modal-share-lessons');
 }
@@ -4483,7 +4574,7 @@ function renderVacc() {
       '<td>' + (v.tetanus||'–') + '</td>' +
       '<td style="' + (v.status==='Overdue'?'color:var(--red);font-weight:500':v.status==='Due soon'?'color:var(--amber);font-weight:500':'') + '">' + (v.next||'–') + '</td>' +
       '<td>' + vaccStatusBadge(v.status) + '</td>' +
-      '<td style="text-align:right"><button class="btn btn-sm" onclick="editVaccRow(' + i + ')">&#9999; Edit</button></td>' +
+      '<td style="text-align:right;white-space:nowrap"><button class="btn btn-sm" onclick="editVaccRow(' + i + ')" style="margin-right:2px">&#9999; Edit</button><button class="btn btn-sm" onclick="archiveVaccRow(' + i + ')" style="color:var(--amber);border-color:var(--amber)">&#128230;</button></td>' +
     '</tr>';
   }).join('');
 }
@@ -4775,7 +4866,7 @@ function renderVetVisits() {
   });
 
   var upcoming = allVisible.filter(function(v) { return v.status === 'scheduled'; }).sort(function(a,b) { return a.date.localeCompare(b.date); });
-  var history  = allVisible.filter(function(v) { return v.status === 'completed'; }).sort(function(a,b) { return b.date.localeCompare(a.date); });
+  var history  = allVisible.filter(function(v) { return v.status !== 'scheduled'; }).sort(function(a,b) { return b.date.localeCompare(a.date); });
 
   var count = document.getElementById('vet-count');
   if (count) count.textContent = allVisible.length + ' visit' + (allVisible.length !== 1 ? 's' : '');
@@ -4806,6 +4897,7 @@ function renderVetTable(list, tbodyId, emptyId, isUpcoming) {
       ? '<button class="btn btn-sm" onclick="markVetComplete(' + globalIdx + ')" style="color:var(--green-badge);border-color:var(--green-badge);margin-right:2px" title="Mark complete">&#10003;</button>'
       : '';
 
+    var archiveVetBtn = '<button class="btn btn-sm" onclick="archiveVetVisit(' + globalIdx + ')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)" title="Archive">&#128230;</button>';
     return '<tr style="' + emgStyle + '">' +
       '<td style="' + dateStyle + '">' + dateStr + '</td>' +
       '<td><strong>' + v.horse + '</strong></td>' +
@@ -4815,6 +4907,7 @@ function renderVetTable(list, tbodyId, emptyId, isUpcoming) {
       '<td style="font-size:12px;color:var(--text-muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + (v.notes||'') + '">' + (v.notes||'–') + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' + markBtn +
         '<button class="btn btn-sm" onclick="editVetVisit(' + globalIdx + ')" style="margin-right:2px">&#9999;</button>' +
+        archiveVetBtn +
         '<button class="btn btn-sm" onclick="deleteVetVisit(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button>' +
       '</td></tr>';
   }).join('');
@@ -5433,16 +5526,16 @@ function renderDayView(container, title, events) {
     dayEvents.forEach(function(e) {
       var delStyle = 'background:transparent;border:none;color:var(--red);cursor:pointer;font-size:18px;padding:0';
       var deleteBtn = '';
-      if (e.type === 'lesson' && e._id) {
-        deleteBtn = '<button data-id="' + e._id + '" data-type="lesson" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
-      } else if (e.type === 'vet' && e._id) {
-        deleteBtn = '<button data-id="' + e._id + '" data-type="vet" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
-      } else if (e.type === 'farrier' && e._id) {
-        deleteBtn = '<button data-id="' + e._id + '" data-type="farrier" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
-      } else if (e.type === 'show' && e._id) {
-        deleteBtn = '<button data-id="' + e._id + '" data-type="show" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
-      } else if (e.type === 'other' && e._idx !== undefined) {
-        deleteBtn = '<button data-idx="' + e._idx + '" data-type="other" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
+      if (e.type === 'lesson') {
+        deleteBtn = '<button data-id="' + (e._id||'') + '" data-type="lesson" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
+      } else if (e.type === 'vet') {
+        deleteBtn = '<button data-id="' + (e._id||'') + '" data-type="vet" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
+      } else if (e.type === 'farrier') {
+        deleteBtn = '<button data-id="' + (e._id||'') + '" data-type="farrier" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
+      } else if (e.type === 'show') {
+        deleteBtn = '<button data-id="' + (e._id||'') + '" data-type="show" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
+      } else if (e.type === 'other') {
+        deleteBtn = '<button data-idx="' + (e._idx !== undefined ? e._idx : '') + '" data-type="other" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
       }
       html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">' +
         '<div style="width:4px;border-radius:2px;background:' + e.color + ';align-self:stretch;flex-shrink:0"></div>' +
@@ -5620,6 +5713,7 @@ function saveIeaShow() {
   ieaShows.unshift(show);
   dbSaveIeaShow(show);
   populateIeaShowSelect();
+  renderIeaShowsTable();
   closeModal();
   document.getElementById('iea-show-name').value = '';
   document.getElementById('iea-show-date-input').value = '';
@@ -6108,6 +6202,146 @@ function populateShowSelect() {
   if (_origPopulateShowSelect) _origPopulateShowSelect();
   renderShowsTable();
 }
+
+// ==========================================
+// ARCHIVE VET VISIT
+// ==========================================
+function archiveVetVisit(idx) {
+  var v = vetVisits[idx];
+  if (!v) return;
+  if (!confirm('Archive this vet visit?')) return;
+  v.status = 'archived';
+  dbSaveVet(v);
+  renderVetVisits();
+  toast('📦 Visit archived');
+}
+
+function archiveVaccRow(i) {
+  var v = vaccData[i];
+  if (!v) return;
+  if (!confirm('Archive vaccination record for ' + v.horse + '?')) return;
+  v.archived = true;
+  dbSaveVacc(v);
+  renderVacc();
+  toast('📦 Record archived');
+}
+
+// ==========================================
+// IEA SHOWS TABLE
+// ==========================================
+var ieaHistoryVisible = false;
+
+function toggleIeaHistory() {
+  ieaHistoryVisible = !ieaHistoryVisible;
+  var btn = document.getElementById('iea-toggle-history');
+  if (btn) btn.textContent = ieaHistoryVisible ? '📦 Hide History' : '📦 Show History';
+  renderIeaShowsTable();
+}
+
+function renderIeaShowsTable() {
+  var tbody = document.getElementById('iea-shows-list-body');
+  var noShow = document.getElementById('iea-no-show-list');
+  if (!tbody) return;
+
+  var list = ieaShows.slice().sort(function(a, b) {
+    if (!a.date) return 1;
+    if (!b.date) return -1;
+    return a.date.localeCompare(b.date);
+  });
+
+  var active = list.filter(function(s) { return !s.archived; });
+  var archived = list.filter(function(s) { return s.archived; });
+  var visible = ieaHistoryVisible ? active.concat(archived) : active;
+
+  if (!visible.length) {
+    tbody.innerHTML = '';
+    if (noShow) noShow.style.display = 'block';
+    return;
+  }
+  if (noShow) noShow.style.display = 'none';
+
+  tbody.innerHTML = visible.map(function(s) {
+    var participants = (s.riders || []).map(function(r) { return r.rider; }).join(', ') || '–';
+    var dateStr = s.date ? new Date(s.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
+    var isArchived = s.archived;
+    var rowStyle = isArchived ? 'opacity:0.55;' : '';
+    var archiveBadge = isArchived ? '<span class="badge badge-gray" style="margin-left:6px;font-size:10px">Archived</span>' : '';
+    return '<tr style="' + rowStyle + '">' +
+      '<td><strong style="cursor:pointer;color:var(--primary)" onclick="loadIeaShowDetail(\'' + s.id + '\')">' + s.name + '</strong>' + archiveBadge + '</td>' +
+      '<td>' + dateStr + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + participants + '">' + participants + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (s.notes||'–') + '</td>' +
+      '<td style="text-align:right;white-space:nowrap">' +
+        '<button class="btn btn-sm" onclick="editIeaShowInline(\'' + s.id + '\')" style="margin-right:2px">✎</button>' +
+        (isArchived
+          ? '<button class="btn btn-sm" onclick="unarchiveIeaShow(\'' + s.id + '\')" style="margin-right:2px;color:var(--green-badge);border-color:var(--green-badge)">↩ Restore</button>'
+          : '<button class="btn btn-sm" onclick="archiveIeaShow(\'' + s.id + '\')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)">📦</button>') +
+        '<button class="btn btn-sm" onclick="deleteIeaShowById(\'' + s.id + '\')" style="color:var(--red);border-color:var(--red)">✕</button>' +
+      '</td></tr>';
+  }).join('');
+}
+
+function loadIeaShowDetail(id) {
+  currentIeaShowId = id;
+  var show = ieaShows.find(function(s) { return s.id === id; });
+  var card = document.getElementById('iea-participants-card');
+  if (!show || !card) return;
+  card.style.display = 'block';
+  card.scrollIntoView({behavior:'smooth', block:'start'});
+  var title = document.getElementById('iea-detail-title');
+  if (title) title.textContent = show.name;
+  renderIeaRiders(show);
+}
+
+function editIeaShowInline(id) {
+  var show = ieaShows.find(function(s) { return s.id === id; });
+  if (!show) return;
+  var name = prompt('Show name:', show.name);
+  if (name === null) return;
+  show.name = name.trim() || show.name;
+  var date = prompt('Date (YYYY-MM-DD):', show.date || '');
+  if (date !== null) show.date = date.trim();
+  var notes = prompt('Notes:', show.notes || '');
+  if (notes !== null) show.notes = notes.trim();
+  dbSaveIeaShow(show);
+  renderIeaShowsTable();
+  toast('✅ Show updated!');
+}
+
+function archiveIeaShow(id) {
+  var show = ieaShows.find(function(s) { return s.id === id; });
+  if (!show || !confirm('Archive "' + show.name + '"?')) return;
+  show.archived = true;
+  dbSaveIeaShow(show);
+  renderIeaShowsTable();
+  toast('📦 Show archived');
+}
+
+function unarchiveIeaShow(id) {
+  var show = ieaShows.find(function(s) { return s.id === id; });
+  if (!show) return;
+  show.archived = false;
+  dbSaveIeaShow(show);
+  renderIeaShowsTable();
+  toast('↩ Show restored');
+}
+
+function deleteIeaShowById(id) {
+  var show = ieaShows.find(function(s) { return s.id === id; });
+  if (!show || !confirm('Permanently delete "' + show.name + '"?')) return;
+  ieaShows = ieaShows.filter(function(s) { return s.id !== id; });
+  dbDeleteIeaShow(id);
+  renderIeaShowsTable();
+  if (currentIeaShowId === id) {
+    currentIeaShowId = null;
+    var card = document.getElementById('iea-participants-card');
+    if (card) card.style.display = 'none';
+  }
+  toast('Show deleted', '#c0392b');
+}
+
+// Override deleteIeaShow to use new function
+function deleteIeaShow() { if (currentIeaShowId) deleteIeaShowById(currentIeaShowId); }
 
 function locationSearch(input, suggestionsId) {
   // Location autocomplete — no-op stub (can be enhanced later)
