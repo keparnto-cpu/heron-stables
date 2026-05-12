@@ -2465,6 +2465,7 @@ async function dbLoadAll() {
     restorePhotosFromStorage();
     console.log('[Heron] Horses after restorePhotos:', horses.map(function(h){ return {name:h.name, photo: h.photo ? h.photo.slice(0,60)+'...' : 'EMPTY'}; }));
     renderAll();
+    renderHorseProfiles();
     return true;
   } catch(e) {
     console.warn('DB load failed:', e);
