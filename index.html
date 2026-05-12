@@ -2846,10 +2846,18 @@ async function dbDeleteVet(visit) {
 }
 
 async function dbSaveIeaShow(show) {
-  var row = {name:show.name,date:show.date||'',location:show.location||'',notes:show.notes||'',riders:show.riders||[]};
-  if (show.id && show.id.length === 36 && show.id.indexOf('-') !== -1) row.id = show.id;
-  else show.id = row.id = crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);});
-  await dbSave('iea_shows', row);
+  if (!show.id || show.id.length !== 36) {
+    show.id = crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);});
+  }
+  var row = {id:show.id, name:show.name, date:show.date||'', location:show.location||'', notes:show.notes||'', riders:show.riders||[]};
+  try {
+    var r = await fetch(SUPA_URL + '/rest/v1/iea_shows', {
+      method: 'POST',
+      headers: Object.assign({}, SUPA_HEADERS, {'Prefer': 'resolution=merge-duplicates,return=minimal'}),
+      body: JSON.stringify(row)
+    });
+    if (!r.ok) { var e = await r.json(); console.warn('dbSaveIeaShow error:', e); }
+  } catch(e) { console.warn('dbSaveIeaShow exception:', e); }
   saveToStorage();
 }
 
@@ -2859,14 +2867,26 @@ async function dbDeleteIeaShow(id) {
 }
 
 async function dbSaveShow(show) {
-  var row = {name:show.name,date:show.date||'',location:show.location||'',notes:show.notes||'',riders:show.riders||[],categories:show.categories||[],expenses:show.expenses||[],archived:show.archived||false,results:show.results||{}};
   var existingId = show._id || show.id;
-  if (existingId && existingId.length === 36 && existingId.indexOf('-') !== -1) {
-    row.id = existingId; show._id = existingId; show.id = existingId;
-  } else {
-    row.id = show._id = show.id = crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);});
+  if (!existingId || existingId.length !== 36) {
+    existingId = crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,function(c){return(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16);});
   }
-  await dbSave('shows', row);
+  show._id = show.id = existingId;
+  var row = {id:existingId, name:show.name, date:show.date||'', location:show.location||'', notes:show.notes||'', riders:show.riders||[], categories:show.categories||[], expenses:show.expenses||[]};
+  try {
+    var r = await fetch(SUPA_URL + '/rest/v1/shows', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify(row)
+    });
+    if (!r.ok) { var e = await r.json(); console.warn('[Heron] dbSaveShow error:', e); }
+    else { console.log('[Heron] Show saved OK:', show.name, existingId); }
+  } catch(e) { console.warn('[Heron] dbSaveShow exception:', e); }
   saveToStorage();
 }
 
