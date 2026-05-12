@@ -1198,11 +1198,11 @@ function checkAppPassword() {
       <div id="vet-coggins-tab" style="display:none">
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div style="font-size:13px;color:var(--text-muted)">EIA / Coggins records. Annual renewal required.</div>
+            <div style="font-size:13px;color:var(--text-muted)">Annual Coggins/EIA testing required. Click ✎ to edit, 📎 to attach a PDF.</div>
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Horse</th><th>Test date</th><th>EIA #</th><th>Status</th><th>Document</th><th style="text-align:right">Actions</th></tr></thead>
+              <thead><tr><th>Horse</th><th>Test date</th><th>Status</th><th>Document</th><th style="text-align:right">Actions</th></tr></thead>
               <tbody id="coggins-table-body"></tbody>
             </table>
           </div>
@@ -6543,71 +6543,75 @@ function renderCogginsTable() {
   var tbody = document.getElementById('coggins-table-body');
   if (!tbody) return;
   var activeHorses = horses.map(function(h) { return h.name; });
-  // Merge hardcoded + uploaded records
-  var hardcoded = {
-    'Stanley (A Happy Medium)': {eia:'EIA21459861', date:'2021', status:'Current'},
-    'Diplo': {eia:'EIA22491692', date:'2022', status:'Current'},
-    'Destiny': {eia:'EIA23095032', date:'2023', status:'Current'},
-    'Kingston': {eia:'EIA23095198', date:'2023', status:'Current'},
-    'Valencio': {eia:'EIA23095292', date:'2023', status:'Renew'},
-    'Coco': {eia:'On file', date:'2024', status:'Current'},
-    'Milton': {eia:'On file', date:'2024', status:'Check'},
-    'Q': {eia:'On file', date:'2024', status:'Current'},
-  };
-  var recs = window.cogginsRecords || {};
-  // Show all horses — either from DB or horses array
-  var horseList = activeHorses.length ? activeHorses : Object.keys(hardcoded);
+  if (!window.cogginsRecords) window.cogginsRecords = {};
+  var horseList = activeHorses.length ? activeHorses : Object.keys(window.cogginsRecords);
   tbody.innerHTML = horseList.map(function(horseName) {
-    var rec = recs[horseName] || hardcoded[horseName] || {};
-    var statusBadge = rec.status === 'Current' ? 'badge-green' : rec.status === 'Renew' ? 'badge-red' : rec.status === 'Check' ? 'badge-amber' : 'badge-gray';
-    var docLink = rec.url ? '<a href="' + rec.url + '" target="_blank" style="color:var(--primary);text-decoration:none;font-size:12px">' + (rec.docName||'View ↗') + '</a>' : '–';
-    var safeHorse = horseName.replace(/'/g,"\'");
+    var rec = window.cogginsRecords[horseName] || {};
+    var statusBadge = rec.status === 'Current' ? 'badge-green' : rec.status === 'Due' ? 'badge-red' : 'badge-gray';
+    var dateStr = rec.date ? new Date(rec.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
+    var safeH = horseName.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    var docCell = rec.url
+      ? '<a href="' + rec.url + '" target="_blank" style="color:var(--primary);font-size:12px;margin-right:6px">' + (rec.docName||'View ↗') + '</a>' +
+        '<button class="btn btn-sm" onclick="cogginsVetUpload(\'' + safeH + '\')" style="font-size:10px;padding:2px 5px">↻</button>'
+      : '<button class="btn btn-sm" onclick="cogginsVetUpload(\'' + safeH + '\')" style="color:var(--primary);border-color:var(--primary)">📎 Attach</button>';
     return '<tr>' +
       '<td><strong>' + horseName + '</strong></td>' +
-      '<td style="font-size:12px;color:var(--text-muted)">' + (rec.date||'–') + '</td>' +
-      '<td style="font-size:12px;color:var(--text-muted)">' + (rec.eia||'–') + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted)">' + dateStr + '</td>' +
       '<td>' + (rec.status ? '<span class="badge ' + statusBadge + '">' + rec.status + '</span>' : '–') + '</td>' +
-      '<td>' + docLink + '</td>' +
+      '<td>' + docCell + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
-        '<button class="btn btn-sm" onclick="addCogginsForHorse(\'' + safeHorse + '\')" style="margin-right:2px">+ Add</button>' +
-        '<button class="btn btn-sm" onclick="editCogginsForHorse(\'' + safeHorse + '\')" style="margin-right:2px">✎</button>' +
-        '<button class="btn btn-sm" onclick="archiveCogginsForHorse(\'' + safeHorse + '\')" style="margin-right:2px;color:var(--amber);border-color:var(--amber)">📦</button>' +
-        '<button class="btn btn-sm" onclick="deleteCogginsForHorse(\'' + safeHorse + '\')" style="color:var(--red);border-color:var(--red)">✕</button>' +
+        '<button class="btn btn-sm" onclick="editCogginsForHorse(\'' + safeH + '\')" style="margin-right:4px">✎ Edit</button>' +
+        '<button class="btn btn-sm" onclick="deleteCogginsForHorse(\'' + safeH + '\')" style="color:var(--red);border-color:var(--red)">✕</button>' +
       '</td></tr>';
   }).join('');
 }
 
-function addCogginsForHorse(horseName) {
-  var rec = (window.cogginsRecords && window.cogginsRecords[horseName]) || {};
-  var date = prompt('Test date (e.g. 2025-03-15):', rec.date || '');
-  if (date === null) return;
-  var eia = prompt('EIA/Coggins # (or "On file"):', rec.eia || '');
-  if (eia === null) return;
-  var url = prompt('Google Drive link (paste URL, or leave blank):', rec.url || '');
-  var status = prompt('Status (Current / Renew / Check):', rec.status || 'Current');
+var _cogginsVetEditingHorse = '';
+
+function editCogginsForHorse(horseName) {
+  _cogginsVetEditingHorse = horseName;
   if (!window.cogginsRecords) window.cogginsRecords = {};
-  window.cogginsRecords[horseName] = {date: date.trim(), eia: eia.trim(), url: (url||'').trim(), docName: eia.trim()||'View ↗', status: status||'Current'};
-  saveToStorage();
-  renderCogginsTable();
-  toast('✅ Coggins record saved!');
+  var rec = window.cogginsRecords[horseName] || {};
+  document.getElementById('coggins-modal-horse-name').textContent = horseName;
+  document.getElementById('coggins-edit-date').value = rec.date || '';
+  document.getElementById('coggins-edit-status').value = rec.status === 'Due' ? 'Due' : 'Current';
+  openModal('modal-edit-coggins');
 }
 
-function editCogginsForHorse(horseName) { addCogginsForHorse(horseName); }
-
-function archiveCogginsForHorse(horseName) {
-  if (!window.cogginsRecords) return;
-  if (!confirm('Archive coggins record for ' + horseName + '?')) return;
-  if (window.cogginsRecords[horseName]) window.cogginsRecords[horseName].archived = true;
-  saveToStorage();
-  renderCogginsTable();
-  toast('📦 Archived');
+function saveCogginsEdit() {
+  var horseName = _cogginsVetEditingHorse || _cogginsEditingHorse;
+  if (!window.cogginsRecords) window.cogginsRecords = {};
+  var rec = window.cogginsRecords[horseName] || {};
+  rec.date = document.getElementById('coggins-edit-date').value;
+  rec.status = document.getElementById('coggins-edit-status').value;
+  window.cogginsRecords[horseName] = rec;
+  // Also update cogginsData for the standalone page
+  if (cogginsData[horseName]) {
+    cogginsData[horseName].date = rec.date;
+    cogginsData[horseName].status = rec.status;
+  }
+  saveToStorage(); renderCogginsTable(); renderCogginsMain(); closeModal();
+  toast('✅ Coggins record updated!');
 }
+
+function cogginsVetUpload(horseName) {
+  if (!window.cogginsRecords) window.cogginsRecords = {};
+  var rec = window.cogginsRecords[horseName] || {};
+  openFileUpload(null, 'coggins', function(url, name) {
+    rec.url = url;
+    rec.docName = name;
+    window.cogginsRecords[horseName] = rec;
+    saveToStorage(); renderCogginsTable();
+    toast('📎 Coggins document attached!');
+  });
+}
+
+function addCogginsForHorse(horseName) { editCogginsForHorse(horseName); }
 
 function deleteCogginsForHorse(horseName) {
-  if (!confirm('Delete coggins record for ' + horseName + '? This cannot be undone.')) return;
+  if (!confirm('Delete coggins record for ' + horseName + '?')) return;
   if (window.cogginsRecords) delete window.cogginsRecords[horseName];
-  saveToStorage();
-  renderCogginsTable();
+  saveToStorage(); renderCogginsTable();
   toast('Deleted', '#c0392b');
 }
 
