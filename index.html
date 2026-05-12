@@ -3107,9 +3107,10 @@ function renderHorseProfiles() {
     var pX = h.photoX !== undefined ? h.photoX : 50;
     var pY = h.photoY !== undefined ? h.photoY : 50;
     var pZ = h.photoZoom !== undefined ? h.photoZoom : 1;
-    var photoHTML = h.photo
+    var photoURL = h.photo ? h.photo.replace(/\s/g, '%20') : '';
+    var photoHTML = photoURL
       ? '<div class="horse-photo-container" data-idx="' + idx + '" style="width:100%;height:220px;overflow:hidden;background:#f0f0f0;position:relative;cursor:grab;user-select:none" title="Drag to reposition">' +
-          '<div style="width:100%;height:100%;background:url(' + JSON.stringify(h.photo) + ') ' + pX + '% ' + pY + '% / ' + Math.round(100*pZ) + '% auto no-repeat" class="horse-photo-bg" data-idx="' + idx + '"></div>' +
+          '<div style="width:100%;height:100%;background:url(' + JSON.stringify(photoURL) + ') ' + pX + '% ' + pY + '% / ' + Math.round(100*pZ) + '% auto no-repeat" class="horse-photo-bg" data-idx="' + idx + '"></div>' +
           '<div style="position:absolute;bottom:6px;right:6px;display:flex;gap:4px">' +
             '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',-0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer" title="Zoom out">−</button>' +
             '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer" title="Zoom in">+</button>' +
