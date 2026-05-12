@@ -2239,13 +2239,29 @@ const sb = {
 const LS_KEY = 'heronStables_v1';
 
 function saveToStorage() {
-  // Also save to localStorage as offline backup
   try {
+    // Save photos separately (they can be large base64 strings)
+    var photoMap = {};
+    horses.forEach(function(h) { if (h.photo) photoMap[h.name] = h.photo; });
+    try { localStorage.setItem('heronPhotos_v1', JSON.stringify(photoMap)); } catch(e) {}
+    // Save everything else (strip photos to keep under size limit)
+    var horsesStripped = horses.map(function(h) { return Object.assign({}, h, {photo: ''}); });
     localStorage.setItem(LS_KEY, JSON.stringify({
-      clients, archivedClients, horses, archivedHorses,
+      clients, archivedClients, horses: horsesStripped, archivedHorses,
       boarders, lessonsData, scheduleData, vaccData,
       ieaShows, ieaRiderList, showsData, farrierVisits, vetVisits, showRiderList
     }));
+  } catch(e) {}
+}
+
+function restorePhotosFromStorage() {
+  try {
+    var raw = localStorage.getItem('heronPhotos_v1');
+    if (!raw) return;
+    var photoMap = JSON.parse(raw);
+    horses.forEach(function(h) {
+      if (!h.photo && photoMap[h.name]) h.photo = photoMap[h.name];
+    });
   } catch(e) {}
 }
 
@@ -2444,11 +2460,13 @@ async function dbLoadAll() {
     }
 
     hideLoadingToast();
+    restorePhotosFromStorage();
     renderAll();
     return true;
   } catch(e) {
     console.warn('DB load failed:', e);
     hideLoadingToast();
+    restorePhotosFromStorage();
     renderAll();
     return false;
   }
@@ -3247,31 +3265,34 @@ document.addEventListener('touchend', function(e) {
 function uploadHorsePhoto(idx, input) {
   var file = input.files[0];
   if (!file) return;
-  toast('⏳ Uploading photo…');
-  uploadDoc(file, 'horse-photos').then(function(url) {
-    if (url) {
-      horses[idx].photo = url;
+  // Always read as base64 first — this is our reliable fallback
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var dataUrl = ev.target.result;
+    horses[idx].photo = dataUrl;
+    saveToStorage();
+    renderHorseProfiles();
+    toast('📸 Photo saved for ' + horses[idx].name + '!');
+    // Also try to upload to Supabase storage for a proper URL
+    uploadDoc(file, 'horse-photos').then(function(url) {
+      if (url) {
+        horses[idx].photo = url;
+        saveToStorage();
+        renderHorseProfiles();
+      }
+      // Either way, persist to the horses DB row
       if (horses[idx]._id) {
         fetch(SUPA_URL + '/rest/v1/horses?id=eq.' + horses[idx]._id, {
           method: 'PATCH',
           headers: Object.assign({}, SUPA_HEADERS, {'Prefer':'return=minimal'}),
-          body: JSON.stringify({photo: url})
+          body: JSON.stringify({photo: horses[idx].photo})
+        }).then(function(r) {
+          if (!r.ok) r.json().then(function(e){ console.warn('Photo PATCH failed:', e); });
         });
       }
-      saveToStorage();
-      renderHorseProfiles();
-      toast('📸 Photo saved for ' + horses[idx].name + '!');
-    } else {
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        horses[idx].photo = e.target.result;
-        saveToStorage();
-        renderHorseProfiles();
-        toast('Photo updated (local only)');
-      };
-      reader.readAsDataURL(file);
-    }
-  });
+    });
+  };
+  reader.readAsDataURL(file);
 }
 
 function editHorse(idx) {
