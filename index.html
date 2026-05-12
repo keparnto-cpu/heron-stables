@@ -3089,6 +3089,7 @@ var horseTextColors = ['#2d6a4f','#6b4c2a','#854f0b','#1a56db','#6d28d9'];
 var editingHorseIdx = -1;
 
 function renderHorseProfiles() {
+  console.log('[Heron] renderHorseProfiles called, horses[0].photo:', horses[0] ? (horses[0].photo ? horses[0].photo.slice(0,50) : 'EMPTY') : 'NO HORSES');
   var q = (document.getElementById('horse-search') ? document.getElementById('horse-search').value : '').toLowerCase().trim();
   var filter = document.getElementById('horse-filter') ? document.getElementById('horse-filter').value : 'all';
   var list = horses.slice();
