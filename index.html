@@ -510,6 +510,7 @@ function checkAppPassword() {
             <button class="btn btn-sm" id="cal-btn-day" onclick="setCalView('day')">Day</button>
             <button class="btn btn-sm" id="cal-btn-week" onclick="setCalView('week')">Week</button>
             <button class="btn btn-sm btn-primary" id="cal-btn-month" onclick="setCalView('month')">Month</button>
+            <button class="btn btn-sm" id="cal-btn-list" onclick="setCalView('list')">List</button>
           </div>
           <button class="btn btn-primary btn-sm" onclick="openCalEventModal()">+ Add event</button>
         </div>
@@ -3169,7 +3170,7 @@ function renderHorseProfiles() {
     var ini = h.name.slice(0,2).toUpperCase();
     var photoHTML = h.photo
       ? '<div class="horse-photo-container" data-idx="' + idx + '" style="width:100%;height:220px;overflow:hidden;background:#f0f0f0;position:relative;cursor:grab;user-select:none">' +
-          '<img src="' + h.photo + '" class="horse-photo-img" data-idx="' + idx + '" style="width:100%;height:100%;object-fit:cover;object-position:' + (h.photoX||50) + '% ' + (h.photoY||50) + '%;transform:scale(' + (h.photoZoom||1) + ');transform-origin:' + (h.photoX||50) + '% ' + (h.photoY||50) + '%;display:block" onerror="this.style.display=\'none\'">' +
+          '<img src="' + h.photo + '" class="horse-photo-img" data-idx="' + idx + '" style="width:100%;height:100%;object-fit:cover;object-position:' + (h.photoX||50) + '% ' + (h.photoY||50) + '%;transform:scale(' + (h.photoZoom||1) + ');transform-origin:' + (h.photoX||50) + '% ' + (h.photoY||50) + '%;display:block" onerror="this.style.display=&quot;none&quot;">' +
           '<div style="position:absolute;bottom:6px;right:6px;display:flex;gap:4px">' +
             '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',-0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer">−</button>' +
             '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer">+</button>' +
@@ -5450,12 +5451,12 @@ function saveCalEvent() {
 // ==========================================
 // CALENDAR
 // ==========================================
-var calView = 'month';  // 'day', 'week', 'month'
+var calView = 'month';  // 'day', 'week', 'month', 'list'
 var calDate = new Date();
 
 function setCalView(view) {
   calView = view;
-  ['day','week','month'].forEach(function(v) {
+  ['day','week','month','list'].forEach(function(v) {
     var btn = document.getElementById('cal-btn-' + v);
     if (btn) { btn.className = 'btn btn-sm' + (v === view ? ' btn-primary' : ''); }
   });
@@ -5465,6 +5466,7 @@ function setCalView(view) {
 function calNav(dir) {
   if (calView === 'day') calDate.setDate(calDate.getDate() + dir);
   else if (calView === 'week') calDate.setDate(calDate.getDate() + dir * 7);
+  else if (calView === 'list') calDate.setMonth(calDate.getMonth() + dir);
   else calDate.setMonth(calDate.getMonth() + dir);
   renderCalendar();
 }
@@ -5513,7 +5515,58 @@ function renderCalendar() {
   var events = getCalEvents();
   if (calView === 'month') renderMonthView(container, title, events);
   else if (calView === 'week') renderWeekView(container, title, events);
+  else if (calView === 'list') renderListView(container, title, events);
   else renderDayView(container, title, events);
+}
+
+function renderListView(container, title, events) {
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var year = calDate.getFullYear();
+  var month = calDate.getMonth();
+  if (title) title.textContent = monthNames[month] + ' ' + year;
+  var monthStr = year + '-' + String(month+1).padStart(2,'0');
+  var today = new Date().toISOString().slice(0,10);
+  var delStyle = 'background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;padding:2px 6px;opacity:0.7';
+
+  // Filter to this month + future, sorted
+  var filtered = events
+    .filter(function(e){ return e.date && e.date >= monthStr + '-01'; })
+    .sort(function(a,b){ return a.date.localeCompare(b.date) || (a.time||'').localeCompare(b.time||''); });
+
+  if (!filtered.length) {
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted)">No events from ' + monthNames[month] + ' onwards.</div>';
+    return;
+  }
+
+  var html = '<div style="padding:8px 0">';
+  var lastDate = '';
+  filtered.forEach(function(e) {
+    if (e.date !== lastDate) {
+      lastDate = e.date;
+      var d = new Date(e.date + 'T12:00:00');
+      var isToday = e.date === today;
+      var dateStr = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+      html += '<div style="padding:10px 16px 4px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:' + (isToday ? 'var(--primary)' : 'var(--text-muted)') + ';border-top:1px solid var(--border);margin-top:4px' + (isToday ? ';background:var(--cream)' : '') + '">' + dateStr + (isToday ? ' <span style="color:var(--primary);font-size:10px">● Today</span>' : '') + '</div>';
+    }
+    var deleteBtn = '';
+    if (e.type === 'lesson') deleteBtn = '<button data-id="'+(e._id||'')+'" data-type="lesson" onclick="deleteCalEvent(this)" style="'+delStyle+'">✕</button>';
+    else if (e.type === 'vet') deleteBtn = '<button data-id="'+(e._id||'')+'" data-type="vet" onclick="deleteCalEvent(this)" style="'+delStyle+'">✕</button>';
+    else if (e.type === 'farrier') deleteBtn = '<button data-id="'+(e._id||'')+'" data-type="farrier" onclick="deleteCalEvent(this)" style="'+delStyle+'">✕</button>';
+    else if (e.type === 'show') deleteBtn = '<button data-id="'+(e._id||'')+'" data-type="show" onclick="deleteCalEvent(this)" style="'+delStyle+'">✕</button>';
+    else if (e.type === 'iea_show') deleteBtn = '<button data-id="'+(e._id||'')+'" data-type="iea_show" onclick="deleteCalEvent(this)" style="'+delStyle+'">✕</button>';
+    var typeLabel = e.type === 'iea_show' ? 'IEA Show' : e.type.charAt(0).toUpperCase() + e.type.slice(1);
+    html += '<div style="display:flex;align-items:center;gap:12px;padding:8px 16px;border-bottom:1px solid var(--border)">' +
+      '<div style="width:4px;height:36px;border-radius:2px;background:' + e.color + ';flex-shrink:0"></div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:14px;font-weight:500;color:var(--text)">' + e.title + '</div>' +
+        (e.sub ? '<div style="font-size:12px;color:var(--text-muted)">' + e.sub + '</div>' : '') +
+      '</div>' +
+      '<span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:' + e.color + ';white-space:nowrap">' + typeLabel + '</span>' +
+      deleteBtn +
+    '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
 }
 
 function deleteCalEvent(btn) {
