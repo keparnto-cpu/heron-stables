@@ -2368,7 +2368,7 @@ async function dbLoadAll() {
       return {data: await r.json(), error: null};
     }
     var safe = function(p) { return p.catch(function(e) { console.warn('table fetch error:', e); return {data:[], error:e}; }); };
-    var [hRes,cRes,bRes,lRes,vRes,fRes,vetRes,ieaRes,showRes,riderRes,schedRes,vendRes,calEvRes,alertRes,fodRes,vdRes,mdRes] = await Promise.all([
+    var [hRes,cRes,bRes,lRes,vRes,fRes,vetRes,ieaRes,showRes,riderRes,schedRes,vendRes,calEvRes,alertRes,fodRes,vdRes,mdRes,coggRes] = await Promise.all([
       safe(qry('horses','created_at')),
       safe(qry('clients','created_at')),
       safe(qry('boarders','created_at')),
@@ -2386,6 +2386,7 @@ async function dbLoadAll() {
       safe(qry('feed_order_history','created_at')),
       safe(qry('vet_docs','created_at')),
       safe(qry('manual_docs','created_at')),
+      safe(qry('coggins','created_at')),
     ]);
 
     // Horses
@@ -2497,6 +2498,20 @@ async function dbLoadAll() {
     // Schedule
     if (schedRes.data && schedRes.data.length) {
       scheduleData.splice(0, scheduleData.length, ...schedRes.data.map(function(s) { return {day:s.day,time:s.time,client:s.client,type:s.type,horse:s.horse,status:s.status,_id:s.id}; }));
+    }
+
+    // Coggins records
+    if (coggRes.data && coggRes.data.length) {
+      if (!window.cogginsRecords) window.cogginsRecords = {};
+      coggRes.data.forEach(function(r) {
+        window.cogginsRecords[r.horse_name] = {
+          date: r.test_date || '',
+          status: r.status || 'Current',
+          url: r.doc_url || '',
+          docName: r.doc_name || '',
+          _id: r.id
+        };
+      });
     }
 
     hideLoadingToast();
@@ -6606,13 +6621,25 @@ function saveCogginsEdit() {
   rec.date = document.getElementById('coggins-edit-date').value;
   rec.status = document.getElementById('coggins-edit-status').value;
   window.cogginsRecords[horseName] = rec;
-  // Also update cogginsData for the standalone page
-  if (cogginsData[horseName]) {
-    cogginsData[horseName].date = rec.date;
-    cogginsData[horseName].status = rec.status;
-  }
+  dbSaveCoggins(horseName, rec);
   saveToStorage(); renderCogginsTable(); renderCogginsMain(); closeModal();
   toast('✅ Coggins record updated!');
+}
+
+async function dbSaveCoggins(horseName, rec) {
+  var row = {horse_name: horseName, test_date: rec.date||'', status: rec.status||'Current', doc_url: rec.url||'', doc_name: rec.docName||''};
+  if (rec._id) row.id = rec._id;
+  try {
+    var r = await fetch(SUPA_URL + '/rest/v1/coggins', {
+      method: 'POST',
+      headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
+      body: JSON.stringify(row)
+    });
+    if (r.ok) {
+      var data = await r.json();
+      if (data && data[0] && data[0].id) window.cogginsRecords[horseName]._id = data[0].id;
+    } else { console.warn('[Heron] dbSaveCoggins error:', await r.json()); }
+  } catch(e) { console.warn('[Heron] dbSaveCoggins exception:', e); }
 }
 
 function cogginsVetUpload(horseName) {
@@ -6622,6 +6649,7 @@ function cogginsVetUpload(horseName) {
     rec.url = url;
     rec.docName = name;
     window.cogginsRecords[horseName] = rec;
+    dbSaveCoggins(horseName, rec);
     saveToStorage(); renderCogginsTable();
     toast('📎 Coggins document attached!');
   });
@@ -6631,7 +6659,11 @@ function addCogginsForHorse(horseName) { editCogginsForHorse(horseName); }
 
 function deleteCogginsForHorse(horseName) {
   if (!confirm('Delete coggins record for ' + horseName + '?')) return;
-  if (window.cogginsRecords) delete window.cogginsRecords[horseName];
+  if (window.cogginsRecords && window.cogginsRecords[horseName]) {
+    var rec = window.cogginsRecords[horseName];
+    if (rec._id) dbDelete('coggins', rec._id);
+    delete window.cogginsRecords[horseName];
+  }
   saveToStorage(); renderCogginsTable();
   toast('Deleted', '#c0392b');
 }
