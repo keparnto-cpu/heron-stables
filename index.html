@@ -491,7 +491,7 @@ function checkAppPassword() {
       <div class="card" style="margin-top:0">
         <div class="card-header">
           <div class="card-title">📅 Upcoming schedule</div>
-          <span class="view-all" onclick="showPage('calendar', document.querySelector('[onclick*=\'calendar\']'))">Full calendar</span>
+          <span class="view-all" onclick="showPage('calendar', document.querySelector('[onclick*=calendar]'))">Full calendar</span>
         </div>
         <div id="dash-schedule-list"></div>
       </div>
@@ -1292,7 +1292,7 @@ function checkAppPassword() {
         <div class="section-title">Coggins / EIA records</div>
       </div>
       <div class="card">
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Click ✎ to set the test date and status. Click 📎 to attach or replace a Coggins PDF.</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Click ✎ Edit to set the test date and status. Click 📎 Attach to upload or replace a Coggins PDF.</div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Horse</th><th>Test date</th><th>Status</th><th>Document</th><th style="text-align:right">Actions</th></tr></thead>
@@ -2100,7 +2100,7 @@ function checkAppPassword() {
     </div>
   </div>
 
-  <!-- EDIT COGGINS RECORD -->
+  <!-- EDIT COGGINS -->
   <div class="modal-box" id="modal-edit-coggins" style="display:none;max-width:400px">
     <div class="modal-header"><span>Edit coggins record</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
     <div class="modal-body">
@@ -2499,15 +2499,12 @@ async function dbLoadAll() {
     }
 
     hideLoadingToast();
-    restorePhotosFromStorage();
-    console.log('[Heron] Horses after restorePhotos:', horses.map(function(h){ return {name:h.name, photo: h.photo ? h.photo.slice(0,60)+'...' : 'EMPTY'}; }));
     renderAll();
     renderHorseProfiles();
     return true;
   } catch(e) {
     console.warn('DB load failed:', e);
     hideLoadingToast();
-    restorePhotosFromStorage();
     renderAll();
     return false;
   }
@@ -2580,31 +2577,27 @@ function renderDashboard() {
   if (schedEl) {
     var todayStr = new Date().toISOString().slice(0,10);
     var upcoming = [];
-    lessonsData.forEach(function(l){ if(l.date >= todayStr) upcoming.push({date:l.date, label:l.rider+' — '+l.type, sub:l.horse, color:'#6888BE', icon:'🎯'}); });
-    vetVisits.filter(function(v){ return v.status==='scheduled'&&v.date>=todayStr; }).forEach(function(v){ upcoming.push({date:v.date, label:v.horse+' — '+v.category, sub:v.vet||'', color:'#2d5a3d', icon:'🩺'}); });
-    farrierVisits.filter(function(v){ return v.status==='scheduled'&&v.date>=todayStr; }).forEach(function(v){ upcoming.push({date:v.date, label:v.horse+' — Farrier', sub:v.service||'', color:'#c4830a', icon:'🔨'}); });
-    showsData.filter(function(s){ return s.date>=todayStr; }).forEach(function(s){ upcoming.push({date:s.date, label:s.name, sub:s.location||'', color:'#c9a96e', icon:'🎪'}); });
-    ieaShows.filter(function(s){ return s.date>=todayStr; }).forEach(function(s){ upcoming.push({date:s.date, label:'IEA: '+s.name, sub:s.location||'', color:'#c9a96e', icon:'🏆'}); });
+    lessonsData.forEach(function(l){ if(l.date>=todayStr) upcoming.push({date:l.date,label:l.rider+' — '+l.type,sub:l.horse,color:'#6888BE',icon:'🎯'}); });
+    vetVisits.filter(function(v){ return v.status==='scheduled'&&v.date>=todayStr; }).forEach(function(v){ upcoming.push({date:v.date,label:v.horse+' — '+v.category,sub:v.vet||'',color:'#2d5a3d',icon:'🩺'}); });
+    farrierVisits.filter(function(v){ return v.status==='scheduled'&&v.date>=todayStr; }).forEach(function(v){ upcoming.push({date:v.date,label:v.horse+' — Farrier',sub:v.service||'',color:'#c4830a',icon:'🔨'}); });
+    showsData.filter(function(s){ return s.date>=todayStr; }).forEach(function(s){ upcoming.push({date:s.date,label:s.name,sub:s.location||'',color:'#c9a96e',icon:'🎪'}); });
+    ieaShows.filter(function(s){ return s.date>=todayStr; }).forEach(function(s){ upcoming.push({date:s.date,label:'IEA: '+s.name,sub:s.location||'',color:'#c9a96e',icon:'🏆'}); });
     upcoming.sort(function(a,b){ return a.date.localeCompare(b.date); });
     upcoming = upcoming.slice(0,12);
     if (!upcoming.length) {
       schedEl.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px">No upcoming events scheduled.</div>';
     } else {
       var lastDate = '';
-      schedEl.innerHTML = upcoming.map(function(e) {
+      schedEl.innerHTML = upcoming.map(function(e,i) {
         var d = new Date(e.date+'T12:00:00');
         var dateStr = d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
         var isNew = e.date !== lastDate; lastDate = e.date;
-        var dateDiv = isNew ? '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);padding:'+(upcoming.indexOf(e)===0?'0':'12px')+' 0 4px;'+(upcoming.indexOf(e)===0?'':'border-top:1px solid var(--border);')+'margin-top:'+(upcoming.indexOf(e)===0?'0':'4px')+'">' + dateStr + '</div>' : '';
-        return dateDiv +
-          '<div style="display:flex;align-items:center;gap:10px;padding:5px 0">' +
-            '<span style="font-size:16px;width:20px;text-align:center">' + e.icon + '</span>' +
-            '<div style="flex:1;min-width:0">' +
-              '<div style="font-size:13px;color:var(--text)">' + e.label + '</div>' +
-              (e.sub ? '<div style="font-size:11px;color:var(--text-muted)">' + e.sub + '</div>' : '') +
-            '</div>' +
-            '<div style="width:8px;height:8px;border-radius:50%;background:'+e.color+';flex-shrink:0"></div>' +
-          '</div>';
+        var dateDiv = isNew ? '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);padding-top:'+(i===0?'0':'12px')+';'+(i===0?'':'border-top:1px solid var(--border);margin-top:4px;')+'padding-bottom:4px">' + dateStr + '</div>' : '';
+        return dateDiv + '<div style="display:flex;align-items:center;gap:10px;padding:5px 0">' +
+          '<span style="font-size:16px;width:20px;text-align:center">' + e.icon + '</span>' +
+          '<div style="flex:1;min-width:0"><div style="font-size:13px;color:var(--text)">' + e.label + '</div>' + (e.sub ? '<div style="font-size:11px;color:var(--text-muted)">' + e.sub + '</div>' : '') + '</div>' +
+          '<div style="width:8px;height:8px;border-radius:50%;background:' + e.color + ';flex-shrink:0"></div>' +
+        '</div>';
       }).join('');
     }
   }
@@ -3158,13 +3151,12 @@ var horseTextColors = ['#2d6a4f','#6b4c2a','#854f0b','#1a56db','#6d28d9'];
 var editingHorseIdx = -1;
 
 function renderHorseProfiles() {
-  console.log('[Heron] renderHorseProfiles called, horses[0].photo:', horses[0] ? (horses[0].photo ? horses[0].photo.slice(0,50) : 'EMPTY') : 'NO HORSES');
   var q = (document.getElementById('horse-search') ? document.getElementById('horse-search').value : '').toLowerCase().trim();
   var filter = document.getElementById('horse-filter') ? document.getElementById('horse-filter').value : 'all';
   var list = horses.slice();
   if (q) list = list.filter(function(h) { return h.name.toLowerCase().includes(q) || (h.owner||'').toLowerCase().includes(q) || (h.breed||'').toLowerCase().includes(q); });
-  if (filter === 'training') list = list.filter(function(h) { return h.board.includes('Training'); });
-  if (filter === 'board') list = list.filter(function(h) { return !h.board.includes('Training'); });
+  if (filter === 'training') list = list.filter(function(h) { return h.board && h.board.includes('Training'); });
+  if (filter === 'board') list = list.filter(function(h) { return !h.board || !h.board.includes('Training'); });
   var grid = document.getElementById('horse-profiles-grid');
   var empty = document.getElementById('horse-profiles-empty');
   if (!grid) return;
@@ -3175,16 +3167,12 @@ function renderHorseProfiles() {
     var bgCol = horseBgColors[idx % horseBgColors.length];
     var txtCol = horseTextColors[idx % horseTextColors.length];
     var ini = h.name.slice(0,2).toUpperCase();
-    var pX = h.photoX !== undefined ? h.photoX : 50;
-    var pY = h.photoY !== undefined ? h.photoY : 50;
-    var pZ = h.photoZoom !== undefined ? h.photoZoom : 1;
-    var photoURL = h.photo ? h.photo.replace(/\s/g, '%20') : '';
-    var photoHTML = photoURL
-      ? '<div class="horse-photo-container" data-idx="' + idx + '" style="width:100%;height:220px;overflow:hidden;background:#f0f0f0;position:relative;cursor:grab;user-select:none" title="Drag to reposition">' +
-          '<div style="width:100%;height:100%;background:url(' + JSON.stringify(photoURL) + ') ' + pX + '% ' + pY + '% / ' + Math.round(100*pZ) + '% auto no-repeat" class="horse-photo-bg" data-idx="' + idx + '"></div>' +
+    var photoHTML = h.photo
+      ? '<div class="horse-photo-container" data-idx="' + idx + '" style="width:100%;height:220px;overflow:hidden;background:#f0f0f0;position:relative;cursor:grab;user-select:none">' +
+          '<img src="' + h.photo + '" class="horse-photo-img" data-idx="' + idx + '" style="width:100%;height:100%;object-fit:cover;object-position:' + (h.photoX||50) + '% ' + (h.photoY||50) + '%;transform:scale(' + (h.photoZoom||1) + ');transform-origin:' + (h.photoX||50) + '% ' + (h.photoY||50) + '%;display:block" onerror="this.style.display=\'none\'">' +
           '<div style="position:absolute;bottom:6px;right:6px;display:flex;gap:4px">' +
-            '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',-0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer" title="Zoom out">−</button>' +
-            '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer" title="Zoom in">+</button>' +
+            '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',-0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer">−</button>' +
+            '<button onclick="event.stopPropagation();zoomHorsePhoto(' + idx + ',0.1)" style="background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:16px;cursor:pointer">+</button>' +
           '</div>' +
         '</div>'
       : '<div style="width:100%;height:180px;background:' + bgCol + ';display:flex;align-items:center;justify-content:center;font-size:56px;font-family:\'Playfair Display\',serif;font-weight:600;color:' + txtCol + '">' + ini + '</div>';
@@ -3243,11 +3231,10 @@ function zoomHorsePhoto(idx, delta) {
   var h = horses[idx];
   if (!h) return;
   h.photoZoom = Math.max(0.5, Math.min(3, (h.photoZoom||1) + delta));
-  // Update live without re-rendering
-  var containers = document.querySelectorAll('.horse-photo-container[data-idx="' + idx + '"]');
-  containers.forEach(function(c) {
-    var bg = c.querySelector('.horse-photo-bg');
-    if (bg) bg.style.backgroundSize = Math.round(100*h.photoZoom) + '% auto';
+  var imgs = document.querySelectorAll('.horse-photo-img[data-idx="' + idx + '"]');
+  imgs.forEach(function(img) {
+    img.style.transform = 'scale(' + h.photoZoom + ')';
+    img.style.transformOrigin = (h.photoX||50) + '% ' + (h.photoY||50) + '%';
   });
   saveHorsePhotoPosition(idx);
 }
@@ -3260,10 +3247,11 @@ function saveHorsePhotoPosition(idx) {
     headers: Object.assign({}, SUPA_HEADERS, {'Prefer':'return=minimal'}),
     body: JSON.stringify({photoX: h.photoX, photoY: h.photoY, photoZoom: h.photoZoom})
   });
+  saveToStorage();
 }
 
 document.addEventListener('mousedown', function(e) {
-  if (e.target.tagName === 'BUTTON') return; // don't drag when clicking zoom buttons
+  if (e.target.tagName === 'BUTTON') return;
   var container = e.target.closest ? e.target.closest('.horse-photo-container') : null;
   if (!container) return;
   var idx = parseInt(container.getAttribute('data-idx'));
@@ -3285,11 +3273,10 @@ document.addEventListener('mousemove', function(e) {
   var dy = (e.clientY - _dragState.startY) / _dragState.container.offsetHeight * 100;
   h.photoX = Math.max(0, Math.min(100, _dragState.origX - dx));
   h.photoY = Math.max(0, Math.min(100, _dragState.origY - dy));
-  var bg = _dragState.container.querySelector('.horse-photo-bg');
-  if (bg) {
-    var z = h.photoZoom || 1;
-    bg.style.backgroundPosition = h.photoX + '% ' + h.photoY + '%';
-    bg.style.backgroundSize = Math.round(100*z) + '% auto';
+  var img = _dragState.container.querySelector('.horse-photo-img');
+  if (img) {
+    img.style.objectPosition = h.photoX + '% ' + h.photoY + '%';
+    img.style.transformOrigin = h.photoX + '% ' + h.photoY + '%';
   }
 });
 
@@ -3300,7 +3287,6 @@ document.addEventListener('mouseup', function(e) {
   _dragState = null;
 });
 
-// Touch support for mobile
 document.addEventListener('touchstart', function(e) {
   var container = e.target.closest ? e.target.closest('.horse-photo-container') : null;
   if (!container) return;
@@ -3320,9 +3306,10 @@ document.addEventListener('touchmove', function(e) {
   var dy = (touch.clientY - _dragState.startY) / _dragState.container.offsetHeight * 100;
   h.photoX = Math.max(0, Math.min(100, _dragState.origX - dx));
   h.photoY = Math.max(0, Math.min(100, _dragState.origY - dy));
-  var bg = _dragState.container.querySelector('.horse-photo-bg');
-  if (bg) {
-    bg.style.backgroundPosition = h.photoX + '% ' + h.photoY + '%';
+  var img = _dragState.container.querySelector('.horse-photo-img');
+  if (img) {
+    img.style.objectPosition = h.photoX + '% ' + h.photoY + '%';
+    img.style.transformOrigin = h.photoX + '% ' + h.photoY + '%';
   }
   e.preventDefault();
 }, {passive:false});
@@ -3340,34 +3327,23 @@ document.addEventListener('touchend', function(e) {
 function uploadHorsePhoto(idx, input) {
   var file = input.files[0];
   if (!file) return;
-  // Always read as base64 first — this is our reliable fallback
-  var reader = new FileReader();
-  reader.onload = function(ev) {
-    var dataUrl = ev.target.result;
-    horses[idx].photo = dataUrl;
+  toast('⏳ Uploading photo…');
+  uploadDoc(file, 'horse-photos').then(function(url) {
+    if (!url) { toast('Upload failed', '#c0392b'); return; }
+    horses[idx].photo = url;
     saveToStorage();
     renderHorseProfiles();
     toast('📸 Photo saved for ' + horses[idx].name + '!');
-    // Also try to upload to Supabase storage for a proper URL
-    uploadDoc(file, 'horse-photos').then(function(url) {
-      if (url) {
-        horses[idx].photo = url;
-        saveToStorage();
-        renderHorseProfiles();
-      }
-      // Either way, persist to the horses DB row
-      if (horses[idx]._id) {
-        fetch(SUPA_URL + '/rest/v1/horses?id=eq.' + horses[idx]._id, {
-          method: 'PATCH',
-          headers: Object.assign({}, SUPA_HEADERS, {'Prefer':'return=minimal'}),
-          body: JSON.stringify({photo: horses[idx].photo})
-        }).then(function(r) {
-          if (!r.ok) r.json().then(function(e){ console.warn('Photo PATCH failed:', e); });
-        });
-      }
-    });
-  };
-  reader.readAsDataURL(file);
+    if (horses[idx]._id) {
+      fetch(SUPA_URL + '/rest/v1/horses?id=eq.' + horses[idx]._id, {
+        method: 'PATCH',
+        headers: Object.assign({}, SUPA_HEADERS, {'Prefer':'return=minimal'}),
+        body: JSON.stringify({photo: url})
+      }).then(function(r) {
+        if (!r.ok) console.warn('[Heron] Photo PATCH failed:', r.status);
+      });
+    }
+  });
 }
 
 function editHorse(idx) {
@@ -4032,12 +4008,12 @@ function renderVendors() {
     }
     return true;
   });
+  if (countEl) countEl.textContent = list.length + ' vendor' + (list.length !== 1 ? 's' : '');
   list.sort(function(a,b) {
-    var aKey = (a.company || a.name).trim().split(' ').pop().toLowerCase();
-    var bKey = (b.company || b.name).trim().split(' ').pop().toLowerCase();
+    var aKey = (a.company||a.name).trim().split(' ').pop().toLowerCase();
+    var bKey = (b.company||b.name).trim().split(' ').pop().toLowerCase();
     return aKey.localeCompare(bKey);
   });
-  if (countEl) countEl.textContent = list.length + ' vendor' + (list.length !== 1 ? 's' : '');
   if (!list.length) { tbody.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
   if(empty) empty.style.display = 'none';
   tbody.innerHTML = list.map(function(v) {
@@ -4131,7 +4107,6 @@ function renderClients() {
   var list = clients.slice();
   if (role !== 'all') list = list.filter(function(c) { return (c.roles||'').includes(role); });
   if (q) list = list.filter(function(c) { return c.name.toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q) || (c.phone||'').includes(q) || (c.city||'').toLowerCase().includes(q); });
-  // Sort by last name
   list.sort(function(a,b) {
     var aLast = a.name.trim().split(' ').pop().toLowerCase();
     var bLast = b.name.trim().split(' ').pop().toLowerCase();
@@ -4223,6 +4198,7 @@ function confirmDeleteClient(idx) {
   var c = clients[idx];
   if (!c) return;
   if (!confirm('Permanently delete ' + c.name + '?\n\nConsider archiving instead.')) return;
+  if (c._id) dbDelete('clients', c._id);
   clients.splice(idx, 1);
   populateSelects(); renderClients(); saveToStorage();
   toast('Deleted', '#c0392b');
@@ -5187,7 +5163,7 @@ function renderFarrierTable(status) {
   var list = farrierVisits
     .filter(function(v) {
       if (v.status !== status) return false;
-      if (!activeHorseNames.includes(v.horse)) return false;
+      if (v.horse !== 'All horses' && !activeHorseNames.includes(v.horse)) return false;
       if (horseFilter !== 'all' && v.horse !== horseFilter) return false;
       return true;
     })
@@ -5500,28 +5476,28 @@ function getCalEvents() {
   // Lessons
   lessonsData.forEach(function(l) {
     if (!l.date) return;
-    events.push({date: l.date, title: l.rider + ' — ' + l.type, sub: l.horse + ' · ' + l.trainer, color: '#6888BE', type: 'lesson', time: '09:00', _id: l._id});
+    events.push({date: l.date, title: l.rider + ' — ' + l.type, sub: l.horse + ' · ' + l.trainer, color: '#6888BE', type: 'lesson', time: '09:00', _id: l._id||l.id||''});
   });
   // Vet visits
   vetVisits.forEach(function(v) {
     if (!v.date) return;
     var color = v.category === 'Emergency' ? '#b33a2a' : '#2d5a3d';
-    events.push({date: v.date, title: v.horse + ' — ' + v.category, sub: v.vet || '', color: color, type: 'vet', time: '10:00', _id: v._id});
+    events.push({date: v.date, title: v.horse + ' — ' + v.category, sub: v.vet || '', color: color, type: 'vet', time: '10:00', _id: v._id||v.id||''});
   });
   // Farrier
   farrierVisits.forEach(function(v) {
     if (!v.date) return;
-    events.push({date: v.date, title: v.horse + ' — Farrier', sub: v.service || '', color: '#c4830a', type: 'farrier', time: '11:00', _id: v._id});
+    events.push({date: v.date, title: v.horse + ' — Farrier', sub: v.service || '', color: '#c4830a', type: 'farrier', time: '11:00', _id: v._id||v.id||''});
   });
   // IEA Shows
   ieaShows.forEach(function(s) {
     if (!s.date) return;
-    events.push({date: s.date, title: 'IEA: ' + s.name, sub: s.location || '', color: '#c9a96e', type: 'show', time: '08:00'});
+    events.push({date: s.date, title: 'IEA: ' + s.name, sub: s.location || '', color: '#c9a96e', type: 'iea_show', time: '08:00', _id: s.id || s._id || ''});
   });
   // Shows
   showsData.forEach(function(s) {
     if (!s.date) return;
-    events.push({date: s.date, title: 'Show: ' + s.name, sub: s.location || '', color: '#c9a96e', type: 'show', time: '08:00'});
+    events.push({date: s.date, title: 'Show: ' + s.name, sub: s.location || '', color: '#c9a96e', type: 'show', time: '08:00', _id: s._id || s.id || ''});
   });
   // Other events
   calOtherEvents.forEach(function(e) {
@@ -5546,20 +5522,23 @@ function deleteCalEvent(btn) {
   var idx = parseInt(btn.getAttribute('data-idx'));
   if (!confirm('Delete this event?')) return;
   if (type === 'lesson') {
-    var i = lessonsData.findIndex(function(l){ return l._id === id || l.id === id; });
-    if (i !== -1) { if(id) dbDelete('lessons', id); lessonsData.splice(i, 1); }
+    var i = lessonsData.findIndex(function(l){ return (l._id&&l._id===id)||(l.id&&l.id===id); });
+    if (i !== -1) { var dbId=lessonsData[i]._id||lessonsData[i].id; if(dbId)dbDelete('lessons',dbId); lessonsData.splice(i,1); }
     renderLessons();
   } else if (type === 'vet') {
-    var i = vetVisits.findIndex(function(v){ return v._id === id || v.id === id; });
-    if (i !== -1) { if(id) dbDelete('vet_visits', id); vetVisits.splice(i, 1); }
+    var i = vetVisits.findIndex(function(v){ return (v._id&&v._id===id)||(v.id&&v.id===id); });
+    if (i !== -1) { var dbId=vetVisits[i]._id||vetVisits[i].id; if(dbId)dbDelete('vet_visits',dbId); vetVisits.splice(i,1); }
     renderVetVisits();
   } else if (type === 'farrier') {
-    var i = farrierVisits.findIndex(function(v){ return v._id === id || v.id === id; });
-    if (i !== -1) { if(id) dbDelete('farrier_visits', id); farrierVisits.splice(i, 1); }
+    var i = farrierVisits.findIndex(function(v){ return (v._id&&v._id===id)||(v.id&&v.id===id); });
+    if (i !== -1) { var dbId=farrierVisits[i]._id||farrierVisits[i].id; if(dbId)dbDelete('farrier_visits',dbId); farrierVisits.splice(i,1); }
     renderFarrier();
   } else if (type === 'show') {
-    var i = showsData.findIndex(function(s){ return s._id === id || s.id === id; });
-    if (i !== -1) { if(id) dbDelete('shows', id); showsData.splice(i, 1); renderShowsTable(); }
+    var i = showsData.findIndex(function(s){ return (s._id&&s._id===id)||(s.id&&s.id===id); });
+    if (i !== -1) { var dbId=showsData[i]._id||showsData[i].id; if(dbId)dbDelete('shows',dbId); showsData.splice(i,1); renderShowsTable(); }
+  } else if (type === 'iea_show') {
+    var i = ieaShows.findIndex(function(s){ return s.id===id||s._id===id; });
+    if (i !== -1) { dbDeleteIeaShow(ieaShows[i].id||ieaShows[i]._id); ieaShows.splice(i,1); renderIeaShowsTable(); }
   } else if (type === 'other') {
     if (!isNaN(idx) && calOtherEvents[idx]) {
       var ev = calOtherEvents[idx];
@@ -5672,15 +5651,18 @@ function renderDayView(container, title, events) {
         deleteBtn = '<button data-id="' + (e._id||'') + '" data-type="farrier" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
       } else if (e.type === 'show') {
         deleteBtn = '<button data-id="' + (e._id||'') + '" data-type="show" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
+      } else if (e.type === 'iea_show') {
+        deleteBtn = '<button data-id="' + (e._id||'') + '" data-type="iea_show" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
       } else if (e.type === 'other') {
         deleteBtn = '<button data-idx="' + (e._idx !== undefined ? e._idx : '') + '" data-type="other" onclick="deleteCalEvent(this)" style="' + delStyle + '" title="Delete">&#10005;</button>';
       }
+      var typeLabel = e.type === 'iea_show' ? 'IEA Show' : e.type;
       html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">' +
         '<div style="width:4px;border-radius:2px;background:' + e.color + ';align-self:stretch;flex-shrink:0"></div>' +
         '<div style="flex:1">' +
           '<div style="font-weight:600;font-size:15px;color:var(--text)">' + e.title + '</div>' +
           (e.sub ? '<div style="font-size:13px;color:var(--text-muted);margin-top:2px">' + e.sub + '</div>' : '') +
-          '<div style="margin-top:4px"><span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:' + e.color + '">' + e.type + '</span></div>' +
+          '<div style="margin-top:4px"><span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:' + e.color + '">' + typeLabel + '</span></div>' +
         '</div>' + deleteBtn + '</div>';
     });
   }
@@ -6611,19 +6593,20 @@ function renderCogginsMain() {
   tbody.innerHTML = allNames.map(function(horseName) {
     var rec = cogginsData[horseName] || {};
     var statusBadge = rec.status === 'Current' ? 'badge-green' : rec.status === 'Due' ? 'badge-red' : 'badge-gray';
-    var statusLabel = rec.status || '–';
+    var dateStr = rec.date ? new Date(rec.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
+    var safeH = horseName.replace(/'/g,'&#39;').replace(/"/g,'&quot;');
     var docCell = rec.url
-      ? '<a href="' + rec.url + '" target="_blank" style="color:var(--primary);font-size:12px;margin-right:6px">' + (rec.docName || 'View ↗') + '</a>' +
-        '<button class="btn btn-sm" onclick="cogginsUploadDoc(this.dataset.h)" data-h="' + horseName.replace(/'/g,'&#39;') + '" style="font-size:10px;padding:2px 5px" title="Replace document">↻</button>'
-      : '<button class="btn btn-sm" onclick="cogginsUploadDoc(this.dataset.h)" data-h="' + horseName.replace(/'/g,'&#39;') + '" style="color:var(--primary);border-color:var(--primary)">📎 Attach</button>';
+      ? '<a href="' + rec.url + '" target="_blank" style="color:var(--primary);font-size:12px;margin-right:6px">' + (rec.docName||'View ↗') + '</a>' +
+        '<button class="btn btn-sm" onclick="cogginsUploadDoc(\'' + safeH + '\')" style="font-size:10px;padding:2px 5px" title="Replace">↻</button>'
+      : '<button class="btn btn-sm" onclick="cogginsUploadDoc(\'' + safeH + '\')" style="color:var(--primary);border-color:var(--primary)">📎 Attach</button>';
     return '<tr>' +
       '<td><strong>' + horseName + '</strong></td>' +
-      '<td style="font-size:12px;color:var(--text-muted)">' + (rec.date ? new Date(rec.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–') + '</td>' +
-      '<td>' + (rec.status ? '<span class="badge ' + statusBadge + '">' + statusLabel + '</span>' : '–') + '</td>' +
+      '<td style="font-size:12px;color:var(--text-muted)">' + dateStr + '</td>' +
+      '<td>' + (rec.status ? '<span class="badge ' + statusBadge + '">' + rec.status + '</span>' : '–') + '</td>' +
       '<td>' + docCell + '</td>' +
       '<td style="text-align:right;white-space:nowrap">' +
-        '<button class="btn btn-sm" onclick="openCogginsEdit(this.dataset.h)" data-h="' + horseName.replace(/'/g,'&#39;') + '" style="margin-right:4px">✎ Edit</button>' +
-        '<button class="btn btn-sm" onclick="deleteCogginsEntry(this.dataset.h)" data-h="' + horseName.replace(/'/g,'&#39;') + '" style="color:var(--red);border-color:var(--red)">✕</button>' +
+        '<button class="btn btn-sm" onclick="openCogginsEdit(\'' + safeH + '\')" style="margin-right:4px">✎ Edit</button>' +
+        '<button class="btn btn-sm" onclick="deleteCogginsEntry(\'' + safeH + '\')" style="color:var(--red);border-color:var(--red)">✕</button>' +
       '</td></tr>';
   }).join('');
 }
@@ -6633,7 +6616,8 @@ var _cogginsEditingHorse = '';
 function openCogginsEdit(horseName) {
   _cogginsEditingHorse = horseName;
   var rec = cogginsData[horseName] || {};
-  document.getElementById('coggins-modal-horse-name').textContent = horseName;
+  var nameEl = document.getElementById('coggins-modal-horse-name');
+  if (nameEl) nameEl.textContent = horseName;
   document.getElementById('coggins-edit-date').value = rec.date || '';
   document.getElementById('coggins-edit-status').value = rec.status === 'Due' ? 'Due' : 'Current';
   openModal('modal-edit-coggins');
