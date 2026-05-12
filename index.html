@@ -2352,10 +2352,12 @@ async function dbLoadAll() {
 
     // Horses
     if (hRes.data && hRes.data.length) {
+      console.log('[Heron] Raw horse data from DB:', hRes.data.map(function(h){ return {name:h.name, photo: h.photo ? h.photo.slice(0,60)+'...' : 'EMPTY'}; }));
       var active = hRes.data.filter(function(h) { return !h.archived; }).map(dbToHorse);
       var archived = hRes.data.filter(function(h) { return h.archived; }).map(dbToHorse);
       horses.splice(0, horses.length, ...active);
       archivedHorses.splice(0, archivedHorses.length, ...archived);
+      console.log('[Heron] Horses after dbToHorse:', horses.map(function(h){ return {name:h.name, photo: h.photo ? h.photo.slice(0,60)+'...' : 'EMPTY'}; }));
     }
 
     // Calendar other events
@@ -2461,6 +2463,7 @@ async function dbLoadAll() {
 
     hideLoadingToast();
     restorePhotosFromStorage();
+    console.log('[Heron] Horses after restorePhotos:', horses.map(function(h){ return {name:h.name, photo: h.photo ? h.photo.slice(0,60)+'...' : 'EMPTY'}; }));
     renderAll();
     return true;
   } catch(e) {
