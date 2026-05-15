@@ -4710,6 +4710,20 @@ function renderBoarderAddons() {
   }).join('');
 }
 
+function saveBoarderAddons() {
+  localStorage.setItem('hs_boarder_addons', JSON.stringify(boarderAddons));
+}
+
+function loadBoarderAddons() {
+  var saved = localStorage.getItem('hs_boarder_addons');
+  if (saved) {
+    try {
+      var loaded = JSON.parse(saved);
+      boarderAddons.splice(0, boarderAddons.length, ...loaded);
+    } catch(e) { console.error('Failed to load boarder addons:', e); }
+  }
+}
+
 function addBoarderAddon() {
   var item = document.getElementById('addon-item').value.trim();
   var amount = parseFloat(document.getElementById('addon-amount').value);
@@ -4717,12 +4731,14 @@ function addBoarderAddon() {
   boarderAddons.push({item: item, amount: amount});
   document.getElementById('addon-item').value = '';
   document.getElementById('addon-amount').value = '';
+  saveBoarderAddons();
   renderBoarderAddons();
   toast('✓ Added');
 }
 
 function removeBoarderAddon(i) {
   boarderAddons.splice(i, 1);
+  saveBoarderAddons();
   renderBoarderAddons();
 }
 
@@ -5943,6 +5959,7 @@ function initApp() {
     } catch(e) {}
     // Initialize tables after a brief delay to ensure DOM is ready
     setTimeout(function() {
+      try { loadBoarderAddons(); } catch(e) { console.error('loadBoarderAddons error:', e); }
       try { renderAlexTraining(); } catch(e) { console.error('renderAlexTraining error:', e); }
       try { renderBoarderAddons(); } catch(e) { console.error('renderBoarderAddons error:', e); }
     }, 100);
