@@ -1492,14 +1492,10 @@ function checkAppPassword() {
               <option value="Half lesson - $60">Half lesson - $60</option>
               <option value="custom">Custom / other…</option>
             </select>
-            <input type="text" id="l-fee" placeholder="or type any amount / note" oninput="calcLessonSplits()" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none" value="$120">
+            <input type="text" id="l-fee" placeholder="or type any amount / note" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);outline:none" value="$120">
           </div>
         </div>
         <div class="form-group"><label>Paid?</label><select id="l-paid"><option value="unpaid">Unpaid</option><option value="paid">Paid</option><option value="pending">Pending</option></select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Alex split</label><input type="text" id="l-alex-split" placeholder="Auto" readonly style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:#f5f5f5;color:var(--text);outline:none;width:100%"></div>
-        <div class="form-group"><label>Barn split</label><input type="text" id="l-barn-split" placeholder="Auto" readonly style="padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:#f5f5f5;color:var(--text);outline:none;width:100%"></div>
       </div>
       <div class="form-group"><label>Notes / observations</label><textarea id="l-notes" rows="2" placeholder="e.g. Good progress on lead changes…" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;background:var(--cream);color:var(--text)"></textarea></div>
     </div>
@@ -4456,9 +4452,7 @@ function renderLessons() {
     var paidClass = l.paid === 'paid' ? 'badge-green' : l.paid === 'pending' ? 'badge-amber' : l.paid === 'followup' ? 'badge-blue' : 'badge-red';
     var paidLabel = l.paid === 'paid' ? 'Paid' : l.paid === 'pending' ? 'Pending' : l.paid === 'followup' ? 'Follow up' : 'Unpaid';
     var row = document.createElement('tr');
-    var alexSplit = l.alexSplit || '';
-    var barnSplit = l.barnSplit || '';
-    row.innerHTML = '<td>' + dateStr + '</td><td><strong>' + l.rider + '</strong></td><td>' + l.horse + '</td><td><span class="badge badge-blue" style="font-size:10px">' + l.type + '</span></td><td>' + l.duration + '</td><td style="color:var(--text-muted)">' + l.trainer + '</td><td>$' + l.fee + '</td>' + (alexSplit ? '<td style="font-size:12px;color:var(--text-muted)">' + alexSplit + '</td><td style="font-size:12px;color:var(--text-muted)">' + barnSplit + '</td>' : '<td colspan="2" style="font-size:12px;color:var(--text-muted)">–</td>') + '<td><span class="badge ' + paidClass + '">' + paidLabel + '</span></td><td style="color:var(--text-muted);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.notes||'–') + '</td><td style="white-space:nowrap"><button class="btn btn-sm" title="Add to app calendar" onclick="addLessonToAppCalendar(' + globalIdx + ')" style="margin-right:2px">&#128197;</button><button class="btn btn-sm" onclick="editLesson(' + globalIdx + ')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteLesson(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td>';
+    row.innerHTML = '<td>' + dateStr + '</td><td><strong>' + l.rider + '</strong></td><td>' + l.horse + '</td><td><span class="badge badge-blue" style="font-size:10px">' + l.type + '</span></td><td>' + l.duration + '</td><td style="color:var(--text-muted)">' + l.trainer + '</td><td>$' + l.fee + '</td><td><span class="badge ' + paidClass + '">' + paidLabel + '</span></td><td style="color:var(--text-muted);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.notes||'–') + '</td><td style="white-space:nowrap"><button class="btn btn-sm" title="Add to app calendar" onclick="addLessonToAppCalendar(' + globalIdx + ')" style="margin-right:2px">&#128197;</button><button class="btn btn-sm" onclick="editLesson(' + globalIdx + ')" style="margin-right:2px">&#9999;</button><button class="btn btn-sm" onclick="deleteLesson(' + globalIdx + ')" style="color:var(--red);border-color:var(--red)">&#10005;</button></td>';
     tbody.appendChild(row);
   });
   var total = list.length;
@@ -4510,7 +4504,6 @@ function editLesson(globalIdx) {
   document.getElementById('l-type').value = l.type;
   document.getElementById('l-duration').value = l.duration;
   document.getElementById('l-fee').value = l.fee;
-  setTimeout(calcLessonSplits, 50);
   var sel = document.getElementById('l-fee-select');
   var opts = Array.from(sel.options).map(function(o){return o.value;});
   sel.value = opts.includes(l.fee) ? l.fee : 'custom';
@@ -4550,9 +4543,7 @@ function saveLesson() {
     date: date, trainer: document.getElementById('l-trainer').value, rider: rider, horse: horse,
     type: document.getElementById('l-type').value, duration: document.getElementById('l-duration').value,
     fee: document.getElementById('l-fee').value.trim() || '$120',
-    paid: document.getElementById('l-paid').value, notes: document.getElementById('l-notes').value,
-    alexSplit: document.getElementById('l-alex-split') ? document.getElementById('l-alex-split').value : '',
-    barnSplit: document.getElementById('l-barn-split') ? document.getElementById('l-barn-split').value : ''
+    paid: document.getElementById('l-paid').value, notes: document.getElementById('l-notes').value
   };
   if (editingLessonIdx >= 0) { lessonsData[editingLessonIdx] = l; toast('✅ Lesson updated!'); editingLessonIdx = -1; }
   else { lessonsData.push(l); document.getElementById('lesson-month-filter').value = date.slice(0,7); toast('🎓 Lesson logged!'); }
@@ -4587,11 +4578,8 @@ function exportLessons() {
   var monthLabel = new Date(month + '-15').toLocaleDateString('en-US',{month:'long',year:'numeric'});
   var revenue = list.reduce(function(s,l) { var f = parseFloat(String(l.fee).replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
   var unpaid = list.filter(function(l) { return l.paid !== 'paid'; }).reduce(function(s,l) { var f = parseFloat(String(l.fee).replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
-  var alexTotal = list.reduce(function(s,l) { var f = parseFloat(String(l.alexSplit||'').replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
-  var barnTotal = list.reduce(function(s,l) { var f = parseFloat(String(l.barnSplit||'').replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
-  var rows = list.map(function(l) { var d = new Date(l.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}); var alex = l.alexSplit ? ' (A:' + l.alexSplit + ' B:' + l.barnSplit + ')' : ''; return '  ' + d.padEnd(8) + ' | ' + l.rider.padEnd(22) + ' | ' + l.horse.padEnd(14) + ' | ' + l.type.padEnd(16) + ' | ' + String(l.fee).padStart(5) + alex + ' | ' + l.paid; }).join('\n');
-  var splitSummary = alexTotal > 0 ? '\n  Alex split    : $' + alexTotal.toLocaleString() + '\n  Barn split    : $' + barnTotal.toLocaleString() : '';
-  var report = 'HERON STABLES — LESSON REPORT\n' + monthLabel + ' | Trainer: ' + (trainer === 'all' ? 'All' : trainer) + '\n' + '─'.repeat(82) + '\n  Date     | Rider                  | Horse          | Type             | Fee  | Status\n' + '─'.repeat(82) + '\n' + rows + '\n' + '─'.repeat(82) + '\n\n  Total lessons : ' + list.length + '\n  Total revenue : $' + revenue.toLocaleString() + splitSummary + '\n  Still unpaid  : $' + unpaid.toLocaleString() + '\n\nGenerated by Heron Stables Management Portal';
+  var rows = list.map(function(l) { var d = new Date(l.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}); return '  ' + d.padEnd(8) + ' | ' + l.rider.padEnd(22) + ' | ' + l.horse.padEnd(14) + ' | ' + l.type.padEnd(16) + ' | ' + String(l.fee).padStart(5) + ' | ' + l.paid; }).join('\n');
+  var report = 'HERON STABLES — LESSON REPORT\n' + monthLabel + ' | Trainer: ' + (trainer === 'all' ? 'All' : trainer) + '\n' + '─'.repeat(82) + '\n  Date     | Rider                  | Horse          | Type             | Fee  | Status\n' + '─'.repeat(82) + '\n' + rows + '\n' + '─'.repeat(82) + '\n\n  Total lessons : ' + list.length + '\n  Total revenue : $' + revenue.toLocaleString() + '\n  Still unpaid  : $' + unpaid.toLocaleString() + '\n\nGenerated by Heron Stables Management Portal';
   document.getElementById('share-preview').textContent = report;
   openModal('modal-share-lessons');
 }
@@ -6247,25 +6235,9 @@ function switchIeaShowTab(el, show) {
 // ==========================================
 // LESSON SPLITS
 // ==========================================
-function calcLessonSplits() {
-  var feeStr = document.getElementById('l-fee') ? document.getElementById('l-fee').value : '';
-  var num = parseFloat(feeStr.replace(/[^0-9.]/g,''));
-  var alexEl = document.getElementById('l-alex-split');
-  var barnEl = document.getElementById('l-barn-split');
-  if (!alexEl || !barnEl) return;
-  if (!isNaN(num) && num > 0) {
-    var half = (num / 2).toFixed(2);
-    alexEl.value = '$' + half;
-    barnEl.value = '$' + half;
-  } else {
-    alexEl.value = '';
-    barnEl.value = '';
-  }
-}
 
 function applyFeePresetWithSplit(val) {
   if (typeof applyFeePreset === 'function') applyFeePreset(val);
-  setTimeout(calcLessonSplits, 50);
 }
 
 // ==========================================
