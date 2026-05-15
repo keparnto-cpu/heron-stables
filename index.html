@@ -825,24 +825,26 @@ function checkAppPassword() {
     <div class="page" id="page-lessons">
       <div class="section-header">
         <div class="section-title">Lessons log</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select class="filter-select" id="lesson-month-filter" onchange="filterLessons()">
-            <option value="2026-05">May 2026</option>
-            <option value="2026-04">April 2026</option>
-            <option value="2026-03">March 2026</option>
-            <option value="2026-02">February 2026</option>
-            <option value="2026-01">January 2026</option>
-          </select>
-          <select class="filter-select" id="lesson-trainer-filter" onchange="filterLessons()">
-            <option value="all">All trainers</option>
-            <option value="Alex Charles">Alex Charles</option>
-            <option value="Caroline Johnston">Caroline Johnston</option>
-          </select>
-          <button class="btn btn-sm" onclick="openModal('modal-boarder-addons')" style="background:#e8f4f8;border-color:#4db8d6;color:#4db8d6">🛒 Boarder add ons</button>
-          <button class="btn btn-sm" onclick="openModal('modal-alex-training')" style="background:#f0e8f8;border-color:#9b7ec1;color:#9b7ec1">🏇 Alex Board training</button>
-          <button class="btn btn-sm" onclick="emailLessonsReport()" style="background:var(--amber-pale);border-color:var(--amber);color:var(--amber)">📤 Share with Pato</button>
-          <button class="btn btn-primary btn-sm" onclick="populateSelects();openModal('modal-add-lesson')">+ Log lesson</button>
-        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <select class="filter-select" id="lesson-month-filter" onchange="filterLessons()">
+          <option value="2026-05">May 2026</option>
+          <option value="2026-04">April 2026</option>
+          <option value="2026-03">March 2026</option>
+          <option value="2026-02">February 2026</option>
+          <option value="2026-01">January 2026</option>
+        </select>
+        <select class="filter-select" id="lesson-trainer-filter" onchange="filterLessons()">
+          <option value="all">All trainers</option>
+          <option value="Alex Charles">Alex Charles</option>
+          <option value="Caroline Johnston">Caroline Johnston</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="openModal('modal-boarder-addons')" style="background:#e8f4f8;border-color:#4db8d6;color:#4db8d6">🛒 Boarder add ons</button>
+        <button class="btn btn-sm" onclick="openModal('modal-alex-training')" style="background:#f0e8f8;border-color:#9b7ec1;color:#9b7ec1">🏇 Alex Board training</button>
+        <button class="btn btn-sm" onclick="emailLessonsReport()" style="background:var(--amber-pale);border-color:var(--amber);color:var(--amber)">📤 Share with Pato</button>
+        <button class="btn btn-primary btn-sm" onclick="populateSelects();openModal('modal-add-lesson')">+ Log lesson</button>
       </div>
 
       <div class="metrics-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
@@ -866,6 +868,15 @@ function checkAppPassword() {
           <div class="metric-value" id="stat-revenue">$0</div>
           <div class="metric-sub">Lesson fees</div>
         </div>
+      </div>
+
+      <!-- BOARDER ADD ONS DISPLAY -->
+      <div class="card" style="border-left:3px solid #4db8d6;margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px">🛒 Boarder add ons</div>
+          <button class="btn btn-sm" onclick="openModal('modal-boarder-addons')" style="background:#e8f4f8;border-color:#4db8d6;color:#4db8d6">Manage</button>
+        </div>
+        <div id="page-boarder-addons-display" style="color:var(--text-muted);font-size:14px">No add-ons added yet</div>
       </div>
 
       <div class="card">
@@ -4703,11 +4714,28 @@ function renderAlexTraining() {
 }
 
 function renderBoarderAddons() {
+  // Render modal list
   var list = document.getElementById('boarder-addons-list');
-  if (!boarderAddons.length) { list.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px">No add-ons added yet</div>'; return; }
-  list.innerHTML = boarderAddons.map(function(item, i) {
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid var(--border);border-radius:4px;margin-bottom:8px"><div><strong>' + item.item + '</strong><div style="color:var(--text-muted);font-size:12px">$' + item.amount.toLocaleString() + '</div></div><button class="btn btn-sm" onclick="removeBoarderAddon(' + i + ')" style="color:var(--red);border-color:var(--red)">✕</button></div>';
-  }).join('');
+  if (list) {
+    if (!boarderAddons.length) { list.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px">No add-ons added yet</div>'; }
+    else {
+      list.innerHTML = boarderAddons.map(function(item, i) {
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid var(--border);border-radius:4px;margin-bottom:8px"><div><strong>' + item.item + '</strong><div style="color:var(--text-muted);font-size:12px">$' + item.amount.toLocaleString() + '</div></div><button class="btn btn-sm" onclick="removeBoarderAddon(' + i + ')" style="color:var(--red);border-color:var(--red)">✕</button></div>';
+      }).join('');
+    }
+  }
+
+  // Render page display
+  var display = document.getElementById('page-boarder-addons-display');
+  if (display) {
+    if (!boarderAddons.length) { display.innerHTML = 'No add-ons added yet'; }
+    else {
+      var total = boarderAddons.reduce(function(s,item) { return s + item.amount; }, 0);
+      display.innerHTML = boarderAddons.map(function(item) {
+        return '<div style="padding:8px 0;display:flex;justify-content:space-between"><span>' + item.item + '</span><strong>$' + item.amount.toLocaleString() + '</strong></div>';
+      }).join('') + '<div style="padding-top:8px;border-top:1px solid var(--border);margin-top:8px;display:flex;justify-content:space-between;font-weight:600;color:#4db8d6">Total:<strong>$' + total.toLocaleString() + '</strong></div>';
+    }
+  }
 }
 
 function saveBoarderAddons() {
@@ -4719,7 +4747,11 @@ function loadBoarderAddons() {
   if (saved) {
     try {
       var loaded = JSON.parse(saved);
-      boarderAddons.splice(0, boarderAddons.length, ...loaded);
+      // Clear and reload
+      boarderAddons.length = 0;
+      for (var i = 0; i < loaded.length; i++) {
+        boarderAddons.push(loaded[i]);
+      }
     } catch(e) { console.error('Failed to load boarder addons:', e); }
   }
 }
