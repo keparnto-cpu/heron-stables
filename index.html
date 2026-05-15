@@ -838,6 +838,8 @@ function checkAppPassword() {
             <option value="Alex Charles">Alex Charles</option>
             <option value="Caroline Johnston">Caroline Johnston</option>
           </select>
+          <button class="btn btn-sm" onclick="openModal('modal-boarder-addons')" style="background:#e8f4f8;border-color:#4db8d6;color:#4db8d6">🛒 Boarder add ons</button>
+          <button class="btn btn-sm" onclick="openModal('modal-alex-training')" style="background:#f0e8f8;border-color:#9b7ec1;color:#9b7ec1">🏇 Alex Board training</button>
           <button class="btn btn-sm" onclick="emailLessonsReport()" style="background:var(--amber-pale);border-color:var(--amber);color:var(--amber)">📤 Share with Pato</button>
           <button class="btn btn-primary btn-sm" onclick="populateSelects();openModal('modal-add-lesson')">+ Log lesson</button>
         </div>
@@ -1502,6 +1504,45 @@ function checkAppPassword() {
     <div class="modal-footer">
       <button class="btn" onclick="closeModal()">Cancel</button>
       <button class="btn btn-primary" id="lesson-save-btn" onclick="saveLesson()">Log lesson</button>
+    </div>
+  </div>
+
+  <!-- BOARDER ADD ONS -->
+  <div class="modal-box" id="modal-boarder-addons" style="display:none;max-width:600px">
+    <div class="modal-header"><span>🛒 Boarder add ons</span><span class="modal-close" onclick="closeModal()">✕</span></div>
+    <div class="modal-body">
+      <div id="boarder-addons-list" style="margin-bottom:20px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input type="text" id="addon-item" placeholder="Item" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:4px">
+        <input type="number" id="addon-amount" placeholder="Amount" style="width:120px;padding:8px;border:1px solid var(--border);border-radius:4px">
+        <button class="btn" onclick="addBoarderAddon()">Add</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Done</button>
+    </div>
+  </div>
+
+  <!-- ALEX BOARD TRAINING -->
+  <div class="modal-box" id="modal-alex-training" style="display:none;max-width:600px">
+    <div class="modal-header"><span>🏇 Alex Board training</span><span class="modal-close" onclick="closeModal()">✕</span></div>
+    <div class="modal-body">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f5f5f5;border-bottom:2px solid #8b7355">
+            <th style="padding:12px;text-align:left;font-weight:600">Horse</th>
+            <th style="padding:12px;text-align:right;font-weight:600">Amount ($)</th>
+          </tr>
+        </thead>
+        <tbody id="alex-training-list"></tbody>
+      </table>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-weight:600;font-size:16px">
+        <span>Total</span>
+        <span id="alex-training-total">$0</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Done</button>
     </div>
   </div>
 
@@ -2996,6 +3037,22 @@ const archivedBoarders = [];
 
 const lessonsData = [];
 
+const boarderAddons = [];
+
+const alexTraining = [
+  {horse: 'Gus', amount: 1400},
+  {horse: 'V (Valentina)', amount: 1080},
+  {horse: 'Buddy', amount: 1400},
+  {horse: 'Nevers', amount: 1400},
+  {horse: 'Q', amount: 1140},
+  {horse: 'Cass', amount: 800},
+  {horse: 'Coco', amount: 960},
+  {horse: 'Luther', amount: 1140},
+  {horse: 'Gigi', amount: 490},
+  {horse: 'Utopia', amount: 1400},
+  {horse: 'Della', amount: 1400}
+];
+
 const scheduleData = [
   {day:'Mon 5',time:'8:00 AM',client:'Erin Polos',type:'Jump lesson',horse:'Stanley',status:'Confirmed'},
   {day:'Mon 5',time:'10:00 AM',client:'Sherri Pyka',type:'Flatwork',horse:'Diplo',status:'Confirmed'},
@@ -3060,6 +3117,9 @@ function openModal(id) {
   document.getElementById('modal-overlay').style.display = 'flex';
   document.querySelectorAll('.modal-box').forEach(function(m) { m.style.display = 'none'; });
   document.getElementById(id).style.display = 'block';
+  // Render tables when modals are opened
+  if (id === 'modal-alex-training') { try { renderAlexTraining(); } catch(e) { console.error('renderAlexTraining:', e); } }
+  if (id === 'modal-boarder-addons') { try { renderBoarderAddons(); } catch(e) { console.error('renderBoarderAddons:', e); } }
 }
 function closeModal() {
   document.getElementById('modal-overlay').style.display = 'none';
@@ -4557,15 +4617,113 @@ function saveLesson() {
 }
 
 function emailLessonsReport() {
-  exportLessons();
-  setTimeout(function() {
-    var preview = document.getElementById('share-preview');
-    var body = preview ? preview.textContent : 'See lesson report.';
-    var subject = 'Heron Stables — Lesson Report';
-    window.location.href = 'mailto:info@heronstables.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-    closeModal();
-    toast('📧 Opening email…');
-  }, 300);
+  try {
+    var month = document.getElementById('lesson-month-filter').value;
+    var trainer = document.getElementById('lesson-trainer-filter').value;
+
+    if (!month) { toast('Please select a month', '#c0392b'); return; }
+
+    var list = lessonsData.filter(function(l) { return l.date.startsWith(month); });
+    if (trainer !== 'all') { list = list.filter(function(l) { return l.trainer === trainer; }); }
+
+    if (!list.length) { toast('No lessons to send', '#c0392b'); return; }
+
+    var monthLabel = new Date(month + '-15').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    var revenue = list.reduce(function(s,l) { var f = parseFloat(String(l.fee).replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
+    var unpaid = list.filter(function(l) { return l.paid !== 'paid'; }).reduce(function(s,l) { var f = parseFloat(String(l.fee).replace(/[^0-9.]/g,'')); return s + (isNaN(f) ? 0 : f); }, 0);
+
+    var alexTotal = alexTraining.reduce(function(s,item) { return s + item.amount; }, 0);
+    var addonsTotal = boarderAddons.reduce(function(s,item) { return s + item.amount; }, 0);
+
+    var body = 'HERON STABLES — REPORT\n' + monthLabel + '\n\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+      'LESSONS | Trainer: ' + (trainer === 'all' ? 'All' : trainer) + '\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+      'Date      | Rider                  | Horse          | Type             | Duration | Fee    | Status\n' +
+      list.map(function(l) {
+        var d = new Date(l.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        var status = l.paid === 'paid' ? '✓ Paid' : l.paid === 'pending' ? '⏱ Pending' : '⚠ Unpaid';
+        return d.padEnd(9) + '| ' + l.rider.padEnd(22) + '| ' + l.horse.padEnd(14) + '| ' + l.type.padEnd(16) + '| ' + (l.duration||'—').padEnd(8) + '| ' + String(l.fee).padStart(5) + ' | ' + status;
+      }).join('\n') + '\n' +
+      '\nTotal Lessons: ' + list.length + '\nTotal Revenue: $' + revenue.toLocaleString('en-US', {minimumFractionDigits: 2}) + '\nStill Unpaid: $' + unpaid.toLocaleString('en-US', {minimumFractionDigits: 2}) + '\n' +
+
+      '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+      'ALEX BOARD TRAINING\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+      'Horse                       | Amount ($)\n' +
+      alexTraining.map(function(item) { return item.horse.padEnd(27) + '| $' + item.amount.toLocaleString(); }).join('\n') + '\n' +
+      '\nTotal: $' + alexTotal.toLocaleString() + '\n' +
+
+      (boarderAddons.length ?
+        '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+        'BOARDER ADD ONS\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+        'Item                        | Amount ($)\n' +
+        boarderAddons.map(function(item) { return item.item.padEnd(27) + '| $' + item.amount.toLocaleString(); }).join('\n') + '\n' +
+        '\nTotal: $' + addonsTotal.toLocaleString() + '\n'
+      : '') +
+
+      '\nGenerated by Heron Stables Management Portal';
+
+    // Generate beautiful HTML report
+    var lessonsHTML = list.map(function(l) {
+      var d = new Date(l.date + 'T12:00:00').toLocaleDateString('en-US', {month:'short',day:'numeric'});
+      var status = l.paid === 'paid' ? '✓ Paid' : l.paid === 'pending' ? '⏱ Pending' : '⚠ Unpaid';
+      return '<tr><td style="padding:12px;border-bottom:1px solid #e0e0e0">' + d + '</td><td style="padding:12px;border-bottom:1px solid #e0e0e0">' + l.rider + '</td><td style="padding:12px;border-bottom:1px solid #e0e0e0">' + l.horse + '</td><td style="padding:12px;border-bottom:1px solid #e0e0e0">' + l.type + '</td><td style="padding:12px;border-bottom:1px solid #e0e0e0">' + (l.duration||'—') + '</td><td style="padding:12px;border-bottom:1px solid #e0e0e0;text-align:right">' + l.fee + '</td><td style="padding:12px;border-bottom:1px solid #e0e0e0;text-align:center">' + status + '</td></tr>';
+    }).join('');
+
+    var alexHTML = alexTraining.map(function(item) {
+      return '<tr><td style="padding:12px;border-bottom:1px solid #e0e0e0">' + item.horse + '</td><td style="padding:12px;border-bottom:1px solid #e0e0e0;text-align:right">$' + item.amount.toLocaleString() + '</td></tr>';
+    }).join('');
+
+    var addonsHTML = boarderAddons.length ? boarderAddons.map(function(item) {
+      return '<tr><td style="padding:12px;border-bottom:1px solid #e0e0e0">' + item.item + '</td><td style="padding:12px;border-bottom:1px solid #e0e0e0;text-align:right">$' + item.amount.toLocaleString() + '</td></tr>';
+    }).join('') : '';
+
+    var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;line-height:1.6;color:#333;background:#f5f5f5;margin:0;padding:20px}.container{max-width:800px;margin:0 auto;background:white;padding:40px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}.header{text-align:center;margin-bottom:40px;border-bottom:3px solid #8b7355;padding-bottom:20px}.header h1{margin:0;color:#8b7355;font-size:32px}.header p{margin:8px 0 0 0;color:#666;font-size:16px}.section{margin-bottom:40px}.section h2{color:#8b7355;font-size:18px;margin-bottom:20px;border-bottom:2px solid #8b7355;padding-bottom:10px}table{width:100%;border-collapse:collapse;margin-bottom:16px}th{background:#f9f9f9;padding:12px;text-align:left;font-weight:600;border-bottom:2px solid #ddd}.summary{background:#f9f9f9;padding:16px;border-radius:4px}.summary-line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ddd}.summary-line:last-child{border-bottom:none;font-weight:600;font-size:16px;color:#8b7355}.footer{text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid #ddd;color:#999;font-size:12px}</style></head><body><div class="container"><div class="header"><h1>🐴 Heron Stables</h1><p>Lesson Report — ' + monthLabel + '</p></div><div class="section"><h2>📚 LESSONS (Trainer: ' + (trainer === 'all' ? 'All' : trainer) + ')</h2><table><tr style="background:#f9f9f9"><th>Date</th><th>Rider</th><th>Horse</th><th>Type</th><th>Duration</th><th style="text-align:right">Fee</th><th style="text-align:center">Status</th></tr>' + lessonsHTML + '</table><div class="summary"><div class="summary-line"><span>Total Lessons:</span><strong>' + list.length + '</strong></div><div class="summary-line"><span>Total Revenue:</span><strong>$' + revenue.toLocaleString('en-US',{minimumFractionDigits:2}) + '</strong></div><div class="summary-line" style="color:#c0392b"><span>Still Unpaid:</span><strong>$' + unpaid.toLocaleString('en-US',{minimumFractionDigits:2}) + '</strong></div></div></div><div class="section"><h2>🏇 ALEX BOARD TRAINING</h2><table><tr style="background:#f9f9f9"><th>Horse</th><th style="text-align:right">Amount</th></tr>' + alexHTML + '</table><div class="summary" style="display:flex;justify-content:space-between;font-weight:600;font-size:16px;color:#8b7355"><span>Total</span><span>$' + alexTotal.toLocaleString() + '</span></div></div>' + (boarderAddons.length ? '<div class="section"><h2>🛒 BOARDER ADD ONS</h2><table><tr style="background:#f9f9f9"><th>Item</th><th style="text-align:right">Amount</th></tr>' + addonsHTML + '</table><div class="summary" style="display:flex;justify-content:space-between;font-weight:600;font-size:16px;color:#9b7ec1"><span>Total</span><span>$' + addonsTotal.toLocaleString() + '</span></div></div>' : '') + '<div class="footer">Generated by Heron Stables Management Portal</div></div></body></html>';
+
+    var newWin = window.open('', 'lessonReport');
+    newWin.document.write(html);
+    newWin.document.close();
+    toast('✅ Report opened — copy & paste into your email');
+  } catch(e) {
+    console.error('emailLessonsReport error:', e);
+    toast('Error generating report: ' + e.message, '#c0392b');
+  }
+}
+
+function renderAlexTraining() {
+  var tbody = document.getElementById('alex-training-list');
+  var total = 0;
+  tbody.innerHTML = alexTraining.map(function(item) {
+    total += item.amount;
+    return '<tr style="border-bottom:1px solid #e0e0e0"><td style="padding:12px">' + item.horse + '</td><td style="padding:12px;text-align:right">$' + item.amount.toLocaleString() + '</td></tr>';
+  }).join('');
+  document.getElementById('alex-training-total').textContent = '$' + total.toLocaleString();
+}
+
+function renderBoarderAddons() {
+  var list = document.getElementById('boarder-addons-list');
+  if (!boarderAddons.length) { list.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:20px">No add-ons added yet</div>'; return; }
+  list.innerHTML = boarderAddons.map(function(item, i) {
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid var(--border);border-radius:4px;margin-bottom:8px"><div><strong>' + item.item + '</strong><div style="color:var(--text-muted);font-size:12px">$' + item.amount.toLocaleString() + '</div></div><button class="btn btn-sm" onclick="removeBoarderAddon(' + i + ')" style="color:var(--red);border-color:var(--red)">✕</button></div>';
+  }).join('');
+}
+
+function addBoarderAddon() {
+  var item = document.getElementById('addon-item').value.trim();
+  var amount = parseFloat(document.getElementById('addon-amount').value);
+  if (!item || isNaN(amount) || amount < 0) { toast('Please fill in item and amount', '#c0392b'); return; }
+  boarderAddons.push({item: item, amount: amount});
+  document.getElementById('addon-item').value = '';
+  document.getElementById('addon-amount').value = '';
+  renderBoarderAddons();
+  toast('✓ Added');
+}
+
+function removeBoarderAddon(i) {
+  boarderAddons.splice(i, 1);
+  renderBoarderAddons();
 }
 
 function exportLessons() {
@@ -5783,6 +5941,11 @@ function initApp() {
         else showPage(lastPage, null);
       }
     } catch(e) {}
+    // Initialize tables after a brief delay to ensure DOM is ready
+    setTimeout(function() {
+      try { renderAlexTraining(); } catch(e) { console.error('renderAlexTraining error:', e); }
+      try { renderBoarderAddons(); } catch(e) { console.error('renderBoarderAddons error:', e); }
+    }, 100);
   });
 }
 
