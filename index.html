@@ -416,6 +416,9 @@ function checkAppPassword() {
     </div>
 
     <div class="nav-section-label">Documents</div>
+    <div class="nav-item" onclick="checkBillingPassword(this)">
+      <span>💳</span><span>Monthly Billing</span>
+    </div>
     <div class="nav-item" onclick="checkDocsPassword(this)">
       <span class="nav-icon">📄</span> Documents
     </div>
@@ -1324,6 +1327,160 @@ function checkAppPassword() {
 
 
 
+    <!-- MONTHLY BILLING -->
+    <div class="page" id="page-billing">
+      <div class="section-header">
+        <div class="section-title">Monthly Billing</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="billing-month-select" onchange="billingMonthChanged()" style="padding:6px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text)"></select>
+          <button class="btn btn-sm" onclick="billingArchiveMonth()" style="font-size:12px">Archive Month</button>
+          <button class="btn btn-primary btn-sm" onclick="billingNewMonth()" style="font-size:12px">+ New Month</button>
+        </div>
+      </div>
+
+      <div class="tabs" id="billing-tabs">
+        <div class="tab active" onclick="switchBillingTab(this,'billing-invoicing')">Invoicing</div>
+        <div class="tab" onclick="switchBillingTab(this,'billing-medsupps')">Med & Supplement Pricing</div>
+        <div class="tab" onclick="switchBillingTab(this,'billing-horseinfo')">Horse Meds & Supps</div>
+        <div class="tab" onclick="switchBillingTab(this,'billing-boarding')">Boarding Prices</div>
+        <div class="tab" onclick="switchBillingTab(this,'billing-packages')">Lesson Packages</div>
+        <div class="tab" onclick="switchBillingTab(this,'billing-staff')">Staff Payments</div>
+      </div>
+
+      <!-- TAB: INVOICING -->
+      <div id="billing-invoicing">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px">
+          <!-- Column 1: Send invoices -->
+          <div class="card">
+            <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:14px;letter-spacing:0.04em;text-transform:uppercase;">Send Invoices To</div>
+            <div id="billing-invoice-checklist" style="display:flex;flex-direction:column;gap:10px"></div>
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Add client</div>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="billing-new-client-input" placeholder="Client name…" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text)" onkeydown="if(event.key==='Enter')billingAddClient()">
+                <button class="btn btn-primary btn-sm" onclick="billingAddClient()">Add</button>
+              </div>
+            </div>
+          </div>
+          <!-- Column 2: Paid -->
+          <div class="card">
+            <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:14px;letter-spacing:0.04em;text-transform:uppercase;">Paid</div>
+            <div id="billing-paid-checklist" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+          <!-- Column 3: Notes -->
+          <div class="card">
+            <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:14px;letter-spacing:0.04em;text-transform:uppercase;">Invoice Notes</div>
+            <textarea id="billing-invoice-notes" placeholder="Notes, reminders, follow-ups…" style="width:100%;min-height:180px;padding:9px 12px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);resize:vertical;box-sizing:border-box" oninput="billingAutoSave()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: MED & SUPPLEMENT PRICING -->
+      <div id="billing-medsupps" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px">
+          <!-- Medications -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-size:11px;font-weight:600;color:var(--text);letter-spacing:0.04em;text-transform:uppercase;">Medications</div>
+              <button class="btn btn-primary btn-sm" onclick="billingAddMed()">+ Add</button>
+            </div>
+            <table style="width:100%">
+              <thead><tr><th>Medication</th><th>Price</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody id="billing-meds-tbody"></tbody>
+            </table>
+            <div id="billing-meds-empty" style="color:var(--text-muted);font-size:13px;padding:16px 0;text-align:center">No medications added yet.</div>
+          </div>
+          <!-- Supplements -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-size:11px;font-weight:600;color:var(--text);letter-spacing:0.04em;text-transform:uppercase;">Supplements</div>
+              <button class="btn btn-primary btn-sm" onclick="billingAddSupp()">+ Add</button>
+            </div>
+            <table style="width:100%">
+              <thead><tr><th>Supplement</th><th>Price</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody id="billing-supps-tbody"></tbody>
+            </table>
+            <div id="billing-supps-empty" style="color:var(--text-muted);font-size:13px;padding:16px 0;text-align:center">No supplements added yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: HORSE MEDS & SUPPS -->
+      <div id="billing-horseinfo" style="display:none">
+        <div class="card" style="margin-top:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:11px;font-weight:600;color:var(--text);letter-spacing:0.04em;text-transform:uppercase;">Horse Medications & Supplements</div>
+            <button class="btn btn-primary btn-sm" onclick="billingAddHorseEntry()">+ Add Horse</button>
+          </div>
+          <div id="billing-horse-entries"></div>
+          <div id="billing-horse-empty" style="color:var(--text-muted);font-size:13px;padding:16px 0;text-align:center">No horses added yet. Click + Add Horse.</div>
+        </div>
+      </div>
+
+      <!-- TAB: BOARDING PRICES -->
+      <div id="billing-boarding" style="display:none">
+        <div class="card" style="margin-top:4px">
+          <div style="font-size:11px;font-weight:600;color:var(--text);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:14px;">Monthly Boarding Rates</div>
+          <table style="width:100%">
+            <thead><tr><th>Horse</th><th>Owner</th><th>Monthly Rate</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead>
+            <tbody id="billing-boarding-tbody"></tbody>
+          </table>
+          <div id="billing-boarding-empty" style="color:var(--text-muted);font-size:13px;padding:16px 0;text-align:center">Loading horses…</div>
+        </div>
+      </div>
+
+      <!-- TAB: LESSON PACKAGES -->
+      <div id="billing-packages" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px">
+          <!-- Package Purchases -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-size:11px;font-weight:600;color:var(--text);letter-spacing:0.04em;text-transform:uppercase;">Package Purchases</div>
+              <button class="btn btn-primary btn-sm" onclick="billingAddPackage()">+ Add</button>
+            </div>
+            <table style="width:100%">
+              <thead><tr><th>Rider</th><th>Package</th><th>Date</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody id="billing-packages-tbody"></tbody>
+            </table>
+            <div id="billing-packages-empty" style="color:var(--text-muted);font-size:13px;padding:16px 0;text-align:center">No packages added yet.</div>
+          </div>
+          <!-- Per-Lesson Tracking -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-size:11px;font-weight:600;color:var(--text);letter-spacing:0.04em;text-transform:uppercase;">Per-Lesson Tracking</div>
+              <button class="btn btn-primary btn-sm" onclick="billingAddLesson()">+ Add</button>
+            </div>
+            <table style="width:100%">
+              <thead><tr><th>Client</th><th>Date</th><th>Paid</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody id="billing-lessons-tbody"></tbody>
+            </table>
+            <div id="billing-lessons-empty" style="color:var(--text-muted);font-size:13px;padding:16px 0;text-align:center">No lessons added yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: STAFF PAYMENTS -->
+      <div id="billing-staff" style="display:none">
+        <div class="card" style="margin-top:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:11px;font-weight:600;color:var(--text);letter-spacing:0.04em;text-transform:uppercase;">Staff Payments</div>
+            <button class="btn btn-primary btn-sm" onclick="billingAddStaffPayment()">+ Add Payment</button>
+          </div>
+          <table style="width:100%">
+            <thead><tr><th>Staff</th><th>Amount</th><th>Date</th><th>Paid</th><th style="text-align:right">Actions</th></tr></thead>
+            <tbody id="billing-staff-tbody"></tbody>
+          </table>
+          <div id="billing-staff-empty" style="color:var(--text-muted);font-size:13px;padding:16px 0;text-align:center">No payments recorded yet.</div>
+        </div>
+        <!-- Archived months -->
+        <div class="card" style="margin-top:12px">
+          <div style="font-size:11px;font-weight:600;color:var(--text);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:10px;">Archived Months</div>
+          <div id="billing-archive-list" style="color:var(--text-muted);font-size:13px">No archived months yet.</div>
+        </div>
+      </div>
+
+    </div><!-- end page-billing -->
+
   </div><!-- end content -->
 </div><!-- end main -->
 
@@ -1472,7 +1629,15 @@ function checkAppPassword() {
     <div class="modal-header"><span>Log a lesson</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
     <div class="modal-body">
       <div class="form-row">
-        <div class="form-group"><label>Date *</label><input type="date" id="l-date"></div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Date(s) * <span style="font-size:11px;color:var(--text-muted);font-weight:400">— pick one or multiple dates for the same rider</span></label>
+          <div id="l-dates-container" style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:6px;align-items:center">
+              <input type="date" class="l-date-input" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text)">
+            </div>
+          </div>
+          <button type="button" onclick="lessonAddDateRow()" style="margin-top:6px;background:none;border:1px dashed var(--border);border-radius:2px;padding:4px 12px;font-family:'Jost',sans-serif;font-size:12px;color:var(--text-muted);cursor:pointer">+ Add another date</button>
+        </div>
         <div class="form-group"><label>Trainer *</label><select id="l-trainer"><option>Alex Charles</option><option>Caroline Johnston</option><option>Patricia Amador</option><option>Bridget Lang</option><option>Other</option></select></div>
       </div>
       <div class="form-row">
@@ -3202,8 +3367,8 @@ function handleAdd() {
 function updateTopbar(pageId) {
   var addBtn = document.querySelector('.topbar .btn-primary');
   var search = document.querySelector('.topbar-search');
-  var noAddPages = ['page-dashboard','page-calendar','page-vendors','page-farrier','page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations'];
-  var noSearchPages = ['page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations','page-boarding','page-lessons','page-horse-profiles'];
+  var noAddPages = ['page-dashboard','page-calendar','page-vendors','page-farrier','page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations','page-billing'];
+  var noSearchPages = ['page-vet','page-iea','page-shows','page-archive','page-waivers','page-coggins','page-vaccinations','page-boarding','page-lessons','page-horse-profiles','page-billing'];
   if (addBtn) addBtn.style.display = noAddPages.includes(pageId) ? 'none' : 'inline-flex';
   if (search) search.style.display = noSearchPages.includes(pageId) ? 'none' : 'flex';
 }
@@ -4564,7 +4729,11 @@ function addLessonToCalendar(l) {
 function editLesson(globalIdx) {
   var l = lessonsData[globalIdx]; if (!l) return;
   editingLessonIdx = globalIdx;
-  document.getElementById('l-date').value = l.date;
+  // Reset date inputs to single field showing the lesson's date
+  var datesContainer = document.getElementById('l-dates-container');
+  if (datesContainer) {
+    datesContainer.innerHTML = '<div style="display:flex;gap:6px;align-items:center"><input type="date" class="l-date-input" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:\'Jost\',sans-serif;font-size:13px;background:var(--cream);color:var(--text)" value="'+l.date+'"></div>';
+  }
   document.getElementById('l-trainer').value = l.trainer;
   // Check if rider is in client list or was a drop-in
   var riderSel = document.getElementById('l-rider');
@@ -4604,27 +4773,62 @@ function applyFeePreset(val) {
   }
 }
 
+function lessonAddDateRow() {
+  var container = document.getElementById('l-dates-container');
+  if (!container) return;
+  var row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:6px;align-items:center';
+  row.innerHTML = '<input type="date" class="l-date-input" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:\'Jost\',sans-serif;font-size:13px;background:var(--cream);color:var(--text)">' +
+    '<button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:0 4px">×</button>';
+  container.appendChild(row);
+}
+
 function saveLesson() {
   var riderSel = document.getElementById('l-rider').value;
   var rider = riderSel === '__dropin__' ? document.getElementById('l-dropin').value.trim() : riderSel;
   var horse = document.getElementById('l-horse').value;
-  var date = document.getElementById('l-date').value;
-  if (!rider || !horse || !date) { toast('Please fill in date, rider and horse', '#c0392b'); return; }
-  var l = {
-    date: date, trainer: document.getElementById('l-trainer').value, rider: rider, horse: horse,
-    type: document.getElementById('l-type').value, duration: document.getElementById('l-duration').value,
-    fee: document.getElementById('l-fee').value.trim() || '$120',
-    paid: document.getElementById('l-paid').value, notes: document.getElementById('l-notes').value
-  };
-  if (editingLessonIdx >= 0) { lessonsData[editingLessonIdx] = l; toast('✅ Lesson updated!'); editingLessonIdx = -1; }
-  else { lessonsData.push(l); document.getElementById('lesson-month-filter').value = date.slice(0,7); toast('🎓 Lesson logged!'); }
+
+  // Collect all dates
+  var dateInputs = document.querySelectorAll('#l-dates-container .l-date-input');
+  var dates = [];
+  dateInputs.forEach(function(inp) { if (inp.value) dates.push(inp.value); });
+
+  if (!rider || !horse || dates.length === 0) { toast('Please fill in at least one date, rider and horse', '#c0392b'); return; }
+
+  var trainer = document.getElementById('l-trainer').value;
+  var type = document.getElementById('l-type').value;
+  var duration = document.getElementById('l-duration').value;
+  var fee = document.getElementById('l-fee').value.trim() || '$120';
+  var paid = document.getElementById('l-paid').value;
+  var notes = document.getElementById('l-notes').value;
+
+  if (editingLessonIdx >= 0) {
+    // Editing: just update the single record with the first date
+    var l = { date: dates[0], trainer: trainer, rider: rider, horse: horse, type: type, duration: duration, fee: fee, paid: paid, notes: notes };
+    lessonsData[editingLessonIdx] = l;
+    toast('\u2705 Lesson updated!');
+    editingLessonIdx = -1;
+    dbSaveLesson(l);
+  } else {
+    // New: create one record per date
+    dates.forEach(function(date) {
+      var l = { date: date, trainer: trainer, rider: rider, horse: horse, type: type, duration: duration, fee: fee, paid: paid, notes: notes };
+      lessonsData.push(l);
+      dbSaveLesson(l);
+    });
+    document.getElementById('lesson-month-filter').value = dates[0].slice(0,7);
+    toast('\ud83c\udf93 ' + dates.length + (dates.length === 1 ? ' lesson' : ' lessons') + ' logged!');
+  }
+
   renderLessons(); closeModal();
-  dbSaveLesson(l);
   document.getElementById('modal-add-lesson').querySelector('.modal-header span').textContent = 'Log a lesson';
   document.getElementById('lesson-save-btn').textContent = 'Log lesson';
   document.getElementById('l-notes').value = ''; document.getElementById('l-fee').value = '$120'; document.getElementById('l-fee-select').value = '$120';
   document.getElementById('l-paid').value = 'unpaid'; document.getElementById('l-rider').value = '';
   document.getElementById('dropin-wrap').style.display = 'none'; document.getElementById('l-dropin').value = '';
+  // Reset dates container to single row
+  var dc = document.getElementById('l-dates-container');
+  if (dc) dc.innerHTML = '<div style="display:flex;gap:6px;align-items:center"><input type="date" class="l-date-input" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:\'Jost\',sans-serif;font-size:13px;background:var(--cream);color:var(--text)"></div>';
 }
 
 function emailLessonsReport() {
@@ -5969,6 +6173,613 @@ function renderDayView(container, title, events) {
 // ==========================================
 // APP STARTUP
 // ==========================================
+function checkBillingPassword(el) {
+  var pwd = prompt('🔒 Monthly Billing — Enter password:');
+  if (pwd === 'Rita') {
+    showPage('billing', el);
+    setTimeout(initBillingPage, 100);
+  } else if (pwd !== null) {
+    alert('Incorrect password.');
+  }
+}
+
+// ── BILLING DATA ──
+var billingData = {}; // keyed by "YYYY-MM"
+var billingCurrentMonth = '';
+
+function billingGetMonthKey(date) {
+  if (!date) date = new Date();
+  return date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0');
+}
+
+function billingMonthLabel(key) {
+  var parts = key.split('-');
+  var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, 1);
+  return d.toLocaleString('default',{month:'long',year:'numeric'});
+}
+
+function billingEnsureMonth(key) {
+  if (!billingData[key]) {
+    billingData[key] = {
+      invoiceClients: ['Erin','Sherri','Kristen','Andrea','Melissa','Bobbi','Bridget'],
+      invoiceChecked: {},
+      invoiceNotes: '',
+      meds: [],
+      supps: [],
+      horseEntries: [],
+      boardingRates: [],
+      packages: [],
+      lessons: [],
+      staff: [],
+      archived: false
+    };
+    // Pre-populate boarding rates from horses
+    horses.forEach(function(h) {
+      billingData[key].boardingRates.push({horse: h.name, owner: h.owner||'–', rate: h.fee||0, notes:''});
+    });
+  }
+}
+
+function initBillingPage() {
+  // Load from Supabase or localStorage
+  try {
+    var saved = localStorage.getItem('hs_billing');
+    if (saved) billingData = JSON.parse(saved);
+  } catch(e) {}
+
+  var key = billingGetMonthKey();
+  billingCurrentMonth = key;
+  billingEnsureMonth(key);
+  renderBillingMonthSelect();
+  renderBillingTab();
+}
+
+function billingAutoSave() {
+  var key = billingCurrentMonth;
+  if (!key) return;
+  billingEnsureMonth(key);
+  // Save notes
+  var notesEl = document.getElementById('billing-invoice-notes');
+  if (notesEl) billingData[key].invoiceNotes = notesEl.value;
+  try { localStorage.setItem('hs_billing', JSON.stringify(billingData)); } catch(e){}
+}
+
+function renderBillingMonthSelect() {
+  var sel = document.getElementById('billing-month-select');
+  if (!sel) return;
+  sel.innerHTML = '';
+  var keys = Object.keys(billingData).sort().reverse();
+  if (keys.indexOf(billingCurrentMonth) === -1) keys.unshift(billingCurrentMonth);
+  keys.forEach(function(k) {
+    var opt = document.createElement('option');
+    opt.value = k;
+    opt.textContent = billingMonthLabel(k) + (billingData[k] && billingData[k].archived ? ' (archived)' : '');
+    if (k === billingCurrentMonth) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function billingMonthChanged() {
+  var sel = document.getElementById('billing-month-select');
+  billingCurrentMonth = sel.value;
+  billingEnsureMonth(billingCurrentMonth);
+  renderBillingTab();
+}
+
+function billingNewMonth() {
+  var d = new Date();
+  d.setMonth(d.getMonth()+1);
+  var key = billingGetMonthKey(d);
+  billingEnsureMonth(key);
+  billingCurrentMonth = key;
+  renderBillingMonthSelect();
+  renderBillingTab();
+  showLoadingToast('New month created: ' + billingMonthLabel(key));
+}
+
+function billingArchiveMonth() {
+  var key = billingCurrentMonth;
+  if (!billingData[key]) return;
+  billingData[key].archived = true;
+  billingAutoSave();
+  renderBillingMonthSelect();
+  showLoadingToast('Month archived: ' + billingMonthLabel(key));
+}
+
+function switchBillingTab(el, id) {
+  document.querySelectorAll('#billing-tabs .tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  ['billing-invoicing','billing-medsupps','billing-horseinfo','billing-boarding','billing-packages','billing-staff'].forEach(function(s){
+    var el2 = document.getElementById(s);
+    if (el2) el2.style.display = (s===id)?'':'none';
+  });
+  renderBillingTabContent(id);
+}
+
+function renderBillingTab() {
+  var activeTab = document.querySelector('#billing-tabs .tab.active');
+  var id = 'billing-invoicing';
+  if (activeTab) {
+    var onclick = activeTab.getAttribute('onclick') || '';
+    var m = onclick.match(/'([^']+)'\)/);
+    if (m) id = m[1];
+  }
+  renderBillingTabContent(id);
+}
+
+function renderBillingTabContent(id) {
+  if (id === 'billing-invoicing') renderBillingInvoicing();
+  else if (id === 'billing-medsupps') renderBillingMedSupps();
+  else if (id === 'billing-horseinfo') renderBillingHorseInfo();
+  else if (id === 'billing-boarding') renderBillingBoarding();
+  else if (id === 'billing-packages') renderBillingPackages();
+  else if (id === 'billing-staff') renderBillingStaff();
+}
+
+// ── INVOICING ──
+function renderBillingInvoicing() {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  var d = billingData[key];
+  if (!d.invoicePaid) d.invoicePaid = {};
+
+  // Send Invoices To column
+  var container = document.getElementById('billing-invoice-checklist');
+  if (container) {
+    container.innerHTML = '';
+    d.invoiceClients.forEach(function(name, i) {
+      var checked = d.invoiceChecked[name] ? 'checked' : '';
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:10px;';
+      row.innerHTML = '<input type="checkbox" id="inv-chk-'+i+'" '+checked+' onchange="billingToggleInvoice(\'' +name+ '\')" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer">' +
+        '<label for="inv-chk-'+i+'" style="font-size:14px;color:var(--text);cursor:pointer;flex:1">'+name+'</label>' +
+        '<button onclick="billingRemoveClient(\'' +name+ '\')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:0 4px" title="Remove">×</button>';
+      container.appendChild(row);
+    });
+  }
+
+  // Paid column
+  var paidContainer = document.getElementById('billing-paid-checklist');
+  if (paidContainer) {
+    paidContainer.innerHTML = '';
+    d.invoiceClients.forEach(function(name, i) {
+      var checked = d.invoicePaid[name] ? 'checked' : '';
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:10px;';
+      row.innerHTML = '<input type="checkbox" id="paid-chk-'+i+'" '+checked+' onchange="billingTogglePaid(\'' +name+ '\')" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer">' +
+        '<label for="paid-chk-'+i+'" style="font-size:14px;color:var(--text);cursor:pointer;flex:1">'+name+'</label>';
+      paidContainer.appendChild(row);
+    });
+  }
+
+  var notesEl = document.getElementById('billing-invoice-notes');
+  if (notesEl) notesEl.value = d.invoiceNotes || '';
+}
+
+function billingTogglePaid(name) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  if (!billingData[key].invoicePaid) billingData[key].invoicePaid = {};
+  billingData[key].invoicePaid[name] = !billingData[key].invoicePaid[name];
+  billingAutoSave();
+}
+
+function billingToggleInvoice(name) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].invoiceChecked[name] = !billingData[key].invoiceChecked[name];
+  billingAutoSave();
+}
+
+function billingAddClient() {
+  var inp = document.getElementById('billing-new-client-input');
+  var name = inp ? inp.value.trim() : '';
+  if (!name) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  if (billingData[key].invoiceClients.indexOf(name) === -1) {
+    billingData[key].invoiceClients.push(name);
+    billingAutoSave();
+    renderBillingInvoicing();
+    inp.value = '';
+  }
+}
+
+function billingRemoveClient(name) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].invoiceClients = billingData[key].invoiceClients.filter(function(n){return n!==name;});
+  delete billingData[key].invoiceChecked[name];
+  billingAutoSave();
+  renderBillingInvoicing();
+}
+
+// ── MED & SUPPLEMENT PRICING ──
+function renderBillingMedSupps() {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  var d = billingData[key];
+  renderBillingMedTable(d.meds, 'billing-meds-tbody', 'billing-meds-empty', 'Med');
+  renderBillingMedTable(d.supps, 'billing-supps-tbody', 'billing-supps-empty', 'Supp');
+}
+
+function renderBillingMedTable(list, tbodyId, emptyId, type) {
+  var tbody = document.getElementById(tbodyId);
+  var empty = document.getElementById(emptyId);
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (!list || list.length === 0) {
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  list.forEach(function(item, i) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>'+item.name+'</td><td>$'+parseFloat(item.price||0).toFixed(2)+'</td>' +
+      '<td style="text-align:right"><button class="btn btn-sm" onclick="billingEditMedSupp(\''+type+'\','+i+')">Edit</button> ' +
+      '<button class="btn btn-sm" style="color:var(--red)" onclick="billingDeleteMedSupp(\''+type+'\','+i+')">Del</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function billingAddMed() {
+  var name = prompt('Medication name:');
+  if (!name) return;
+  var price = prompt('Price (e.g. 45.00):');
+  if (price === null) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].meds.push({name:name.trim(), price:parseFloat(price)||0});
+  billingAutoSave();
+  renderBillingMedSupps();
+}
+
+function billingAddSupp() {
+  var name = prompt('Supplement name:');
+  if (!name) return;
+  var price = prompt('Price (e.g. 45.00):');
+  if (price === null) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].supps.push({name:name.trim(), price:parseFloat(price)||0});
+  billingAutoSave();
+  renderBillingMedSupps();
+}
+
+function billingEditMedSupp(type, idx) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  var list = type === 'Med' ? billingData[key].meds : billingData[key].supps;
+  var item = list[idx];
+  var name = prompt('Name:', item.name);
+  if (!name) return;
+  var price = prompt('Price:', item.price);
+  if (price === null) return;
+  list[idx] = {name:name.trim(), price:parseFloat(price)||0};
+  billingAutoSave();
+  renderBillingMedSupps();
+}
+
+function billingDeleteMedSupp(type, idx) {
+  if (!confirm('Remove this entry?')) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  if (type === 'Med') billingData[key].meds.splice(idx,1);
+  else billingData[key].supps.splice(idx,1);
+  billingAutoSave();
+  renderBillingMedSupps();
+}
+
+// ── HORSE MEDS & SUPPS ──
+function renderBillingHorseInfo() {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  var entries = billingData[key].horseEntries;
+  var container = document.getElementById('billing-horse-entries');
+  var empty = document.getElementById('billing-horse-empty');
+  if (!container) return;
+  container.innerHTML = '';
+  if (!entries || entries.length === 0) {
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  entries.forEach(function(entry, i) {
+    var div = document.createElement('div');
+    div.style.cssText = 'border:1px solid var(--border);border-radius:3px;padding:14px;margin-bottom:12px;background:var(--cream)';
+    div.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">' +
+      '<div style="font-weight:600;font-size:14px;color:var(--text)">🐴 '+entry.horse+'</div>' +
+      '<div style="display:flex;gap:8px"><button class="btn btn-sm" onclick="billingEditHorseEntry('+i+')">Edit</button>' +
+      '<button class="btn btn-sm" style="color:var(--red)" onclick="billingDeleteHorseEntry('+i+')">Remove</button></div></div>' +
+      '<div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Medications</div>' +
+      '<div style="font-size:13px;color:var(--text);margin-bottom:10px;white-space:pre-wrap">'+(entry.meds||'–')+'</div>' +
+      '<div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Supplements</div>' +
+      '<div style="font-size:13px;color:var(--text);white-space:pre-wrap">'+(entry.supps||'–')+'</div>';
+    container.appendChild(div);
+  });
+}
+
+function billingAddHorseEntry() {
+  var horseNames = horses.map(function(h){return h.name;});
+  var horseName = prompt('Horse name:\n\nCurrent horses: ' + horseNames.join(', '));
+  if (!horseName) return;
+  var meds = prompt('Medications (one per line or comma-separated):');
+  if (meds === null) return;
+  var supps = prompt('Supplements (one per line or comma-separated):');
+  if (supps === null) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].horseEntries.push({horse:horseName.trim(), meds:meds.trim(), supps:supps.trim()});
+  billingAutoSave();
+  renderBillingHorseInfo();
+}
+
+function billingEditHorseEntry(idx) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  var entry = billingData[key].horseEntries[idx];
+  var meds = prompt('Medications:', entry.meds);
+  if (meds === null) return;
+  var supps = prompt('Supplements:', entry.supps);
+  if (supps === null) return;
+  billingData[key].horseEntries[idx].meds = meds.trim();
+  billingData[key].horseEntries[idx].supps = supps.trim();
+  billingAutoSave();
+  renderBillingHorseInfo();
+}
+
+function billingDeleteHorseEntry(idx) {
+  if (!confirm('Remove this horse entry?')) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].horseEntries.splice(idx,1);
+  billingAutoSave();
+  renderBillingHorseInfo();
+}
+
+// ── BOARDING PRICES ──
+function renderBillingBoarding() {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  var rates = billingData[key].boardingRates;
+  var tbody = document.getElementById('billing-boarding-tbody');
+  var empty = document.getElementById('billing-boarding-empty');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (!rates || rates.length === 0) {
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  rates.forEach(function(r, i) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>'+r.horse+'</td><td>'+r.owner+'</td>' +
+      '<td><input type="number" value="'+(r.rate||0)+'" min="0" style="width:90px;padding:4px 8px;border:1px solid var(--border);border-radius:2px;font-family:\'Jost\',sans-serif;font-size:13px;background:var(--cream)" onchange="billingUpdateBoardingRate('+i+',this.value)"></td>' +
+      '<td><input type="text" value="'+(r.notes||'')+'" placeholder="Notes…" style="width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:2px;font-family:\'Jost\',sans-serif;font-size:13px;background:var(--cream)" onchange="billingUpdateBoardingNote('+i+',this.value)"></td>' +
+      '<td style="text-align:right"><button class="btn btn-sm" style="color:var(--red)" onclick="billingDeleteBoardingRate('+i+')">Remove</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function billingUpdateBoardingRate(idx, val) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].boardingRates[idx].rate = parseFloat(val)||0;
+  billingAutoSave();
+}
+
+function billingUpdateBoardingNote(idx, val) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].boardingRates[idx].notes = val;
+  billingAutoSave();
+}
+
+function billingDeleteBoardingRate(idx) {
+  if (!confirm('Remove this boarding entry?')) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].boardingRates.splice(idx,1);
+  billingAutoSave();
+  renderBillingBoarding();
+}
+
+// ── LESSON PACKAGES ──
+function renderBillingPackages() {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  var d = billingData[key];
+  // Packages
+  var tbody = document.getElementById('billing-packages-tbody');
+  var empty = document.getElementById('billing-packages-empty');
+  if (tbody) {
+    tbody.innerHTML = '';
+    if (!d.packages || d.packages.length === 0) {
+      if (empty) empty.style.display = 'block';
+    } else {
+      if (empty) empty.style.display = 'none';
+      d.packages.forEach(function(p, i) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>'+p.rider+'</td><td>'+p.pkg+'</td><td>'+p.date+'</td>' +
+          '<td style="text-align:right"><button class="btn btn-sm" style="color:var(--red)" onclick="billingDeletePackage('+i+')">Del</button></td>';
+        tbody.appendChild(tr);
+      });
+    }
+  }
+  // Per-lesson
+  var tbody2 = document.getElementById('billing-lessons-tbody');
+  var empty2 = document.getElementById('billing-lessons-empty');
+  if (tbody2) {
+    tbody2.innerHTML = '';
+    if (!d.lessons || d.lessons.length === 0) {
+      if (empty2) empty2.style.display = 'block';
+    } else {
+      if (empty2) empty2.style.display = 'none';
+      d.lessons.forEach(function(l, i) {
+        var checked = l.paid ? 'checked' : '';
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>'+l.client+'</td><td>'+l.date+'</td>' +
+          '<td><input type="checkbox" '+checked+' onchange="billingToggleLessonPaid('+i+')" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer"> <span style="font-size:12px;color:var(--text-muted)">'+(l.paid?'Paid':'Unpaid')+'</span></td>' +
+          '<td style="text-align:right"><button class="btn btn-sm" style="color:var(--red)" onclick="billingDeleteLesson('+i+')">Del</button></td>';
+        tbody2.appendChild(tr);
+      });
+    }
+  }
+}
+
+function billingAddPackage() {
+  var riders = clients.filter(function(c){return c.roles&&(c.roles.includes('rider')||c.roles.includes('lesson student'));}).map(function(c){return c.name;});
+  var rider = prompt('Rider:\n\n'+riders.join('\n'));
+  if (!rider) return;
+  var pkg = prompt('Package (e.g. 4-lesson, 8-lesson, monthly):');
+  if (!pkg) return;
+  var date = prompt('Purchase date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
+  if (!date) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].packages.push({rider:rider.trim(), pkg:pkg.trim(), date:date.trim()});
+  billingAutoSave();
+  renderBillingPackages();
+}
+
+function billingDeletePackage(idx) {
+  if (!confirm('Remove this package?')) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].packages.splice(idx,1);
+  billingAutoSave();
+  renderBillingPackages();
+}
+
+function billingAddLesson() {
+  var allClients = clients.map(function(c){return c.name;});
+  var client = prompt('Client:\n\n'+allClients.join('\n'));
+  if (!client) return;
+  var date = prompt('Lesson date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
+  if (!date) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].lessons.push({client:client.trim(), date:date.trim(), paid:false});
+  billingAutoSave();
+  renderBillingPackages();
+}
+
+function billingToggleLessonPaid(idx) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].lessons[idx].paid = !billingData[key].lessons[idx].paid;
+  billingAutoSave();
+  renderBillingPackages();
+}
+
+function billingDeleteLesson(idx) {
+  if (!confirm('Remove this lesson?')) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].lessons.splice(idx,1);
+  billingAutoSave();
+  renderBillingPackages();
+}
+
+// ── STAFF PAYMENTS ──
+function renderBillingStaff() {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  var d = billingData[key];
+  var tbody = document.getElementById('billing-staff-tbody');
+  var empty = document.getElementById('billing-staff-empty');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (!d.staff || d.staff.length === 0) {
+    if (empty) empty.style.display = 'block';
+  } else {
+    if (empty) empty.style.display = 'none';
+    d.staff.forEach(function(p, i) {
+      var checked = p.paid ? 'checked' : '';
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td style="font-weight:500">'+p.name+'</td>' +
+        '<td>$'+parseFloat(p.amount||0).toFixed(2)+'</td>' +
+        '<td>'+p.date+'</td>' +
+        '<td><input type="checkbox" '+checked+' onchange="billingToggleStaffPaid('+i+')" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer"> <span style="font-size:12px;color:var(--text-muted)">'+(p.paid?'Paid':'Pending')+'</span></td>' +
+        '<td style="text-align:right"><button class="btn btn-sm" onclick="billingEditStaffPayment('+i+')">Edit</button> ' +
+        '<button class="btn btn-sm" style="color:var(--red)" onclick="billingDeleteStaffPayment('+i+')">Del</button></td>';
+      tbody.appendChild(tr);
+    });
+  }
+  // Archive list
+  var archiveDiv = document.getElementById('billing-archive-list');
+  if (archiveDiv) {
+    var archived = Object.keys(billingData).filter(function(k){return billingData[k].archived;}).sort().reverse();
+    if (archived.length === 0) {
+      archiveDiv.innerHTML = '<span style="color:var(--text-muted);font-size:13px">No archived months yet.</span>';
+    } else {
+      archiveDiv.innerHTML = archived.map(function(k) {
+        var d2 = billingData[k];
+        var total = (d2.staff||[]).reduce(function(sum,p){return sum+(parseFloat(p.amount)||0);},0);
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">' +
+          '<span style="font-size:13px;color:var(--text)">'+billingMonthLabel(k)+'</span>' +
+          '<span style="font-size:13px;color:var(--text-muted)">'+d2.staff.length+' payment(s) · $'+total.toFixed(2)+'</span>' +
+          '<button class="btn btn-sm" onclick="billingViewArchive(\''+k+'\')">View</button></div>';
+      }).join('');
+    }
+  }
+}
+
+function billingAddStaffPayment() {
+  var staffNames = ['Alex','Caroline','Micaela'];
+  var name = prompt('Staff member:\n\nAlex\nCaroline\nMicaela\n\n(or type another name)');
+  if (!name) return;
+  var amount = prompt('Amount ($):');
+  if (!amount) return;
+  var date = prompt('Payment date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
+  if (!date) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].staff.push({name:name.trim(), amount:parseFloat(amount)||0, date:date.trim(), paid:false});
+  billingAutoSave();
+  renderBillingStaff();
+}
+
+function billingEditStaffPayment(idx) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  var p = billingData[key].staff[idx];
+  var amount = prompt('Amount:', p.amount);
+  if (amount === null) return;
+  var date = prompt('Date:', p.date);
+  if (date === null) return;
+  billingData[key].staff[idx].amount = parseFloat(amount)||0;
+  billingData[key].staff[idx].date = date.trim();
+  billingAutoSave();
+  renderBillingStaff();
+}
+
+function billingToggleStaffPaid(idx) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].staff[idx].paid = !billingData[key].staff[idx].paid;
+  billingAutoSave();
+  renderBillingStaff();
+}
+
+function billingDeleteStaffPayment(idx) {
+  if (!confirm('Remove this payment?')) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  billingData[key].staff.splice(idx,1);
+  billingAutoSave();
+  renderBillingStaff();
+}
+
+function billingViewArchive(key) {
+  billingCurrentMonth = key;
+  var sel = document.getElementById('billing-month-select');
+  if (sel) sel.value = key;
+  renderBillingTab();
+}
+
+
+
 function checkOpsPassword(el, page) {
   showPage(page, el);
 }
