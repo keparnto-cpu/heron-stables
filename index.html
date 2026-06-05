@@ -1366,6 +1366,13 @@ function checkAppPassword() {
           <div class="card">
             <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:14px;letter-spacing:0.04em;text-transform:uppercase;">Paid</div>
             <div id="billing-paid-checklist" style="display:flex;flex-direction:column;gap:10px"></div>
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Add client</div>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="billing-new-paid-client-input" placeholder="Client name…" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text)" onkeydown="if(event.key==='Enter')billingAddPaidClient()">
+                <button class="btn btn-primary btn-sm" onclick="billingAddPaidClient()">Add</button>
+              </div>
+            </div>
           </div>
           <!-- Column 3: Notes -->
           <div class="card">
@@ -6338,16 +6345,20 @@ function renderBillingInvoicing() {
     });
   }
 
-  // Paid column
+  // Paid column — show invoice clients + any paid-only extras
   var paidContainer = document.getElementById('billing-paid-checklist');
   if (paidContainer) {
     paidContainer.innerHTML = '';
-    d.invoiceClients.forEach(function(name, i) {
+    var paidOnlyClients = d.paidOnlyClients || [];
+    var allPaidNames = d.invoiceClients.concat(paidOnlyClients.filter(function(n){ return d.invoiceClients.indexOf(n) === -1; }));
+    allPaidNames.forEach(function(name, i) {
       var checked = d.invoicePaid[name] ? 'checked' : '';
+      var isPaidOnly = paidOnlyClients.indexOf(name) !== -1 && d.invoiceClients.indexOf(name) === -1;
       var row = document.createElement('div');
       row.style.cssText = 'display:flex;align-items:center;gap:10px;';
       row.innerHTML = '<input type="checkbox" id="paid-chk-'+i+'" '+checked+' onchange="billingTogglePaid(\'' +name+ '\')" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer">' +
-        '<label for="paid-chk-'+i+'" style="font-size:14px;color:var(--text);cursor:pointer;flex:1">'+name+'</label>';
+        '<label for="paid-chk-'+i+'" style="font-size:14px;color:var(--text);cursor:pointer;flex:1">'+name+'</label>' +
+        (isPaidOnly ? '<button onclick="billingRemovePaidClient(\'' +name+ '\')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:0 4px" title="Remove">×</button>' : '');
       paidContainer.appendChild(row);
     });
   }
@@ -6362,6 +6373,32 @@ function billingTogglePaid(name) {
   if (!billingData[key].invoicePaid) billingData[key].invoicePaid = {};
   billingData[key].invoicePaid[name] = !billingData[key].invoicePaid[name];
   billingAutoSave();
+}
+
+function billingRemovePaidClient(name) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  if (!billingData[key].paidOnlyClients) return;
+  billingData[key].paidOnlyClients = billingData[key].paidOnlyClients.filter(function(n){return n!==name;});
+  delete billingData[key].invoicePaid[name];
+  billingAutoSave();
+  renderBillingInvoicing();
+}
+
+function billingAddPaidClient() {
+  var inp = document.getElementById('billing-new-paid-client-input');
+  var name = inp ? inp.value.trim() : '';
+  if (!name) return;
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  if (!billingData[key].invoicePaid) billingData[key].invoicePaid = {};
+  if (!billingData[key].paidOnlyClients) billingData[key].paidOnlyClients = [];
+  if (billingData[key].paidOnlyClients.indexOf(name) === -1) {
+    billingData[key].paidOnlyClients.push(name);
+    billingAutoSave();
+    renderBillingInvoicing();
+    inp.value = '';
+  }
 }
 
 function billingToggleInvoice(name) {
