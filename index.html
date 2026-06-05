@@ -6697,7 +6697,15 @@ function renderBillingPackages() {
     allRiders.forEach(function(rider) {
       var co = carryover[rider] || 0;
       var bought = packageLessons[rider] || 0;
-      var used = lessonsUsed[rider] || 0;
+      // Match lessons by first word of rider name (handles "Hilary Duncan (Via John Duncan)" vs "Hilary Duncan")
+      var riderFirst = rider.split(' ').slice(0,2).join(' ').toLowerCase();
+      var used = 0;
+      Object.keys(lessonsUsed).forEach(function(clientName) {
+        var clientFirst = clientName.split(' ').slice(0,2).join(' ').toLowerCase();
+        if (clientFirst === riderFirst || rider.toLowerCase().indexOf(clientFirst) === 0 || clientName.toLowerCase().indexOf(riderFirst) === 0) {
+          used += lessonsUsed[clientName];
+        }
+      });
       var remaining = co + bought - used;
       var tr = document.createElement('tr');
       tr.style.cssText = 'background:rgba(201,169,110,0.08);font-size:12px;';
