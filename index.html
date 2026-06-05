@@ -6291,7 +6291,8 @@ function billingNewMonth() {
     var lessonsUsed = {};
     (prevData.lessons || []).forEach(function(l) {
       if (!lessonsUsed[l.client]) lessonsUsed[l.client] = 0;
-      lessonsUsed[l.client]++;
+      var dateCount = l.date ? l.date.split(',').filter(function(s){return s.trim();}).length : 1;
+      lessonsUsed[l.client] += Math.max(dateCount, 1);
     });
     var allRiders = Object.keys(Object.assign({}, prevCarryover, packageLessons));
     allRiders.forEach(function(rider) {
@@ -6687,7 +6688,9 @@ function renderBillingPackages() {
     var lessonsUsed = {};
     (d.lessons || []).forEach(function(l) {
       if (!lessonsUsed[l.client]) lessonsUsed[l.client] = 0;
-      lessonsUsed[l.client]++;
+      // Count comma-separated dates as multiple lessons
+      var dateCount = l.date ? l.date.split(',').filter(function(s){return s.trim();}).length : 1;
+      lessonsUsed[l.client] += Math.max(dateCount, 1);
     });
     // Show carryover banner rows
     var allRiders = Object.keys(Object.assign({}, carryover, packageLessons));
@@ -6766,11 +6769,15 @@ function billingAddLesson() {
   var allClients = clients.map(function(c){return c.name;});
   var client = prompt('Client:\n\n'+allClients.join('\n'));
   if (!client) return;
-  var date = prompt('Lesson date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
-  if (!date) return;
+  var datesStr = prompt('Lesson date(s) — separate multiple with commas\n(YYYY-MM-DD or MM/DD):', new Date().toISOString().slice(0,10));
+  if (!datesStr) return;
+  var dates = datesStr.split(',').map(function(s){return s.trim();}).filter(Boolean);
   var key = billingCurrentMonth;
   billingEnsureMonth(key);
-  billingData[key].lessons.push({client:client.trim(), date:date.trim(), paid:false});
+  // Add one row per date
+  dates.forEach(function(date) {
+    billingData[key].lessons.push({client:client.trim(), date:date, paid:false});
+  });
   billingAutoSave();
   renderBillingPackages();
 }
