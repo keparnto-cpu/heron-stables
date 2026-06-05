@@ -1455,7 +1455,10 @@ function checkAppPassword() {
           <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
               <div style="font-size:11px;font-weight:600;color:var(--text);letter-spacing:0.04em;text-transform:uppercase;">Per-Lesson Tracking</div>
-              <button class="btn btn-primary btn-sm" onclick="billingAddLesson()">+ Add</button>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-sm" onclick="billingEditCarryover()" title="Manually set carried-over lessons per rider">Edit Carryover</button>
+                <button class="btn btn-primary btn-sm" onclick="billingAddLesson()">+ Add</button>
+              </div>
             </div>
             <table style="width:100%">
               <thead><tr><th>Client</th><th>Date</th><th>Paid</th><th style="text-align:right">Actions</th></tr></thead>
@@ -6770,6 +6773,37 @@ function billingAddLesson() {
   billingData[key].lessons.push({client:client.trim(), date:date.trim(), paid:false});
   billingAutoSave();
   renderBillingPackages();
+}
+
+function billingEditCarryover() {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  var d = billingData[key];
+  var carryover = d.carryover || {};
+  // Build list of all riders who have packages or existing carryover
+  var riderSet = {};
+  (d.packages || []).forEach(function(p) { riderSet[p.rider] = true; });
+  Object.keys(carryover).forEach(function(r) { riderSet[r] = true; });
+  var riders = Object.keys(riderSet);
+  if (riders.length === 0) {
+    // Let user type a rider name
+    var rider = prompt('Rider name:');
+    if (!rider) return;
+    riders = [rider.trim()];
+  }
+  var changed = false;
+  riders.forEach(function(rider) {
+    var current = carryover[rider] || 0;
+    var val = prompt('Carried-over lessons for ' + rider + ':', current);
+    if (val === null) return;
+    var num = parseInt(val);
+    if (!isNaN(num)) {
+      if (!billingData[key].carryover) billingData[key].carryover = {};
+      billingData[key].carryover[rider] = num;
+      changed = true;
+    }
+  });
+  if (changed) { billingAutoSave(); renderBillingPackages(); }
 }
 
 function billingToggleLessonPaid(idx) {
