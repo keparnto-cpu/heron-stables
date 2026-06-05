@@ -1446,7 +1446,7 @@ function checkAppPassword() {
               <button class="btn btn-primary btn-sm" onclick="billingAddPackage()">+ Add</button>
             </div>
             <table style="width:100%">
-              <thead><tr><th>Rider</th><th>Package</th><th>Date</th><th style="text-align:right">Actions</th></tr></thead>
+              <thead><tr><th>Rider</th><th>Pkgs</th><th>Lessons</th><th>Date Purchased</th><th style="text-align:right">Actions</th></tr></thead>
               <tbody id="billing-packages-tbody"></tbody>
             </table>
             <div id="billing-packages-empty" style="color:var(--text-muted);font-size:13px;padding:16px 0;text-align:center">No packages added yet.</div>
@@ -6274,10 +6274,34 @@ function billingMonthChanged() {
 }
 
 function billingNewMonth() {
+  // Calculate carryover from current month before creating new one
+  var prevKey = billingCurrentMonth;
+  var prevData = billingData[prevKey];
+  var carryover = {};
+  if (prevData) {
+    var packageLessons = {};
+    (prevData.packages || []).forEach(function(p) {
+      if (!packageLessons[p.rider]) packageLessons[p.rider] = 0;
+      packageLessons[p.rider] += (p.qty || 1) * 5;
+    });
+    var prevCarryover = prevData.carryover || {};
+    var lessonsUsed = {};
+    (prevData.lessons || []).forEach(function(l) {
+      if (!lessonsUsed[l.client]) lessonsUsed[l.client] = 0;
+      lessonsUsed[l.client]++;
+    });
+    var allRiders = Object.keys(Object.assign({}, prevCarryover, packageLessons));
+    allRiders.forEach(function(rider) {
+      var remaining = (prevCarryover[rider]||0) + (packageLessons[rider]||0) - (lessonsUsed[rider]||0);
+      if (remaining > 0) carryover[rider] = remaining;
+    });
+  }
+
   var d = new Date();
   d.setMonth(d.getMonth()+1);
   var key = billingGetMonthKey(d);
   billingEnsureMonth(key);
+  if (Object.keys(carryover).length > 0) billingData[key].carryover = carryover;
   billingCurrentMonth = key;
   renderBillingMonthSelect();
   renderBillingTab();
@@ -6636,9 +6660,11 @@ function renderBillingPackages() {
     } else {
       if (empty) empty.style.display = 'none';
       d.packages.forEach(function(p, i) {
+        var qty = p.qty || 1;
+        var lessons = qty * 5;
         var tr = document.createElement('tr');
-        tr.innerHTML = '<td>'+p.rider+'</td><td>'+p.pkg+'</td><td>'+p.date+'</td>' +
-          '<td style="text-align:right"><button class="btn btn-sm" style="color:var(--red)" onclick="billingDeletePackage('+i+')">Del</button></td>';
+        tr.innerHTML = '<td>'+p.rider+'</td><td>'+qty+'</td><td>'+lessons+'</td><td>'+p.date+'</td>' +
+          '<td style="text-align:right"><button class="btn btn-sm" onclick="billingEditPackage('+i+')" style="margin-right:4px">Edit</button><button class="btn btn-sm" style="color:var(--red)" onclick="billingDeletePackage('+i+')">Del</button></td>';
         tbody.appendChild(tr);
       });
     }
@@ -6648,8 +6674,35 @@ function renderBillingPackages() {
   var empty2 = document.getElementById('billing-lessons-empty');
   if (tbody2) {
     tbody2.innerHTML = '';
+    // Calculate carryover summary per rider
+    var carryover = d.carryover || {};
+    var packageLessons = {};
+    (d.packages || []).forEach(function(p) {
+      if (!packageLessons[p.rider]) packageLessons[p.rider] = 0;
+      packageLessons[p.rider] += (p.qty || 1) * 5;
+    });
+    var lessonsUsed = {};
+    (d.lessons || []).forEach(function(l) {
+      if (!lessonsUsed[l.client]) lessonsUsed[l.client] = 0;
+      lessonsUsed[l.client]++;
+    });
+    // Show carryover banner rows
+    var allRiders = Object.keys(Object.assign({}, carryover, packageLessons));
+    allRiders.forEach(function(rider) {
+      var co = carryover[rider] || 0;
+      var bought = packageLessons[rider] || 0;
+      var used = lessonsUsed[rider] || 0;
+      var remaining = co + bought - used;
+      var tr = document.createElement('tr');
+      tr.style.cssText = 'background:rgba(201,169,110,0.08);font-size:12px;';
+      tr.innerHTML = '<td colspan="4" style="padding:6px 10px;color:var(--text-muted)">' +
+        '<strong style="color:var(--text)">'+rider+'</strong> — ' +
+        (co > 0 ? co+' carried over + ' : '') + bought+' purchased − '+used+' used = ' +
+        '<strong style="color:'+(remaining>0?'var(--gold)':'var(--red)')+'">'+remaining+' remaining</strong></td>';
+      tbody2.appendChild(tr);
+    });
     if (!d.lessons || d.lessons.length === 0) {
-      if (empty2) empty2.style.display = 'block';
+      if (empty2 && allRiders.length === 0) empty2.style.display = 'block';
     } else {
       if (empty2) empty2.style.display = 'none';
       d.lessons.forEach(function(l, i) {
@@ -6668,13 +6721,31 @@ function billingAddPackage() {
   var riders = clients.filter(function(c){return c.roles&&(c.roles.includes('rider')||c.roles.includes('lesson student'));}).map(function(c){return c.name;});
   var rider = prompt('Rider:\n\n'+riders.join('\n'));
   if (!rider) return;
-  var pkg = prompt('Package (e.g. 4-lesson, 8-lesson, monthly):');
-  if (!pkg) return;
-  var date = prompt('Purchase date (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
+  var qtyStr = prompt('How many packages? (each = 5 lessons, $700)', '1');
+  if (!qtyStr) return;
+  var qty = parseInt(qtyStr) || 1;
+  var date = prompt('Date purchased (YYYY-MM-DD):', new Date().toISOString().slice(0,10));
   if (!date) return;
   var key = billingCurrentMonth;
   billingEnsureMonth(key);
-  billingData[key].packages.push({rider:rider.trim(), pkg:pkg.trim(), date:date.trim()});
+  billingData[key].packages.push({rider:rider.trim(), qty:qty, pkg: qty+'x package ('+(qty*5)+' lessons)', date:date.trim()});
+  billingAutoSave();
+  renderBillingPackages();
+}
+
+function billingEditPackage(idx) {
+  var key = billingCurrentMonth;
+  billingEnsureMonth(key);
+  var p = billingData[key].packages[idx];
+  var riders = clients.filter(function(c){return c.roles&&(c.roles.includes('rider')||c.roles.includes('lesson student'));}).map(function(c){return c.name;});
+  var rider = prompt('Rider:', p.rider);
+  if (rider === null) return;
+  var qtyStr = prompt('How many packages?', p.qty || 1);
+  if (qtyStr === null) return;
+  var qty = parseInt(qtyStr) || 1;
+  var date = prompt('Date purchased:', p.date);
+  if (date === null) return;
+  billingData[key].packages[idx] = {rider:rider.trim(), qty:qty, pkg:qty+'x package ('+(qty*5)+' lessons)', date:date.trim()};
   billingAutoSave();
   renderBillingPackages();
 }
