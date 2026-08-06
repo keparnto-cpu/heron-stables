@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0042)file:///Users/pato/Downloads/index_97.html -->
+<!-- saved from url=(0042)file:///Users/pato/Downloads/index_98.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -4709,7 +4709,6 @@ function populateLessonMonthSelect() {
   var now = new Date();
   var currentVal = sel.value;
   sel.innerHTML = '';
-  // 3 months forward, 24 months back
   for (var i = -3; i <= 24; i++) {
     var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     var val = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
@@ -4719,13 +4718,14 @@ function populateLessonMonthSelect() {
     opt.textContent = label;
     sel.appendChild(opt);
   }
-  // Restore previous selection or default to current month
   if (currentVal && sel.querySelector('option[value="'+currentVal+'"]')) {
     sel.value = currentVal;
   } else {
     sel.value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
   }
-} renderLessons(); }
+}
+
+function filterLessons() { renderLessons(); }
 
 function addLessonToCalendar(l) {
   var date = l.date.replace(/-/g,'');
