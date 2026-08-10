@@ -6382,10 +6382,9 @@ function renderLedger() {
   grid.innerHTML = riders.map(function(r) {
     var unpaidCount = r.lessons.filter(function(l){ return !l.paid; }).length;
     var unpaidAmt = r.lessons.filter(function(l){ return !l.paid && l.amount; }).reduce(function(s,l){ return s + parseFloat(l.amount); }, 0);
-    var waiverOk = r.waiver_status && !r.waiver_status.toLowerCase().startsWith('no');
-    var waiverBadge = waiverOk
-      ? '<span class="badge badge-green" style="font-size:10px">✓ Waiver</span>'
-      : '<span class="badge badge-red" style="font-size:10px">⚠ No waiver</span>';
+    var waiverOk = r.waiver_status && !r.waiver_status.toLowerCase().startsWith('no') && r.waiver_status.toLowerCase() !== 'other';
+    var waiverLessonId = r.lessons[0] ? r.lessons[0].id : '';
+    var waiverBadge = '<span style="cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;border:1px solid var(--border);background:var(--cream)" onclick="toggleLedgerWaiver(\'' + waiverLessonId + '\',\'' + r.rider.replace(/'/g,"\\'") + '\',' + waiverOk + ')" title="Click to toggle waiver">' + (waiverOk ? '✅' : '❌') + ' <span style="font-size:11px;font-weight:500">Waiver</span></span>';
     var unpaidBadge = unpaidCount > 0
       ? '<span class="badge badge-red" style="font-size:10px">' + unpaidCount + ' unpaid' + (unpaidAmt > 0 ? ' — $' + unpaidAmt : '') + '</span>'
       : '<span class="badge badge-green" style="font-size:10px">All paid</span>';
@@ -6417,17 +6416,21 @@ function renderLedger() {
     var notesText = uniqueNotes.join(' · ');
     var safeRider = r.rider.replace(/'/g,"\\'");
     var firstLessonId = r.lessons[0] ? r.lessons[0].id : '';
-    var notesBadge = notesText
-      ? '<span class="badge badge-gray" style="font-size:10px;cursor:pointer;display:inline-block;vertical-align:middle" onclick="editLedgerNotes(\'' + firstLessonId + '\',\'' + safeRider + '\',this)" data-notes="' + notesText.replace(/"/g,'&quot;') + '" title="Click to edit notes">💬 Notes</span>'
-      : '<span class="badge badge-gray" style="font-size:10px;cursor:pointer;display:inline-block;vertical-align:middle;opacity:0.6" onclick="editLedgerNotes(\'' + firstLessonId + '\',\'' + safeRider + '\',this)" data-notes="" title="Click to add notes">💬 Add note</span>';
+    var notesField = '<div style="margin-top:8px">' +
+      '<textarea id="ledger-note-' + firstLessonId + '" placeholder="Add a note..." rows="1" ' +
+      'style="width:100%;border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-family:\'Jost\',sans-serif;font-size:12px;color:var(--text);background:var(--cream);resize:none;overflow:hidden;box-sizing:border-box;outline:none" ' +
+      'oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\'" ' +
+      'onblur="saveLedgerNote(\'' + firstLessonId + '\',this.value)">' + notesText.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</textarea>' +
+      '</div>';
 
     return '<div class="card" style="margin-bottom:12px">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">' +
         '<div>' +
           '<div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:600">' + r.rider + '</div>' +
           '<div style="font-size:12px;color:var(--text-muted);margin-top:2px">Payer: ' + (r.payer||'–') + (r.notes && r.notes !== '—' ? ' · ' + r.notes : '') + '</div>' +
-          '<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center">' + waiverBadge + unpaidBadge + remainingBadge + notesBadge + '</div>' +
+          '<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center">' + waiverBadge + unpaidBadge + remainingBadge + '</div>' +
           (r.waiver_notes && r.waiver_notes !== '–' ? '<div style="font-size:11px;color:var(--amber);margin-top:4px">⚠ ' + r.waiver_notes + '</div>' : '') +
+          notesField +
         '</div>' +
         '<button class="btn btn-sm btn-primary" onclick="openAddLedgerEntry(\'' + r.rider.replace(/'/g,"\\'") + '\',\'' + (r.payer||'').replace(/'/g,"\\'") + '\')">+ Add lesson</button>' +
       '</div>' +
@@ -6509,22 +6512,33 @@ async function toggleLedgerPaid(id, newPaid) {
   toast(newPaid ? '✅ Marked as paid!' : 'Marked as unpaid');
 }
 
-function editLedgerNotes(id, riderName, el) {
-  var current = el ? el.getAttribute('data-notes') : '';
-  var val = prompt('Notes for ' + riderName + ':', current || '');
-  if (val === null) return;
-  val = val.trim();
+async function toggleLedgerWaiver(id, riderName, currentlyOk) {
+  var newStatus = currentlyOk ? 'No' : 'Yes';
   if (id) {
-    fetch(SUPA_URL + '/rest/v1/lesson_ledger?id=eq.' + id, {
+    await fetch(SUPA_URL + '/rest/v1/lesson_ledger?id=eq.' + id, {
       method: 'PATCH',
       headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body: JSON.stringify({lesson_notes: val})
+      body: JSON.stringify({waiver_status: newStatus})
     });
     var entry = ledgerData.find(function(e){ return e.id === id; });
-    if (entry) entry.lesson_notes = val;
+    if (entry) entry.waiver_status = newStatus;
   }
   renderLedger();
-  toast('✅ Notes updated!');
+  toast(currentlyOk ? 'Waiver removed' : '✅ Waiver marked as signed!');
+}
+
+async function saveLedgerNote(id, val) {
+  if (!id) return;
+  val = (val || '').trim();
+  var entry = ledgerData.find(function(e){ return e.id === id; });
+  if (entry && entry.lesson_notes === val) return; // no change
+  if (entry) entry.lesson_notes = val;
+  await fetch(SUPA_URL + '/rest/v1/lesson_ledger?id=eq.' + id, {
+    method: 'PATCH',
+    headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({lesson_notes: val || null})
+  });
+  toast('✅ Note saved!');
 }
 
 async function editLessonsRemaining(id, current, riderName) {
