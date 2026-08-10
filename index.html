@@ -2683,6 +2683,9 @@ async function dbLoadAll() {
       safe(qry('coggins','created_at')),
     ]);
 
+    // Load ledger in background (non-blocking)
+    dbLoadLedger();
+
     // Horses
     if (hRes.data && hRes.data.length) {
       console.log('[Heron] Raw horse data from DB:', hRes.data.map(function(h){ return {name:h.name, photo: h.photo ? h.photo.slice(0,60)+'...' : 'EMPTY'}; }));
