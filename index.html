@@ -419,6 +419,9 @@ function checkAppPassword() {
     <div class="nav-item" onclick="checkBillingPassword(this)">
       <span>💳</span><span>Monthly Billing</span>
     </div>
+    <div class="nav-item" onclick="showPage('lesson-ledger', this)">
+      <span>📒</span><span>Lesson Ledger</span>
+    </div>
     <div class="nav-item" onclick="checkDocsPassword(this)">
       <span class="nav-icon">📄</span> Documents
     </div>
@@ -1323,6 +1326,36 @@ function checkAppPassword() {
     </div>
 
 
+
+    <!-- LESSON LEDGER -->
+    <div class="page" id="page-lesson-ledger" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Lesson Ledger</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="ledger-search" placeholder="Search rider..." onchange="renderLedger()" oninput="renderLedger()" style="padding:6px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text);width:180px">
+          <select id="ledger-filter" onchange="renderLedger()" style="padding:6px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text)">
+            <option value="all">All riders</option>
+            <option value="unpaid">Has unpaid lessons</option>
+            <option value="no-waiver">No waiver</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="openAddLedgerEntry()">+ Add entry</button>
+        </div>
+      </div>
+
+      <!-- Summary cards -->
+      <div class="stats-grid" style="margin-bottom:16px">
+        <div class="stat-card"><div class="stat-label">Total riders</div><div class="stat-value" id="ledger-stat-riders">–</div></div>
+        <div class="stat-card"><div class="stat-label">Total lessons</div><div class="stat-value" id="ledger-stat-lessons">–</div></div>
+        <div class="stat-card"><div class="stat-label">Total collected</div><div class="stat-value" id="ledger-stat-paid">–</div></div>
+        <div class="stat-card"><div class="stat-label">Outstanding</div><div class="stat-value" id="ledger-stat-unpaid" style="color:var(--red)">–</div></div>
+      </div>
+
+      <!-- Rider cards -->
+      <div id="ledger-grid"></div>
+    </div>
+
+    <!-- ADD LEDGER ENTRY MODAL -->
+    <!-- (uses main modal overlay) -->
 
     <!-- MONTHLY BILLING -->
     <div class="page" id="page-billing">
@@ -2347,6 +2380,44 @@ function checkAppPassword() {
     </div>
   </div>
 
+  <!-- ADD LEDGER LESSON -->
+  <div class="modal-box" id="modal-add-ledger" style="display:none;max-width:500px">
+    <div class="modal-header"><span id="ledger-modal-title">Add lesson entry</span><span class="modal-close" onclick="closeModal()">&#10005;</span></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Rider *</label><input type="text" id="ledger-rider" placeholder="Rider name"></div>
+        <div class="form-group"><label>Payer</label><input type="text" id="ledger-payer" placeholder="Payer name"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Lesson date *</label><input type="date" id="ledger-date"></div>
+        <div class="form-group"><label>Rate ($)</label><input type="number" id="ledger-amount" placeholder="e.g. 150"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Status</label>
+          <select id="ledger-paid" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text)">
+            <option value="true">Paid</option>
+            <option value="false">Unpaid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Waiver</label>
+          <select id="ledger-waiver" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text)">
+            <option value="Yes">Yes — on Jotform</option>
+            <option value="No">No — needs waiver</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Notes</label><input type="text" id="ledger-notes" placeholder="e.g. Package purchased, special rate..."></div>
+      <div class="form-group"><label>Package info</label><input type="text" id="ledger-package" placeholder="e.g. Package of 10 purchased on Jan 1"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="ledger-save-btn" onclick="saveLedgerEntry()">Save entry</button>
+    </div>
+  </div>
+
 </div><!-- end modal overlay -->
 
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:2000;box-shadow:0 4px 16px rgba(0,0,0,0.15)"></div>
@@ -3282,7 +3353,7 @@ function showPage(id, el) {
     boarding:'Boarding & Training', lessons:'Lessons Log',
     iea:'IEA Shows', shows:'Shows', farrier:'Farrier Schedule',
     vet:'Veterinary', vaccinations:'Veterinary', coggins:'Veterinary',
-    waivers:'Documents'
+    waivers:'Documents', 'lesson-ledger':'Lesson Ledger'
   };
   document.getElementById('topbar-title').textContent = titles[id] || id;
   updateTopbar('page-' + id);
@@ -3292,6 +3363,7 @@ function showPage(id, el) {
   if (id === 'boarding') renderBoarders();
   if (id === 'iea') { populateIeaShowSelect(); populateIeaRiderSelect(); }
   if (id === 'shows') { showHistoryVisible = false; var btn = document.getElementById('shows-toggle-history'); if(btn) btn.textContent = '📦 Show History'; populateShowSelect(); populateShowRiderSelect(); renderShowsTable(); }
+  if (id === 'lesson-ledger') { dbLoadLedger().then(function(){ renderLedger(); }); }
   if (id === 'farrier') { populateFarrierHorseSelect(); renderFarrier(); }
   if (id === 'vet') { populateVetHorseSelects(); renderVetVisits(); }
 }
@@ -6236,6 +6308,194 @@ function renderDayView(container, title, events) {
   container.innerHTML = html;
 }
 
+
+// ==========================================
+// LESSON LEDGER
+// ==========================================
+var ledgerData = []; // loaded from Supabase
+var _editingLedgerId = null;
+
+async function dbLoadLedger() {
+  try {
+    var r = await fetch(SUPA_URL + '/rest/v1/lesson_ledger?select=*&order=lesson_date.asc', {
+      headers: {'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY}
+    });
+    if (r.ok) { ledgerData = await r.json(); }
+  } catch(e) { console.warn('Ledger load error:', e); }
+}
+
+async function dbSaveLedgerEntry(entry) {
+  var method = entry.id ? 'PATCH' : 'POST';
+  var url = SUPA_URL + '/rest/v1/lesson_ledger' + (entry.id ? '?id=eq.' + entry.id : '');
+  var row = {rider:entry.rider, payer:entry.payer||'', notes:entry.notes||'', waiver_status:entry.waiver_status||'', waiver_notes:entry.waiver_notes||'', lesson_date:entry.lesson_date||null, paid:entry.paid||false, amount:entry.amount||null, lesson_notes:entry.lesson_notes||'', package_info:entry.package_info||''};
+  if (!entry.id) row.id = undefined;
+  var r = await fetch(url, {
+    method: method,
+    headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},
+    body: JSON.stringify(row)
+  });
+  if (r.ok) { var data = await r.json(); if (data && data[0]) return data[0]; }
+  return null;
+}
+
+async function dbDeleteLedgerEntry(id) {
+  await fetch(SUPA_URL + '/rest/v1/lesson_ledger?id=eq.' + id, {
+    method: 'DELETE',
+    headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  });
+}
+
+function renderLedger() {
+  var grid = document.getElementById('ledger-grid');
+  if (!grid) return;
+  var q = (document.getElementById('ledger-search') ? document.getElementById('ledger-search').value : '').toLowerCase().trim();
+  var filter = document.getElementById('ledger-filter') ? document.getElementById('ledger-filter').value : 'all';
+
+  // Group by rider
+  var byRider = {};
+  ledgerData.forEach(function(e) {
+    if (!byRider[e.rider]) byRider[e.rider] = {rider:e.rider, payer:e.payer, notes:e.notes, waiver_status:e.waiver_status, waiver_notes:e.waiver_notes, lessons:[]};
+    if (e.lesson_date) byRider[e.rider].lessons.push(e);
+  });
+
+  var riders = Object.values(byRider).sort(function(a,b){ return a.rider.split(' ').pop().localeCompare(b.rider.split(' ').pop()); });
+
+  // Apply filters
+  if (q) riders = riders.filter(function(r){ return r.rider.toLowerCase().includes(q) || (r.payer||'').toLowerCase().includes(q); });
+  if (filter === 'unpaid') riders = riders.filter(function(r){ return r.lessons.some(function(l){ return !l.paid; }); });
+  if (filter === 'no-waiver') riders = riders.filter(function(r){ return !r.waiver_status || r.waiver_status.toLowerCase().includes('no'); });
+
+  // Stats
+  var allLessons = ledgerData.filter(function(e){ return e.lesson_date; });
+  var totalPaid = allLessons.filter(function(e){ return e.paid && e.amount; }).reduce(function(s,e){ return s + parseFloat(e.amount); }, 0);
+  var totalUnpaid = allLessons.filter(function(e){ return !e.paid && e.amount; }).reduce(function(s,e){ return s + parseFloat(e.amount); }, 0);
+  var el = document.getElementById('ledger-stat-riders'); if(el) el.textContent = Object.keys(byRider).length;
+  el = document.getElementById('ledger-stat-lessons'); if(el) el.textContent = allLessons.length;
+  el = document.getElementById('ledger-stat-paid'); if(el) el.textContent = '$' + totalPaid.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+  el = document.getElementById('ledger-stat-unpaid'); if(el) el.textContent = '$' + totalUnpaid.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+  if (!riders.length) { grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">No riders found.</div>'; return; }
+
+  grid.innerHTML = riders.map(function(r) {
+    var unpaidCount = r.lessons.filter(function(l){ return !l.paid; }).length;
+    var unpaidAmt = r.lessons.filter(function(l){ return !l.paid && l.amount; }).reduce(function(s,l){ return s + parseFloat(l.amount); }, 0);
+    var waiverOk = r.waiver_status && !r.waiver_status.toLowerCase().startsWith('no');
+    var waiverBadge = waiverOk
+      ? '<span class="badge badge-green" style="font-size:10px">✓ Waiver</span>'
+      : '<span class="badge badge-red" style="font-size:10px">⚠ No waiver</span>';
+    var unpaidBadge = unpaidCount > 0
+      ? '<span class="badge badge-red" style="font-size:10px">' + unpaidCount + ' unpaid' + (unpaidAmt > 0 ? ' — $' + unpaidAmt : '') + '</span>'
+      : '<span class="badge badge-green" style="font-size:10px">All paid</span>';
+
+    var lessonRows = r.lessons.sort(function(a,b){ return (a.lesson_date||'').localeCompare(b.lesson_date||''); }).map(function(l) {
+      var d = l.lesson_date ? new Date(l.lesson_date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
+      return '<tr>' +
+        '<td style="font-size:12px">' + d + '</td>' +
+        '<td>' + (l.paid ? '<span class="badge badge-green" style="font-size:10px">Paid</span>' : '<span class="badge badge-red" style="font-size:10px">Unpaid</span>') + '</td>' +
+        '<td style="font-size:12px">' + (l.amount ? '$' + l.amount : '–') + '</td>' +
+        '<td style="font-size:12px;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.lesson_notes||l.package_info||'–') + '</td>' +
+        '<td style="text-align:right;white-space:nowrap">' +
+          '<button class="btn btn-sm" onclick="editLedgerEntry(\'' + l.id + '\')" style="margin-right:4px">✎</button>' +
+          '<button class="btn btn-sm" onclick="toggleLedgerPaid(\'' + l.id + '\',' + !l.paid + ')" style="font-size:10px;padding:2px 5px">' + (l.paid ? 'Mark unpaid' : 'Mark paid') + '</button>' +
+          '<button class="btn btn-sm" onclick="deleteLedgerEntry(\'' + l.id + '\')" style="color:var(--red);border-color:var(--red);margin-left:4px">✕</button>' +
+        '</td></tr>';
+    }).join('');
+
+    return '<div class="card" style="margin-bottom:12px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">' +
+        '<div>' +
+          '<div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:600">' + r.rider + '</div>' +
+          '<div style="font-size:12px;color:var(--text-muted);margin-top:2px">Payer: ' + (r.payer||'–') + (r.notes && r.notes !== '—' ? ' · ' + r.notes : '') + '</div>' +
+          '<div style="display:flex;gap:6px;margin-top:6px">' + waiverBadge + unpaidBadge + '</div>' +
+          (r.waiver_notes && r.waiver_notes !== '–' ? '<div style="font-size:11px;color:var(--amber);margin-top:4px">⚠ ' + r.waiver_notes + '</div>' : '') +
+        '</div>' +
+        '<button class="btn btn-sm btn-primary" onclick="openAddLedgerEntry(\'' + r.rider.replace(/'/g,"\\'") + '\',\'' + (r.payer||'').replace(/'/g,"\\'") + '\')">+ Add lesson</button>' +
+      '</div>' +
+      (lessonRows ? '<table style="width:100%"><thead><tr><th>Date</th><th>Status</th><th>Rate</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead><tbody>' + lessonRows + '</tbody></table>' : '<div style="font-size:13px;color:var(--text-muted)">No lessons logged yet.</div>') +
+    '</div>';
+  }).join('');
+}
+
+function openAddLedgerEntry(rider, payer) {
+  _editingLedgerId = null;
+  document.getElementById('ledger-modal-title').textContent = 'Add lesson entry';
+  document.getElementById('ledger-save-btn').textContent = 'Save entry';
+  document.getElementById('ledger-rider').value = rider || '';
+  document.getElementById('ledger-payer').value = payer || '';
+  document.getElementById('ledger-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('ledger-amount').value = '';
+  document.getElementById('ledger-paid').value = 'false';
+  document.getElementById('ledger-waiver').value = 'Yes';
+  document.getElementById('ledger-notes').value = '';
+  document.getElementById('ledger-package').value = '';
+  openModal('modal-add-ledger');
+}
+
+function editLedgerEntry(id) {
+  var entry = ledgerData.find(function(e){ return e.id === id; });
+  if (!entry) return;
+  _editingLedgerId = id;
+  document.getElementById('ledger-modal-title').textContent = 'Edit lesson entry';
+  document.getElementById('ledger-save-btn').textContent = 'Save changes';
+  document.getElementById('ledger-rider').value = entry.rider || '';
+  document.getElementById('ledger-payer').value = entry.payer || '';
+  document.getElementById('ledger-date').value = entry.lesson_date || '';
+  document.getElementById('ledger-amount').value = entry.amount || '';
+  document.getElementById('ledger-paid').value = entry.paid ? 'true' : 'false';
+  document.getElementById('ledger-waiver').value = entry.waiver_status && entry.waiver_status.toLowerCase().startsWith('y') ? 'Yes' : 'No';
+  document.getElementById('ledger-notes').value = entry.lesson_notes || '';
+  document.getElementById('ledger-package').value = entry.package_info || '';
+  openModal('modal-add-ledger');
+}
+
+async function saveLedgerEntry() {
+  var rider = document.getElementById('ledger-rider').value.trim();
+  if (!rider) { toast('Please enter a rider name', '#c0392b'); return; }
+  var entry = {
+    id: _editingLedgerId || undefined,
+    rider: rider,
+    payer: document.getElementById('ledger-payer').value.trim(),
+    lesson_date: document.getElementById('ledger-date').value || null,
+    amount: parseFloat(document.getElementById('ledger-amount').value) || null,
+    paid: document.getElementById('ledger-paid').value === 'true',
+    waiver_status: document.getElementById('ledger-waiver').value,
+    lesson_notes: document.getElementById('ledger-notes').value.trim(),
+    package_info: document.getElementById('ledger-package').value.trim()
+  };
+  var saved = await dbSaveLedgerEntry(entry);
+  if (saved) {
+    if (_editingLedgerId) {
+      var idx = ledgerData.findIndex(function(e){ return e.id === _editingLedgerId; });
+      if (idx !== -1) ledgerData[idx] = saved;
+    } else {
+      ledgerData.push(saved);
+    }
+  }
+  renderLedger();
+  closeModal();
+  toast(_editingLedgerId ? '✅ Entry updated!' : '✅ Lesson entry saved!');
+}
+
+async function toggleLedgerPaid(id, newPaid) {
+  var entry = ledgerData.find(function(e){ return e.id === id; });
+  if (!entry) return;
+  entry.paid = newPaid;
+  await fetch(SUPA_URL + '/rest/v1/lesson_ledger?id=eq.' + id, {
+    method: 'PATCH',
+    headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body: JSON.stringify({paid: newPaid})
+  });
+  renderLedger();
+  toast(newPaid ? '✅ Marked as paid!' : 'Marked as unpaid');
+}
+
+async function deleteLedgerEntry(id) {
+  if (!confirm('Delete this lesson entry?')) return;
+  await dbDeleteLedgerEntry(id);
+  ledgerData = ledgerData.filter(function(e){ return e.id !== id; });
+  renderLedger();
+  toast('Deleted', '#c0392b');
+}
 
 // ==========================================
 // APP STARTUP
