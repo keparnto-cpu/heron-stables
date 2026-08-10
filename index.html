@@ -6392,11 +6392,15 @@ function renderLedger() {
 
     var lessonRows = r.lessons.sort(function(a,b){ return (a.lesson_date||'').localeCompare(b.lesson_date||''); }).map(function(l) {
       var d = l.lesson_date ? new Date(l.lesson_date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
+      var noteText = (l.lesson_notes || l.package_info || '').trim();
+      var noteBtn = noteText
+        ? '<button class="btn btn-sm" onclick="alert(' + JSON.stringify(noteText) + ')" style="font-size:11px;padding:2px 5px" title="' + noteText.replace(/"/g,'&quot;') + '">💬</button>'
+        : '<span style="color:var(--text-muted);font-size:11px;padding:2px 5px">–</span>';
       return '<tr>' +
         '<td style="font-size:12px">' + d + '</td>' +
         '<td>' + (l.paid ? '<span class="badge badge-green" style="font-size:10px">Paid</span>' : '<span class="badge badge-red" style="font-size:10px">Unpaid</span>') + '</td>' +
         '<td style="font-size:12px">' + (l.amount ? '$' + l.amount : '–') + '</td>' +
-        '<td style="font-size:12px;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (l.lesson_notes||l.package_info||'–') + '</td>' +
+        '<td style="text-align:center">' + noteBtn + '</td>' +
         '<td style="text-align:right;white-space:nowrap">' +
           '<button class="btn btn-sm" onclick="editLedgerEntry(\'' + l.id + '\')" style="margin-right:4px">✎</button>' +
           '<button class="btn btn-sm" onclick="toggleLedgerPaid(\'' + l.id + '\',' + !l.paid + ')" style="font-size:10px;padding:2px 5px">' + (l.paid ? 'Mark unpaid' : 'Mark paid') + '</button>' +
@@ -6404,17 +6408,24 @@ function renderLedger() {
         '</td></tr>';
     }).join('');
 
+    var remainingEntry = r.lessons.find(function(l){ return l.lessons_remaining !== null && l.lessons_remaining !== undefined; });
+    var remaining = remainingEntry ? remainingEntry.lessons_remaining : null;
+    var remainingId = remainingEntry ? remainingEntry.id : (r.lessons[0] ? r.lessons[0].id : null);
+    var remainingBadge = remaining !== null
+      ? '<span class="badge ' + (remaining <= 2 ? 'badge-red' : remaining <= 5 ? 'badge-amber' : 'badge-green') + '" style="font-size:10px;cursor:pointer" onclick="editLessonsRemaining(\'' + remainingId + '\',' + remaining + ')" title="Click to edit">📦 ' + remaining + ' lessons left</span>'
+      : '<span class="badge badge-gray" style="font-size:10px;cursor:pointer" onclick="editLessonsRemaining(\'' + (remainingId||'') + '\',null,\'' + r.rider.replace(/'/g,"\\'") + '\')" title="Click to set">📦 Set package remaining</span>';
+
     return '<div class="card" style="margin-bottom:12px">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">' +
         '<div>' +
           '<div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:600">' + r.rider + '</div>' +
           '<div style="font-size:12px;color:var(--text-muted);margin-top:2px">Payer: ' + (r.payer||'–') + (r.notes && r.notes !== '—' ? ' · ' + r.notes : '') + '</div>' +
-          '<div style="display:flex;gap:6px;margin-top:6px">' + waiverBadge + unpaidBadge + '</div>' +
+          '<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">' + waiverBadge + unpaidBadge + remainingBadge + '</div>' +
           (r.waiver_notes && r.waiver_notes !== '–' ? '<div style="font-size:11px;color:var(--amber);margin-top:4px">⚠ ' + r.waiver_notes + '</div>' : '') +
         '</div>' +
         '<button class="btn btn-sm btn-primary" onclick="openAddLedgerEntry(\'' + r.rider.replace(/'/g,"\\'") + '\',\'' + (r.payer||'').replace(/'/g,"\\'") + '\')">+ Add lesson</button>' +
       '</div>' +
-      (lessonRows ? '<table style="width:100%"><thead><tr><th>Date</th><th>Status</th><th>Rate</th><th>Notes</th><th style="text-align:right">Actions</th></tr></thead><tbody>' + lessonRows + '</tbody></table>' : '<div style="font-size:13px;color:var(--text-muted)">No lessons logged yet.</div>') +
+      (lessonRows ? '<table style="width:100%"><thead><tr><th>Date</th><th>Status</th><th>Rate</th><th style="text-align:center">Note</th><th style="text-align:right">Actions</th></tr></thead><tbody>' + lessonRows + '</tbody></table>' : '<div style="font-size:13px;color:var(--text-muted)">No lessons logged yet.</div>') +
     '</div>';
   }).join('');
 }
@@ -6490,6 +6501,25 @@ async function toggleLedgerPaid(id, newPaid) {
   });
   renderLedger();
   toast(newPaid ? '✅ Marked as paid!' : 'Marked as unpaid');
+}
+
+async function editLessonsRemaining(id, current, riderName) {
+  var val = prompt('Lessons remaining in package for ' + (riderName || 'this rider') + ':\n(Enter 0 if package is used up, leave blank to clear)', current !== null && current !== undefined ? current : '');
+  if (val === null) return;
+  var num = val.trim() === '' ? null : parseInt(val.trim());
+  if (val.trim() !== '' && isNaN(num)) { toast('Please enter a number', '#c0392b'); return; }
+  
+  if (id) {
+    await fetch(SUPA_URL + '/rest/v1/lesson_ledger?id=eq.' + id, {
+      method: 'PATCH',
+      headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({lessons_remaining: num})
+    });
+    var entry = ledgerData.find(function(e){ return e.id === id; });
+    if (entry) entry.lessons_remaining = num;
+  }
+  renderLedger();
+  toast('✅ Package remaining updated!');
 }
 
 async function deleteLedgerEntry(id) {
