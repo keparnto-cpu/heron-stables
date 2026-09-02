@@ -1339,6 +1339,8 @@ function checkAppPassword() {
             <option value="no-waiver">No waiver</option>
           </select>
           <button class="btn btn-sm" onclick="printAllRidersLessons()" title="Print or save as PDF for every rider shown">🖨 Print all</button>
+          <input type="month" id="ledger-print-month" style="padding:6px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text)">
+          <button class="btn btn-sm" onclick="printMonthLessons()" title="Print or save as PDF for one month, per rider">🖨 Print month</button>
           <button class="btn btn-primary btn-sm" onclick="openAddLedgerEntry()">+ Add entry</button>
         </div>
       </div>
@@ -6666,6 +6668,68 @@ function printAllRidersLessons() {
     setTimeout(function(){ w.focus(); w.print(); }, 250);
   } catch(e) {
     console.error('printAllRidersLessons error:', e);
+    toast('Error generating print view: ' + e.message, '#c0392b');
+  }
+}
+
+function printMonthLessons() {
+  try {
+    var monthInput = document.getElementById('ledger-print-month');
+    var ym = monthInput && monthInput.value ? monthInput.value : '';
+    if (!ym) {
+      var now = new Date();
+      ym = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+      if (monthInput) monthInput.value = ym;
+    }
+    var monthLabel = new Date(ym + '-01T12:00:00').toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+    var monthEntries = ledgerData.filter(function(e){ return e.lesson_date && e.lesson_date.slice(0,7) === ym; });
+    if (!monthEntries.length) { toast('No lessons found for ' + monthLabel, '#c0392b'); return; }
+
+    var byRider = {};
+    monthEntries.forEach(function(e) {
+      if (!byRider[e.rider]) byRider[e.rider] = {rider:e.rider, payer:e.payer, lessons:[]};
+      byRider[e.rider].lessons.push(e);
+    });
+    var riders = Object.values(byRider).sort(function(a,b){ return a.rider.split(' ').pop().localeCompare(b.rider.split(' ').pop()); });
+
+    var grandPaid = monthEntries.filter(function(e){ return e.paid && e.amount; }).reduce(function(s,e){ return s + parseFloat(e.amount); }, 0);
+    var grandUnpaid = monthEntries.filter(function(e){ return !e.paid && e.amount; }).reduce(function(s,e){ return s + parseFloat(e.amount); }, 0);
+
+    var sections = riders.map(function(r) {
+      var entries = r.lessons.slice().sort(function(a,b){ return (a.lesson_date||'').localeCompare(b.lesson_date||''); });
+      var totalPaid = entries.filter(function(e){ return e.paid && e.amount; }).reduce(function(s,e){ return s + parseFloat(e.amount); }, 0);
+      var totalUnpaid = entries.filter(function(e){ return !e.paid && e.amount; }).reduce(function(s,e){ return s + parseFloat(e.amount); }, 0);
+      var rowsHtml = entries.map(function(e) {
+        var d = e.lesson_date ? new Date(e.lesson_date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
+        var status = e.paid ? 'Paid' : 'Unpaid';
+        var pkg = (e.package_info || '').trim().replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        var paidDate = e.paid_date ? new Date(e.paid_date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '–';
+        return '<tr><td>' + d + '</td><td>' + status + '</td><td>' + (e.amount ? '$' + e.amount : '–') + '</td><td>' + (pkg || '–') + '</td><td>' + paidDate + '</td></tr>';
+      }).join('');
+      var safeName = r.rider.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return '<div class="rider-section">' +
+        '<h2>' + safeName + '</h2>' +
+        '<div class="meta">Payer: ' + (r.payer||'–') + '</div>' +
+        '<table><thead><tr><th>Date</th><th>Status</th><th>Rate</th><th>Package Purchased On</th><th>Lesson Paid On</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+        '<div class="summary"><div><span>Lessons</span><strong>' + entries.length + '</strong></div><div><span>Paid</span><strong>$' + totalPaid.toLocaleString('en-US',{minimumFractionDigits:2}) + '</strong></div><div><span>Unpaid</span><strong>$' + totalUnpaid.toLocaleString('en-US',{minimumFractionDigits:2}) + '</strong></div></div>' +
+        '</div>';
+    }).join('');
+
+    var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + monthLabel + ' - Lessons by Rider</title>' +
+      '<style>body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#333;padding:24px;max-width:800px;margin:0 auto}h1{color:#8b7355;border-bottom:3px solid #8b7355;padding-bottom:12px;margin-bottom:4px}h2{color:#8b7355;margin-top:28px;margin-bottom:4px;border-bottom:1px solid #ddd;padding-bottom:6px}.meta{color:#666;font-size:14px;margin-bottom:12px}table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;background:#f5f5f5;padding:8px;border-bottom:2px solid #8b7355}td{padding:8px;border-bottom:1px solid #ddd}.summary{margin-top:10px;padding:12px;background:#f9f9f9;border-radius:4px;font-size:13px;max-width:320px}.summary div{display:flex;justify-content:space-between;padding:3px 0}.grand-summary{margin-top:16px;padding:14px;background:#efe8dd;border-radius:4px;font-size:14px;max-width:320px}.grand-summary div{display:flex;justify-content:space-between;padding:4px 0}.rider-section{page-break-inside:avoid}@media print{body{padding:0}}</style>' +
+      '</head><body>' +
+      '<h1>Lessons by Rider — ' + monthLabel + '</h1>' +
+      '<div class="grand-summary"><div><span>Total Lessons</span><strong>' + monthEntries.length + '</strong></div><div><span>Total Collected</span><strong>$' + grandPaid.toLocaleString('en-US',{minimumFractionDigits:2}) + '</strong></div><div><span>Outstanding</span><strong>$' + grandUnpaid.toLocaleString('en-US',{minimumFractionDigits:2}) + '</strong></div></div>' +
+      sections +
+      '</body></html>';
+
+    var w = window.open('', 'monthPrint');
+    w.document.write(html);
+    w.document.close();
+    setTimeout(function(){ w.focus(); w.print(); }, 250);
+  } catch(e) {
+    console.error('printMonthLessons error:', e);
     toast('Error generating print view: ' + e.message, '#c0392b');
   }
 }
