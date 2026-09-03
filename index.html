@@ -1338,6 +1338,7 @@ function checkAppPassword() {
             <option value="unpaid">Has unpaid lessons</option>
             <option value="no-waiver">No waiver</option>
           </select>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted)"><input type="checkbox" id="ledger-show-archived" onchange="renderLedger()">Show archived</label>
           <button class="btn btn-sm" onclick="printAllRidersLessons()" title="Print or save as PDF for every rider shown">🖨 Print all</button>
           <input type="month" id="ledger-print-month" style="padding:6px 10px;border:1px solid var(--border);border-radius:2px;font-family:'Jost',sans-serif;font-size:13px;background:var(--cream);color:var(--text)">
           <button class="btn btn-sm" onclick="printMonthLessons()" title="Print or save as PDF for one month, per rider">🖨 Print month</button>
@@ -6360,22 +6361,26 @@ function renderLedger() {
   // Group by rider
   var byRider = {};
   ledgerData.forEach(function(e) {
-    if (!byRider[e.rider]) byRider[e.rider] = {rider:e.rider, payer:e.payer, notes:e.notes, waiver_status:e.waiver_status, waiver_notes:e.waiver_notes, lessons:[]};
+    if (!byRider[e.rider]) byRider[e.rider] = {rider:e.rider, payer:e.payer, notes:e.notes, waiver_status:e.waiver_status, waiver_notes:e.waiver_notes, archived:false, lessons:[]};
+    if (e.archived) byRider[e.rider].archived = true;
     if (e.lesson_date) byRider[e.rider].lessons.push(e);
   });
 
   var riders = Object.values(byRider).sort(function(a,b){ return a.rider.split(' ').pop().localeCompare(b.rider.split(' ').pop()); });
 
   // Apply filters
+  var showArchived = document.getElementById('ledger-show-archived') ? document.getElementById('ledger-show-archived').checked : false;
+  if (!showArchived) riders = riders.filter(function(r){ return !r.archived; });
   if (q) riders = riders.filter(function(r){ return r.rider.toLowerCase().includes(q) || (r.payer||'').toLowerCase().includes(q); });
   if (filter === 'unpaid') riders = riders.filter(function(r){ return r.lessons.some(function(l){ return !l.paid; }); });
   if (filter === 'no-waiver') riders = riders.filter(function(r){ return !r.waiver_status || r.waiver_status.toLowerCase().includes('no'); });
 
-  // Stats
-  var allLessons = ledgerData.filter(function(e){ return e.lesson_date; });
+  // Stats (active riders only)
+  var allLessons = ledgerData.filter(function(e){ return e.lesson_date && !e.archived; });
   var totalPaid = allLessons.filter(function(e){ return e.paid && e.amount; }).reduce(function(s,e){ return s + parseFloat(e.amount); }, 0);
   var totalUnpaid = allLessons.filter(function(e){ return !e.paid && e.amount; }).reduce(function(s,e){ return s + parseFloat(e.amount); }, 0);
-  var el = document.getElementById('ledger-stat-riders'); if(el) el.textContent = Object.keys(byRider).length;
+  var activeRiderCount = Object.values(byRider).filter(function(r){ return !r.archived; }).length;
+  var el = document.getElementById('ledger-stat-riders'); if(el) el.textContent = activeRiderCount;
   el = document.getElementById('ledger-stat-lessons'); if(el) el.textContent = allLessons.length;
   el = document.getElementById('ledger-stat-paid'); if(el) el.textContent = '$' + totalPaid.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
   el = document.getElementById('ledger-stat-unpaid'); if(el) el.textContent = '$' + totalUnpaid.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
@@ -6437,10 +6442,14 @@ function renderLedger() {
       'onblur="saveLedgerNote(\'' + firstLessonId + '\',this.value)">' + notesText.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</textarea>' +
       '</div>';
 
-    return '<div class="card" style="margin-bottom:12px">' +
+    return '<div class="card" style="margin-bottom:12px' + (r.archived ? ';opacity:0.65' : '') + '">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">' +
         '<div>' +
-          '<div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:600">' + r.rider + '</div>' +
+          '<div style="display:flex;align-items:center;gap:6px">' +
+            '<span style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:600">' + r.rider + '</span>' +
+            '<span style="cursor:pointer;font-size:13px;color:var(--text-muted)" onclick="renameRider(\'' + r.rider.replace(/'/g,"\\'") + '\')" title="Rename rider">✏️</span>' +
+            (r.archived ? '<span class="badge badge-gray" style="font-size:10px">Archived</span>' : '') +
+          '</div>' +
           '<div style="font-size:12px;color:var(--text-muted);margin-top:2px">Payer: ' + (r.payer||'–') + (r.notes && r.notes !== '—' ? ' · ' + r.notes : '') + '</div>' +
           '<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center">' + waiverBadge + unpaidBadge + remainingBadge + '</div>' +
           (r.waiver_notes && r.waiver_notes !== '–' ? '<div style="font-size:11px;color:var(--amber);margin-top:4px">⚠ ' + r.waiver_notes + '</div>' : '') +
@@ -6448,6 +6457,9 @@ function renderLedger() {
         '</div>' +
         '<div style="display:flex;gap:6px;flex-shrink:0">' +
           '<button class="btn btn-sm" onclick="printRiderLessons(\'' + r.rider.replace(/'/g,"\\'") + '\')" title="Print or save as PDF">🖨 Print</button>' +
+          (r.archived
+            ? '<button class="btn btn-sm" onclick="archiveRider(\'' + r.rider.replace(/'/g,"\\'") + '\',false)" title="Unarchive">♻️ Unarchive</button>'
+            : '<button class="btn btn-sm" onclick="archiveRider(\'' + r.rider.replace(/'/g,"\\'") + '\',true)" title="Archive rider">📦 Archive</button>') +
           '<button class="btn btn-sm btn-primary" onclick="openAddLedgerEntry(\'' + r.rider.replace(/'/g,"\\'") + '\',\'' + (r.payer||'').replace(/'/g,"\\'") + '\')">+ Add lesson</button>' +
         '</div>' +
       '</div>' +
@@ -6586,6 +6598,43 @@ async function saveLedgerPaidDate(id, val) {
   toast('✅ Saved!');
 }
 
+async function renameRider(oldName) {
+  var newName = prompt('Rename "' + oldName + '" to:', oldName);
+  if (newName === null) return;
+  newName = newName.trim();
+  if (!newName || newName === oldName) return;
+  try {
+    await fetch(SUPA_URL + '/rest/v1/lesson_ledger?rider=eq.' + encodeURIComponent(oldName), {
+      method: 'PATCH',
+      headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({rider: newName})
+    });
+    ledgerData.forEach(function(e){ if (e.rider === oldName) e.rider = newName; });
+    renderLedger();
+    toast('✅ Renamed to ' + newName + '!');
+  } catch(e) {
+    console.error('renameRider error:', e);
+    toast('Error renaming rider: ' + e.message, '#c0392b');
+  }
+}
+
+async function archiveRider(riderName, archive) {
+  if (archive && !confirm('Archive ' + riderName + '? Their full lesson history stays intact — you can unarchive anytime.')) return;
+  try {
+    await fetch(SUPA_URL + '/rest/v1/lesson_ledger?rider=eq.' + encodeURIComponent(riderName), {
+      method: 'PATCH',
+      headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({archived: archive})
+    });
+    ledgerData.forEach(function(e){ if (e.rider === riderName) e.archived = archive; });
+    renderLedger();
+    toast(archive ? '📦 Rider archived' : '✅ Rider restored');
+  } catch(e) {
+    console.error('archiveRider error:', e);
+    toast('Error archiving rider: ' + e.message, '#c0392b');
+  }
+}
+
 function printRiderLessons(riderName) {
   try {
     var entries = ledgerData.filter(function(e){ return e.rider === riderName && e.lesson_date; });
@@ -6627,10 +6676,13 @@ function printAllRidersLessons() {
 
     var byRider = {};
     ledgerData.forEach(function(e) {
-      if (!byRider[e.rider]) byRider[e.rider] = {rider:e.rider, payer:e.payer, waiver_status:e.waiver_status, lessons:[]};
+      if (!byRider[e.rider]) byRider[e.rider] = {rider:e.rider, payer:e.payer, waiver_status:e.waiver_status, archived:false, lessons:[]};
+      if (e.archived) byRider[e.rider].archived = true;
       if (e.lesson_date) byRider[e.rider].lessons.push(e);
     });
+    var showArchived = document.getElementById('ledger-show-archived') ? document.getElementById('ledger-show-archived').checked : false;
     var riders = Object.values(byRider).sort(function(a,b){ return a.rider.split(' ').pop().localeCompare(b.rider.split(' ').pop()); });
+    if (!showArchived) riders = riders.filter(function(r){ return !r.archived; });
     if (q) riders = riders.filter(function(r){ return r.rider.toLowerCase().includes(q) || (r.payer||'').toLowerCase().includes(q); });
     if (filter === 'unpaid') riders = riders.filter(function(r){ return r.lessons.some(function(l){ return !l.paid; }); });
     if (filter === 'no-waiver') riders = riders.filter(function(r){ return !r.waiver_status || r.waiver_status.toLowerCase().includes('no'); });
@@ -6683,7 +6735,8 @@ function printMonthLessons() {
     }
     var monthLabel = new Date(ym + '-01T12:00:00').toLocaleDateString('en-US',{month:'long',year:'numeric'});
 
-    var monthEntries = ledgerData.filter(function(e){ return e.lesson_date && e.lesson_date.slice(0,7) === ym; });
+    var showArchived = document.getElementById('ledger-show-archived') ? document.getElementById('ledger-show-archived').checked : false;
+    var monthEntries = ledgerData.filter(function(e){ return e.lesson_date && e.lesson_date.slice(0,7) === ym && (showArchived || !e.archived); });
     if (!monthEntries.length) { toast('No lessons found for ' + monthLabel, '#c0392b'); return; }
 
     var byRider = {};
