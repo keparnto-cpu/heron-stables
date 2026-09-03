@@ -6450,7 +6450,7 @@ function renderLedger() {
             '<span style="cursor:pointer;font-size:13px;color:var(--text-muted)" onclick="renameRider(\'' + r.rider.replace(/'/g,"\\'") + '\')" title="Rename rider">✏️</span>' +
             (r.archived ? '<span class="badge badge-gray" style="font-size:10px">Archived</span>' : '') +
           '</div>' +
-          '<div style="font-size:12px;color:var(--text-muted);margin-top:2px">Payer: ' + (r.payer||'–') + (r.notes && r.notes !== '—' ? ' · ' + r.notes : '') + '</div>' +
+          '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;display:flex;align-items:center;gap:5px">Payer: ' + (r.payer||'–') + (r.notes && r.notes !== '—' ? ' · ' + r.notes : '') + ' <span style="cursor:pointer" onclick="editPayer(\'' + r.rider.replace(/'/g,"\\'") + '\',\'' + (r.payer||'').replace(/'/g,"\\'") + '\')" title="Edit payer">✏️</span></div>' +
           '<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center">' + waiverBadge + unpaidBadge + remainingBadge + '</div>' +
           (r.waiver_notes && r.waiver_notes !== '–' ? '<div style="font-size:11px;color:var(--amber);margin-top:4px">⚠ ' + r.waiver_notes + '</div>' : '') +
           notesField +
@@ -6615,6 +6615,26 @@ async function renameRider(oldName) {
   } catch(e) {
     console.error('renameRider error:', e);
     toast('Error renaming rider: ' + e.message, '#c0392b');
+  }
+}
+
+async function editPayer(riderName, currentPayer) {
+  var newPayer = prompt('Payer for ' + riderName + ':', currentPayer || '');
+  if (newPayer === null) return;
+  newPayer = newPayer.trim();
+  if (newPayer === (currentPayer || '')) return;
+  try {
+    await fetch(SUPA_URL + '/rest/v1/lesson_ledger?rider=eq.' + encodeURIComponent(riderName), {
+      method: 'PATCH',
+      headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({payer: newPayer})
+    });
+    ledgerData.forEach(function(e){ if (e.rider === riderName) e.payer = newPayer; });
+    renderLedger();
+    toast('✅ Payer updated!');
+  } catch(e) {
+    console.error('editPayer error:', e);
+    toast('Error updating payer: ' + e.message, '#c0392b');
   }
 }
 
