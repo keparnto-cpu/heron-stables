@@ -2666,7 +2666,7 @@ async function dbLoadAll() {
       return {data: await r.json(), error: null};
     }
     var safe = function(p) { return p.catch(function(e) { console.warn('table fetch error:', e); return {data:[], error:e}; }); };
-    var [hRes,cRes,bRes,lRes,vRes,fRes,vetRes,ieaRes,showRes,riderRes,schedRes,vendRes,calEvRes,alertRes,fodRes,vdRes,mdRes,coggRes] = await Promise.all([
+    var [hRes,cRes,bRes,lRes,vRes,fRes,vetRes,ieaRes,showRes,riderRes,schedRes,vendRes,calEvRes,alertRes,fodRes,vdRes,mdRes,coggRes,fpRes] = await Promise.all([
       safe(qry('horses','created_at')),
       safe(qry('clients','created_at')),
       safe(qry('boarders','created_at')),
@@ -2685,6 +2685,7 @@ async function dbLoadAll() {
       safe(qry('vet_docs','created_at')),
       safe(qry('manual_docs','created_at')),
       safe(qry('coggins','created_at')),
+      safe(qry('feed_products','created_at')),
     ]);
 
     // Load ledger in background (non-blocking)
@@ -2813,6 +2814,13 @@ async function dbLoadAll() {
           _id: r.id
         };
       });
+    }
+
+    // Feed & Supplies products (shared across all devices — cloud is source of truth once it has data)
+    if (fpRes.data && fpRes.data.length) {
+      feedProducts.splice(0, feedProducts.length, ...fpRes.data);
+    } else if (!feedProducts.length) {
+      feedProducts.splice(0, feedProducts.length, ...feedProductsDefault.map(function(p){ return Object.assign({}, p); }));
     }
 
     hideLoadingToast();
@@ -4039,6 +4047,7 @@ function deleteFeedProduct(idx) {
   feedProducts.splice(idx, 1);
   renderFeedProducts();
   saveToStorage();
+  if (p.id) dbDelete('feed_products', p.id);
   toast('Deleted', '#c0392b');
 }
 
@@ -4054,14 +4063,16 @@ function openAddFeedProductModal() {
 
 async function dbSaveFeedProduct(product) {
   var row = {name: product.name, brand: product.brand||'', category: product.category||'grain', unit: product.unit||'', notes: product.notes||'', where_to_buy: product.where_to_buy||'', photo: product.photo||''};
-  if (!row.id) row.id = crypto.randomUUID ? crypto.randomUUID() : 'fp'+Date.now();
-  await dbSave('feed_products', row);
+  row.id = product.id || (crypto.randomUUID ? crypto.randomUUID() : 'fp'+Date.now());
+  var result = await dbSave('feed_products', row);
+  return result !== null ? row.id : null;
 }
 
-function saveFeedProduct() {
+async function saveFeedProduct() {
   var name = document.getElementById('fp-name').value.trim();
   if (!name) { toast('Please enter a product name','#c0392b'); return; }
   var p = {
+    id: editingFeedIdx >= 0 && feedProducts[editingFeedIdx] ? feedProducts[editingFeedIdx].id : undefined,
     name: name,
     brand: document.getElementById('fp-brand').value.trim(),
     category: document.getElementById('fp-category').value,
@@ -4070,10 +4081,22 @@ function saveFeedProduct() {
     where_to_buy: document.getElementById('fp-where') ? document.getElementById('fp-where').value.trim() : '',
     photo: document.getElementById('fp-photo').value.trim()
   };
+  var saveBtn = document.getElementById('feed-product-save-btn');
+  var originalBtnText = saveBtn ? saveBtn.textContent : '';
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+  var savedId = await dbSaveFeedProduct(p);
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = originalBtnText; }
+  if (!savedId) {
+    toast('⚠️ Save failed — check your connection and try again', '#c0392b');
+    return; // modal stays open, nothing added locally, so nothing looks saved when it wasn't
+  }
+  p.id = savedId;
   if (editingFeedIdx >= 0) { feedProducts[editingFeedIdx] = p; toast('✅ '+name+' updated!'); editingFeedIdx=-1; }
   else { feedProducts.push(p); toast('🌾 '+name+' added!'); }
   renderFeedProducts();
-  if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar(); saveToStorage(); dbSaveFeedProduct(p); closeModal();
+  if (document.getElementById("page-calendar") && document.getElementById("page-calendar").classList.contains("active")) renderCalendar();
+  saveToStorage();
+  closeModal();
 }
 
 function renderFeedOrderHistory() {
